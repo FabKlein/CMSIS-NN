@@ -39,6 +39,55 @@
  * @{
  */
 
+#if defined(ARM_NN_USE_MVE_INTRINSICS)
+static void arm_nn_mat_mult_nt_t_s16_4rows_mve(const int16_t *ip_row_0,
+                                               const int16_t *ip_row_1,
+                                               const int16_t *ip_row_2,
+                                               const int16_t *ip_row_3,
+                                               const int8_t *col_base,
+                                               int32_t rhs_cols,
+                                               int32_t *acc_0,
+                                               int32_t *acc_1,
+                                               int32_t *acc_2,
+                                               int32_t *acc_3)
+{
+    int32_t acc_n0 = 0;
+    int32_t acc_n1 = 0;
+    int32_t acc_n2 = 0;
+    int32_t acc_n3 = 0;
+
+    for (int32_t j = 0; j < rhs_cols; j += 8)
+    {
+        const mve_pred16_t p = vctp16q((uint32_t)(rhs_cols - j));
+        const int16x8_t col = vldrbq_z_s16(col_base + j, p);
+        acc_n0 = vmladavaq_p_s16(acc_n0, col, vldrhq_z_s16(ip_row_0 + j, p), p);
+        acc_n1 = vmladavaq_p_s16(acc_n1, col, vldrhq_z_s16(ip_row_1 + j, p), p);
+        acc_n2 = vmladavaq_p_s16(acc_n2, col, vldrhq_z_s16(ip_row_2 + j, p), p);
+        acc_n3 = vmladavaq_p_s16(acc_n3, col, vldrhq_z_s16(ip_row_3 + j, p), p);
+    }
+
+    *acc_0 = acc_n0;
+    *acc_1 = acc_n1;
+    *acc_2 = acc_n2;
+    *acc_3 = acc_n3;
+}
+
+static void
+arm_nn_mat_mult_nt_t_s16_1row_mve(const int16_t *ip_row_0, const int8_t *col_base, int32_t rhs_cols, int32_t *acc)
+{
+    int32_t acc_n0 = 0;
+
+    for (int32_t j = 0; j < rhs_cols; j += 8)
+    {
+        const mve_pred16_t p = vctp16q((uint32_t)(rhs_cols - j));
+        const int16x8_t col = vldrbq_z_s16(col_base + j, p);
+        acc_n0 = vmladavaq_p_s16(acc_n0, col, vldrhq_z_s16(ip_row_0 + j, p), p);
+    }
+
+    *acc = acc_n0;
+}
+#endif
+
 /*
  * s16 matrix multiplication with the right-hand-side matrix transposed
  *
@@ -95,6 +144,9 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                 acc_n2 += ip_row_2[j] * col;
                 acc_n3 += ip_row_3[j] * col;
             }
+    #elif defined(ARM_NN_USE_MVE_INTRINSICS)
+            arm_nn_mat_mult_nt_t_s16_4rows_mve(
+                ip_row_0, ip_row_1, ip_row_2, ip_row_3, col_base, rhs_cols_fast, &acc_n0, &acc_n1, &acc_n2, &acc_n3);
     #else
             // Note: If operand initialization is moved around, use '&' constraint to
             // specify earlyclobber operands.
@@ -225,6 +277,8 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                     int32_t col = col_base[j];
                     acc_n0 += ip_row_0[j] * col;
                 }
+    #elif defined(ARM_NN_USE_MVE_INTRINSICS)
+                arm_nn_mat_mult_nt_t_s16_1row_mve(ip_row_0, col_base, rhs_cols, &acc_n0);
     #else
                 __ASM volatile(" .p2align 2                              \n"
                                "   wlstp.32        lr, %[cnt], 1f        \n"
@@ -290,6 +344,8 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                     int8_t col = col_base[j];
                     acc_n0 += ip_row_0[j] * col;
                 }
+    #elif defined(ARM_NN_USE_MVE_INTRINSICS)
+                arm_nn_mat_mult_nt_t_s16_1row_mve(ip_row_0, col_base, rhs_cols_fast, &acc_n0);
     #else
                 __ASM volatile(" .p2align 2                              \n"
                                "   wlstp.32        lr, %[cnt], 1f        \n"
@@ -336,6 +392,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
         }
     }
 
+    return ARM_CMSIS_NN_SUCCESS;
 #else
     (void)lhs;
     (void)rhs;
@@ -352,7 +409,6 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
 
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
 #endif
-    return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**

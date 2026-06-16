@@ -24,13 +24,13 @@ on:
         required: false
         default: all
       toolchains:
-        description: Comma-separated toolchains to run (no spaces)
+        description: Comma-separated toolchains to run
         required: false
-        default: GCC@14.3.1,AC6@6.24.0
+        default: GCC@14.3.1,AC6@6.24.0,IAR@9.70.4
   pull_request:
     branches: [main]
   push:
-    branches: [main, cmsis_nn_float]
+    branches: [main, iar_support_branch]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,7 +42,7 @@ permissions:
 jobs:
   fvp:
     name: FVP ${{ matrix.toolchain_label }}
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -53,12 +53,16 @@ jobs:
           - key: ac6
             toolchain: AC6
             toolchain_label: AC6@6.24.0
+          - key: iar
+            toolchain: IAR
+            toolchain_label: IAR@9.70.4
 
     env:
       INTEGER_TESTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tests || 'all' }}
-      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0' }}
+      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0,IAR@9.70.4' }}
       CMSIS_PACK_ROOT: /home/runner/.cache/arm/packs
       INTEGER_BUILD_ROOT: ${{ github.workspace }}/.ci-tmp/cmsis-nn-integer-fvp
+      IAR_LMS_BEARER_TOKEN: ${{ secrets.IAR_LMS_BEARER_TOKEN }}
 
     steps:
       - name: Checkout
@@ -93,9 +97,21 @@ jobs:
             echo "Skipped by workflow_dispatch filter."
           } >> "${GITHUB_STEP_SUMMARY}"
 
+      - name: Check IAR license secret
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'IAR' && env.IAR_LMS_BEARER_TOKEN == ''
+        run: |
+          {
+            echo "## ${{ matrix.toolchain_label }}"
+            echo ""
+            echo "IAR was selected, but the IAR_LMS_BEARER_TOKEN secret is not configured."
+          } >> "${GITHUB_STEP_SUMMARY}"
+          exit 1
+
       - name: Install Arm tools
         if: steps.select.outputs.enabled == 'true'
         uses: ARM-software/cmsis-actions/vcpkg@v1
+        with:
+          config: vcpkg-configuration.json
 
       - name: Activate Arm tool license
         if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'AC6'
@@ -122,6 +138,19 @@ jobs:
           fi
           if [[ -n "${AC6_TOOLCHAIN_6_24_0:-}" ]]; then
             echo "AC6_TOOLCHAIN=${AC6_TOOLCHAIN_6_24_0}" >> "${GITHUB_ENV}"
+          fi
+          if [[ -z "${IAR_TOOLCHAIN_9_70_4:-}" ]]; then
+            iar_cc="$(command -v iccarm || true)"
+            if [[ -z "${iar_cc}" ]]; then
+              iar_cc="$(find "${GITHUB_WORKSPACE}/.vcpkg/downloads/artifacts" -path '*/compilers.iar.cxarm/*/arm/bin/iccarm' -print -quit 2>/dev/null || true)"
+            fi
+            if [[ -n "${iar_cc}" ]]; then
+              echo "IAR_TOOLCHAIN_9_70_4=$(dirname "${iar_cc}")" >> "${GITHUB_ENV}"
+              echo "IAR_TOOLCHAIN=$(dirname "${iar_cc}")" >> "${GITHUB_ENV}"
+            fi
+          fi
+          if [[ -n "${IAR_TOOLCHAIN_9_70_4:-}" ]]; then
+            echo "IAR_TOOLCHAIN=${IAR_TOOLCHAIN_9_70_4}" >> "${GITHUB_ENV}"
           fi
 
       - name: Run integer CMSIS/FVP regression
@@ -164,4 +193,4 @@ jobs:
           name: integer-fvp-${{ matrix.key }}
           path: |
             Tests/UnitTest/integer_fvp.log
-            ${{ env.INTEGER_BUILD_ROOT }}/${{ matrix.key }}/**/*.log
+            ${{ env.INTEGER_BUILD_ROOT }}/**/*.log

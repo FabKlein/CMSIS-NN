@@ -5,4 +5,4 @@
 
 const int32_t *const kernel1x1_stride_x_y_2_int4_input_bias = NULL;
 
-const int32_t *const kernel1x1_stride_x_y_2_int4_biases = kernel1x1_stride_x_y_2_int4_input_bias;
+const int32_t *const kernel1x1_stride_x_y_2_int4_biases = NULL;

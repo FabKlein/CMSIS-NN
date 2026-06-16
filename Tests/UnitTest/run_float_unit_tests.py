@@ -29,6 +29,10 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# Reuse the integer FVP runner helpers for direct-CMake embedded builds so the
+# float and integer flows resolve toolchains, CMSIS overlays, and logs the same way.
+import run_integer_unit_tests as integer_fvp
+
 
 @dataclass(frozen=True)
 class FloatTestFamily:
@@ -237,6 +241,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--build-host", action="store_true", help="Configure and build host unit tests.")
     parser.add_argument("--run-host", action="store_true", help="Run host unit-test executables.")
     parser.add_argument("--build-cmsis", action="store_true", help="Build CMSIS-Toolbox Corstone-300 test contexts.")
+    parser.add_argument(
+        "--build-fvp-cmake",
+        action="store_true",
+        help="Build Corstone-300 FVP tests with direct CMake, reusing one CMSIS-NN library build per toolchain.",
+    )
     parser.add_argument("--run-fvp", action="store_true", help="Run CMSIS-Toolbox test images on FVP.")
     parser.add_argument(
         "--cbuild-packs",
@@ -266,6 +275,12 @@ def parse_args() -> argparse.Namespace:
         help="Host unit-test build directory.",
     )
     parser.add_argument("--clean-host", action="store_true", help="Delete the host build directory before configuring.")
+    parser.add_argument("--clean-fvp-cmake", action="store_true", help="Delete direct CMake FVP build directories before configuring.")
+    parser.add_argument("--fvp-cmake-build-root", default="/tmp/cmsis-nn-float-fvp-cmake", help="Root direct CMake FVP build directory.")
+    parser.add_argument("--cmsis-pack-root", default=os.environ.get("CMSIS_PACK_ROOT", "/home/runner/.cache/arm/packs"), help="CMSIS pack root for direct CMake FVP builds.")
+    parser.add_argument("--cmsis-version", default="6.3.0", help="Preferred ARM::CMSIS pack version for direct CMake FVP builds.")
+    parser.add_argument("--cortex-dfp-version", default="1.1.0", help="Preferred ARM::Cortex_DFP pack version for direct CMake FVP builds.")
+    parser.add_argument("--optimization-level", default="-O3", help="CMSIS optimization level for direct CMake FVP builds.")
     parser.add_argument(
         "--fvp-bin",
         help="Path to the Corstone-300 FVP binary. Required when --run-fvp is used.",
@@ -568,7 +583,13 @@ def toolchain_family(toolchain: str) -> str:
 
 
 def cmsis_image_suffix(toolchain: str) -> str:
-    return "axf" if toolchain_family(toolchain) == "AC6" else "elf"
+    family = toolchain_family(toolchain)
+    if family == "AC6":
+        return "axf"
+    if family == "IAR":
+        # IAR CMake/FVP builds produce .out images, unlike ELF-based GCC/Clang.
+        return "out"
+    return "elf"
 
 
 def build_cmsis_tests(
@@ -627,11 +648,112 @@ def build_cmsis_tests(
     return all_ok
 
 
+def cmake_fvp_target_name(family: FloatTestFamily, dtype_name: str) -> str:
+    return family.host_target(dtype_name)
+
+
+def configure_cmake_fvp_build(
+    build_dir: Path,
+    overlay_root: Path,
+    toolchain: integer_fvp.Toolchain,
+    dtypes: list[str],
+    optimization_level: str,
+    log_dir: Path,
+) -> subprocess.CompletedProcess[str]:
+    optimization = optimization_level
+    if toolchain.family == "IAR" and optimization in {"", "-O3", "-Ofast"}:
+        # Match the script's default high-speed optimization to IAR spelling.
+        optimization = "-Oh"
+
+    cmd = [
+        "cmake",
+        "-S",
+        str(UNIT_TEST_ROOT),
+        "-B",
+        str(build_dir),
+        f"-DCMSIS_PATH={overlay_root}",
+        "-DCMAKE_SYSTEM_NAME=Generic",
+        "-DCMAKE_SYSTEM_PROCESSOR=cortex-m55",
+        "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY",
+        f"-DCMAKE_C_COMPILER={toolchain.cc}",
+        f"-DCMAKE_CXX_COMPILER={toolchain.cxx}",
+        f"-DCMAKE_C_FLAGS={toolchain.c_flags}",
+        f"-DCMAKE_CXX_FLAGS={toolchain.cxx_flags}",
+        f"-DCMAKE_ASM_FLAGS={toolchain.c_flags}",
+        f"-DCMSIS_OPTIMIZATION_LEVEL={optimization}",
+        f"-DARM_NN_ENABLE_F32={'ON' if 'f32' in dtypes else 'OFF'}",
+        f"-DARM_NN_ENABLE_F16={'ON' if 'f16' in dtypes else 'OFF'}",
+        f"-DPython3_EXECUTABLE={sys.executable}",
+        "-Wno-dev",
+    ]
+    if toolchain.ar:
+        cmd.append(f"-DCMAKE_AR={toolchain.ar}")
+    return integer_fvp.run_command(cmd, log_dir / "configure.log")
+
+
+def build_cmake_fvp_tests(
+    families: list[FloatTestFamily],
+    dtypes: list[str],
+    toolchains: list[str],
+    jobs: int,
+    build_root: Path,
+    pack_root: Path,
+    cmsis_version: str,
+    cortex_dfp_version: str,
+    optimization_level: str,
+    clean: bool,
+    results: list[StepResult],
+) -> bool:
+    all_ok = True
+    # Direct CMake does not consume CMSIS packs directly, so create the same
+    # lightweight CMSIS/Cortex_DFP overlay used by the integer FVP runner.
+    overlay_root = integer_fvp.create_cmsis_overlay(build_root / "cmsis-overlay", pack_root, cmsis_version, cortex_dfp_version)
+    for requested_toolchain in toolchains:
+        toolchain = integer_fvp.resolve_toolchain(requested_toolchain)
+        build_dir = build_root / toolchain.family.lower()
+        log_dir = build_dir / "logs"
+        if clean and build_dir.exists():
+            shutil.rmtree(build_dir)
+
+        configure = configure_cmake_fvp_build(build_dir, overlay_root, toolchain, dtypes, optimization_level, log_dir)
+        # Build selected test executables from a single configured tree so the
+        # CMSIS-NN library is not rebuilt once per family/context as with cbuild.
+        selected_targets = [cmake_fvp_target_name(family, dtype_name) for family in families for dtype_name in dtypes]
+        if configure.returncode != 0:
+            all_ok = False
+            for family in families:
+                for dtype_name in dtypes:
+                    append_result(results, "build-fvp-cmake", family.name, dtype_name, requested_toolchain, "FAIL", "cmake configure failed")
+            continue
+
+        build = integer_fvp.build_targets(build_dir, toolchain, selected_targets, jobs, log_dir)
+        build_status = "PASS" if build.returncode == 0 else "FAIL"
+        build_detail = "" if build.returncode == 0 else "cmake build failed"
+        if build.returncode != 0:
+            all_ok = False
+        for family in families:
+            for dtype_name in dtypes:
+                append_result(results, "build-fvp-cmake", family.name, dtype_name, requested_toolchain, build_status, build_detail)
+    return all_ok
+
+
 def cmsis_image_path(family: FloatTestFamily, dtype_name: str, toolchain: str) -> Path:
     family_name = toolchain_family(toolchain)
     binary_name = family.host_target(dtype_name)
     output_root = Path(CMSIS_OUTPUT_ROOT) if CMSIS_OUTPUT_ROOT else CMSIS_UNIT_TEST_ROOT
     return output_root / f"{family.cmsis_context(dtype_name)}-{family_name}" / "outdir" / f"{binary_name}.{cmsis_image_suffix(toolchain)}"
+
+
+def cmake_fvp_image_path(build_root: Path, family: FloatTestFamily, dtype_name: str, toolchain: str) -> Path:
+    toolchain_name = toolchain_family(toolchain).lower()
+    target_name = cmake_fvp_target_name(family, dtype_name)
+    test_dir = build_root / toolchain_name / "TestCases" / target_name
+    # The direct-CMake path currently covers IAR (.out) and ELF-producing tools.
+    for suffix in ("out", "elf"):
+        candidate = test_dir / f"{target_name}.{suffix}"
+        if candidate.exists():
+            return candidate
+    raise SystemExit(f"Unable to find direct CMake FVP image for {target_name} in {test_dir}")
 
 
 def run_fvp_tests(
@@ -642,6 +764,7 @@ def run_fvp_tests(
     fvp_image_arg: str,
     fvp_timeout: int,
     results: list[StepResult],
+    cmake_build_root: Path | None = None,
 ) -> bool:
     if not fvp_bin:
         raise SystemExit("--fvp-bin is required when --run-fvp is used.")
@@ -663,7 +786,10 @@ def run_fvp_tests(
     for toolchain in toolchains:
         for family in families:
             for dtype_name in dtypes:
-                image_path = cmsis_image_path(family, dtype_name, toolchain)
+                if cmake_build_root is not None:
+                    image_path = cmake_fvp_image_path(cmake_build_root, family, dtype_name, toolchain)
+                else:
+                    image_path = cmsis_image_path(family, dtype_name, toolchain)
                 fvp_cmd = [str(fvp_bin)]
                 if fvp_image_arg:
                     fvp_cmd.extend([fvp_image_arg, str(image_path)])
@@ -686,7 +812,7 @@ def main() -> None:
             print(family_name)
         return
 
-    if not any((args.generate, args.build_host, args.run_host, args.build_cmsis, args.run_fvp)):
+    if not any((args.generate, args.build_host, args.run_host, args.build_cmsis, args.build_fvp_cmake, args.run_fvp)):
         args.generate = True
         args.build_host = True
         args.run_host = True
@@ -714,6 +840,20 @@ def main() -> None:
         failed |= not run_host_tests(families, dtypes, Path(args.host_build_dir), results)
     if args.build_cmsis:
         failed |= not build_cmsis_tests(families, dtypes, toolchains, args.jobs, results, args.cbuild_packs)
+    if args.build_fvp_cmake:
+        failed |= not build_cmake_fvp_tests(
+            families,
+            dtypes,
+            toolchains,
+            args.jobs,
+            Path(args.fvp_cmake_build_root).resolve(),
+            Path(args.cmsis_pack_root).resolve(),
+            args.cmsis_version,
+            args.cortex_dfp_version,
+            args.optimization_level,
+            args.clean_fvp_cmake,
+            results,
+        )
     if args.run_fvp:
         failed |= not run_fvp_tests(
             families,
@@ -723,6 +863,7 @@ def main() -> None:
             args.fvp_image_arg,
             args.fvp_timeout,
             results,
+            Path(args.fvp_cmake_build_root).resolve() if args.build_fvp_cmake else None,
         )
 
     print_summary(results)

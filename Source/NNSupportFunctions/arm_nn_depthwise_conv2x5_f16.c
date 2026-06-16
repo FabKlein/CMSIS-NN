@@ -69,7 +69,7 @@ void arm_nn_depthwise_conv2x5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                 {
                     const mve_pred16_t p = vctp16q((uint32_t)(ch_mult - m));
                     const int32_t oc = c * ch_mult + m;
-                    float16x8_t vacc = b ? vld1q_z(b + oc, p) : vdupq_n_f16((float16_t)0.0f);
+                    float16x8_t vacc = arm_nn_load_optional_bias_z_f16(b, oc, p);
 
                     vacc = vfmaq(vacc, vdupq_n_f16(x00), vld1q_z(kernel + (size_t)0 * (size_t)out_c + (size_t)oc, p));
                     vacc = vfmaq(vacc, vdupq_n_f16(x01), vld1q_z(kernel + (size_t)1 * (size_t)out_c + (size_t)oc, p));

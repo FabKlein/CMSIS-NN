@@ -22,15 +22,15 @@ on:
       toolchains:
         description: Comma-separated toolchains to run (no spaces)
         required: false
-        default: GCC@14.3.1,AC6@6.24.0
+        default: GCC@14.3.1,AC6@6.24.0,IAR@9.70.4
       variants:
         description: Comma-separated variant keys to build
         required: false
         default: all
-      cpu:
-        description: Target CPU passed to the toolchain
+      cpus:
+        description: Comma-separated target CPUs passed to the toolchain
         required: false
-        default: cortex-m55
+        default: cortex-m55,cortex-m4
       optimization:
         description: Value forwarded to CMSIS_OPTIMIZATION_LEVEL
         required: false
@@ -38,7 +38,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, cmsis_nn_float]
+    branches: [main, iar_support_branch]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -61,14 +61,18 @@ jobs:
           - key: ac6
             toolchain: AC6
             toolchain_label: AC6@6.24.0
+          - key: iar
+            toolchain: IAR
+            toolchain_label: IAR@9.70.4
 
     env:
-      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0' }}
+      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0,IAR@9.70.4' }}
       LIB_VARIANTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.variants || 'all' }}
-      LIB_CPU: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.cpu || 'cortex-m55' }}
+      LIB_CPUS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.cpus || 'cortex-m55,cortex-m4' }}
       LIB_OPTIMIZATION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.optimization || '' }}
       LIB_BUILD_ROOT: ${{ github.workspace }}/.ci-tmp/cmsis-nn-lib-variants
       CMSIS_PACK_ROOT: /home/runner/.cache/arm/packs
+      IAR_LMS_BEARER_TOKEN: ${{ secrets.IAR_LMS_BEARER_TOKEN }}
 
     steps:
       - name: Checkout
@@ -97,9 +101,21 @@ jobs:
             echo "Skipped by workflow_dispatch filter."
           } >> "${GITHUB_STEP_SUMMARY}"
 
+      - name: Check IAR license secret
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'IAR' && env.IAR_LMS_BEARER_TOKEN == ''
+        run: |
+          {
+            echo "## ${{ matrix.toolchain_label }}"
+            echo ""
+            echo "IAR was selected, but the IAR_LMS_BEARER_TOKEN secret is not configured."
+          } >> "${GITHUB_STEP_SUMMARY}"
+          exit 1
+
       - name: Install Arm tools
         if: steps.select.outputs.enabled == 'true'
         uses: ARM-software/cmsis-actions/vcpkg@v1
+        with:
+          config: vcpkg-configuration.json
 
       - name: Cache CMSIS packs
         if: steps.select.outputs.enabled == 'true'
@@ -126,13 +142,24 @@ jobs:
           if [[ -n "${AC6_TOOLCHAIN_6_24_0:-}" ]]; then
             echo "AC6_TOOLCHAIN=${AC6_TOOLCHAIN_6_24_0}" >> "${GITHUB_ENV}"
           fi
+          if [[ -z "${IAR_TOOLCHAIN_9_70_4:-}" ]]; then
+            iar_cc="$(command -v iccarm || true)"
+            if [[ -z "${iar_cc}" ]]; then
+              iar_cc="$(find "${GITHUB_WORKSPACE}/.vcpkg/downloads/artifacts" -path '*/compilers.iar.cxarm/*/arm/bin/iccarm' -print -quit 2>/dev/null || true)"
+            fi
+            if [[ -n "${iar_cc}" ]]; then
+              echo "IAR_TOOLCHAIN_9_70_4=$(dirname "${iar_cc}")" >> "${GITHUB_ENV}"
+              echo "IAR_TOOLCHAIN=$(dirname "${iar_cc}")" >> "${GITHUB_ENV}"
+            fi
+          fi
+          if [[ -n "${IAR_TOOLCHAIN_9_70_4:-}" ]]; then
+            echo "IAR_TOOLCHAIN=${IAR_TOOLCHAIN_9_70_4}" >> "${GITHUB_ENV}"
+          fi
 
       - name: Build library variants
         if: steps.select.outputs.enabled == 'true'
         run: |
-          # Keep this matrix on the toolchains that are already stable with the
-          # direct CMake library build path. Embedded CLANG is validated in the
-          # CMSIS/FVP workflow instead.
+          # Embedded CLANG is validated in the CMSIS/FVP workflow instead.
           set +e
           set -o pipefail
 
@@ -141,26 +168,49 @@ jobs:
             optimization_args=(--optimization "${LIB_OPTIMIZATION}")
           fi
 
-          python3 Tests/UnitTest/build_lib_variants.py \
-            --toolchain "${{ matrix.toolchain }}" \
-            --variants "${LIB_VARIANTS}" \
-            --cpu "${LIB_CPU}" \
-            --cmsis-pack-root "${CMSIS_PACK_ROOT}" \
-            "${optimization_args[@]}" \
-            --jobs 4 \
-            --build-root "${LIB_BUILD_ROOT}" | tee build_lib_variants.log
+          status=0
+          : > build_lib_variants.log
 
-          status=${PIPESTATUS[0]}
+          IFS=',' read -ra cpu_list <<< "${LIB_CPUS}"
+          for cpu in "${cpu_list[@]}"; do
+            cpu="${cpu//[[:space:]]/}"
+            if [[ -z "${cpu}" ]]; then
+              continue
+            fi
+
+            cpu_variants="${LIB_VARIANTS}"
+            if [[ "${cpu}" == "cortex-m4" && "${LIB_VARIANTS}" == "all" ]]; then
+              # GCC does not expose float16_t for Cortex-M4, so keep the
+              # default M4 coverage on the variants that are meaningful across
+              # the stable default toolchains.
+              cpu_variants="baseline,f32"
+            fi
+
+            echo "### ${cpu}" | tee -a build_lib_variants.log
+            python3 Tests/UnitTest/build_lib_variants.py \
+              --toolchain "${{ matrix.toolchain }}" \
+              --variants "${cpu_variants}" \
+              --cpu "${cpu}" \
+              --cmsis-pack-root "${CMSIS_PACK_ROOT}" \
+              "${optimization_args[@]}" \
+              --jobs 4 \
+              --build-root "${LIB_BUILD_ROOT}/${cpu}" 2>&1 | tee -a build_lib_variants.log
+            cpu_status=${PIPESTATUS[0]}
+            if [[ "${cpu_status}" -ne 0 ]]; then
+              status="${cpu_status}"
+            fi
+
+          done
 
           {
             echo "## ${{ matrix.toolchain_label }}"
             echo ""
-            echo "- CPU: \`${LIB_CPU}\`"
+            echo "- CPUs: \`${LIB_CPUS}\`"
             echo "- Variants: \`${LIB_VARIANTS}\`"
             echo "- Optimization: \`${LIB_OPTIMIZATION:-script default}\`"
             echo ""
             echo '```text'
-            sed -n '/^CMSIS-NN library variant summary/,$p' build_lib_variants.log
+            sed -n '/^### /,$p' build_lib_variants.log
             echo '```'
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -173,4 +223,4 @@ jobs:
           name: lib-variants-${{ matrix.key }}
           path: |
             build_lib_variants.log
-            ${{ env.LIB_BUILD_ROOT }}/${{ matrix.key }}/**/*.log
+            ${{ env.LIB_BUILD_ROOT }}/**/*.log

@@ -24,6 +24,11 @@
     #include <stdlib.h>
     #include <string.h>
     #include <time.h>
+#elif defined(__ICCARM__)
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <time.h>
 #else
     #include <errno.h>
     #include <string.h>
@@ -44,11 +49,19 @@
 
 #include "uart.h"
 
+#if defined(__ICCARM__)
+    #define TEST_NORETURN __noreturn
+    #define TEST_WEAK __weak
+#else
+    #define TEST_NORETURN __attribute__((noreturn))
+    #define TEST_WEAK __attribute__((weak))
+#endif
+
 unsigned char UartPutc(unsigned char ch) { return uart_putc(ch); }
 
 unsigned char UartGetc(void) { return uart_putc(uart_getc()); }
 
-__attribute__((noreturn)) void UartEndSimulation(int code)
+TEST_NORETURN void UartEndSimulation(int code)
 {
     UartPutc((char)0x4);  // End of simulation
     UartPutc((char)code); // Exit code
@@ -57,30 +70,16 @@ __attribute__((noreturn)) void UartEndSimulation(int code)
     }
 }
 
-void exit(int code)
-{
-    UartEndSimulation(code);
-    while (1)
-    {
-    }
-}
+#if defined(__ICCARM__)
+int stdin_getchar(void) { return UartGetc(); }
+#endif
+
+TEST_NORETURN void exit(int code) { UartEndSimulation(code); }
 
 #if CMSIS_COMPILER_CUSTOM_STDIO && defined(__clang__)
-__attribute__((noreturn)) void _exit(int code)
-{
-    UartEndSimulation(code);
-    while (1)
-    {
-    }
-}
+TEST_NORETURN void _exit(int code) { UartEndSimulation(code); }
 
-__attribute__((noreturn)) void _sys_exit(int code)
-{
-    UartEndSimulation(code);
-    while (1)
-    {
-    }
-}
+TEST_NORETURN void _sys_exit(int code) { UartEndSimulation(code); }
 #endif
 
 #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6100100) && !defined(GCCCOMPILER)
@@ -121,7 +120,7 @@ const char __stderr_name[] = ":STDERR";
 */
 
     #if !CMSIS_COMPILER_CUSTOM_STDIO
-__attribute__((weak)) FILEHANDLE _sys_open(const char *name, int openmode)
+TEST_WEAK FILEHANDLE _sys_open(const char *name, int openmode)
 {
     (void)openmode;
 
@@ -150,7 +149,7 @@ __attribute__((weak)) FILEHANDLE _sys_open(const char *name, int openmode)
     return (-1);
 }
 
-__attribute__((weak)) int _sys_close(FILEHANDLE fh)
+TEST_WEAK int _sys_close(FILEHANDLE fh)
 {
 
     switch (fh)
@@ -166,7 +165,7 @@ __attribute__((weak)) int _sys_close(FILEHANDLE fh)
     }
 }
 
-__attribute__((weak)) int _sys_write(FILEHANDLE fh, const uint8_t *buf, uint32_t len, int mode)
+TEST_WEAK int _sys_write(FILEHANDLE fh, const uint8_t *buf, uint32_t len, int mode)
 {
     (void)buf;
     (void)len;
@@ -185,7 +184,7 @@ __attribute__((weak)) int _sys_write(FILEHANDLE fh, const uint8_t *buf, uint32_t
     }
 }
 
-__attribute__((weak)) int _sys_read(FILEHANDLE fh, uint8_t *buf, uint32_t len, int mode)
+TEST_WEAK int _sys_read(FILEHANDLE fh, uint8_t *buf, uint32_t len, int mode)
 {
     (void)buf;
     (void)len;
@@ -204,7 +203,7 @@ __attribute__((weak)) int _sys_read(FILEHANDLE fh, uint8_t *buf, uint32_t len, i
     }
 }
 
-__attribute__((weak)) int _sys_istty(FILEHANDLE fh)
+TEST_WEAK int _sys_istty(FILEHANDLE fh)
 {
 
     switch (fh)
@@ -220,7 +219,7 @@ __attribute__((weak)) int _sys_istty(FILEHANDLE fh)
     }
 }
 
-__attribute__((weak)) int _sys_seek(FILEHANDLE fh, long pos)
+TEST_WEAK int _sys_seek(FILEHANDLE fh, long pos)
 {
     (void)pos;
 
@@ -237,7 +236,7 @@ __attribute__((weak)) int _sys_seek(FILEHANDLE fh, long pos)
     }
 }
 
-__attribute__((weak)) long _sys_flen(FILEHANDLE fh)
+TEST_WEAK long _sys_flen(FILEHANDLE fh)
 {
 
     switch (fh)
@@ -253,14 +252,46 @@ __attribute__((weak)) long _sys_flen(FILEHANDLE fh)
     }
 }
 
-__attribute__((weak)) char *(_sys_command_string)(char *cmd, int len)
+TEST_WEAK char *(_sys_command_string)(char *cmd, int len)
 {
     (void)len;
 
     return cmd;
 }
 
-__attribute__((weak)) void(_sys_exit)(int return_code) { exit(return_code); }
+TEST_WEAK void(_sys_exit)(int return_code) { exit(return_code); }
+    #endif
+
+#elif defined(__ICCARM__)
+
+    #if !CMSIS_COMPILER_CUSTOM_STDIO
+/* IAR DLIB calls __write/__read for low-level stdio retargeting. Provide
+ * UART-backed implementations for the direct CMake/FVP flow, but leave them out
+ * when CMSIS-Compiler already supplies the retarget layer through RTE.
+ */
+size_t __write(int handle, const unsigned char *buffer, size_t size)
+{
+    (void)handle;
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        UartPutc(buffer[i]);
+    }
+
+    return size;
+}
+
+size_t __read(int handle, unsigned char *buffer, size_t size)
+{
+    (void)handle;
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        buffer[i] = UartGetc();
+    }
+
+    return size;
+}
     #endif
 
 #else
@@ -290,7 +321,7 @@ int _lseek(int fd, int ptr, int dir)
     return (0);
 }
 
-int __attribute__((weak)) _fstat(int fd, struct stat *st)
+TEST_WEAK int _fstat(int fd, struct stat *st)
 {
     (void)fd;
     memset(st, 0, sizeof(*st));

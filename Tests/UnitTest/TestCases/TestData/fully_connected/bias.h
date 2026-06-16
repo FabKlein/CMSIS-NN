@@ -5,4 +5,4 @@
 
 const int32_t *const fully_connected_bias = NULL;
 
-const int32_t *const fully_connected_biases = fully_connected_bias;
+const int32_t *const fully_connected_biases = NULL;

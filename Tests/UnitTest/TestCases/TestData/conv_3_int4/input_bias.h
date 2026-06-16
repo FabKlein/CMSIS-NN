@@ -5,4 +5,4 @@
 
 const int32_t *const conv_3_int4_input_bias = NULL;
 
-const int32_t *const conv_3_int4_biases = conv_3_int4_input_bias;
+const int32_t *const conv_3_int4_biases = NULL;

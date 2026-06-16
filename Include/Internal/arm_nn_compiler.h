@@ -21,8 +21,8 @@
  * Title:        arm_nn_compiler.h
  * Description:  Generic compiler header
  *
- * $Date:        28 April 2026
- * $Revision:    V.1.3.2
+ * $Date:        16 June 2026
+ * $Revision:    V.1.3.3
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -59,7 +59,9 @@
 
 #elif defined(__ICCARM__)
 
-    #warning IAR support is not tested
+    /*
+     * /!\ IAR support is experimental /!\
+     */
     #ifndef __ASM
         #define __ASM __asm
     #endif
@@ -80,6 +82,15 @@
     #endif
     #ifndef UNUSED_ATTR
         #define UNUSED_ATTR __attribute__((unused))
+    #endif
+    /*
+     * IAR accepts simple inline assembly, but the MVE inline assembly used in
+     * some kernels relies on GCC operand constraints. Prefer the
+     * equivalent MVE intrinsic implementations when Helium is available.
+     */
+    #if defined(__ARM_FEATURE_MVE) && (__ARM_FEATURE_MVE & 1)
+        #undef ARM_NN_USE_MVE_INTRINSICS
+        #define ARM_NN_USE_MVE_INTRINSICS 1
     #endif
 
 #elif defined(_MSC_VER)

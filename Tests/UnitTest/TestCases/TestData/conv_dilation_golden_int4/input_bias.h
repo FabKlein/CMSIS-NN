@@ -5,4 +5,4 @@
 
 const int32_t *const conv_dilation_golden_int4_input_bias = NULL;
 
-const int32_t *const conv_dilation_golden_int4_biases = conv_dilation_golden_int4_input_bias;
+const int32_t *const conv_dilation_golden_int4_biases = NULL;

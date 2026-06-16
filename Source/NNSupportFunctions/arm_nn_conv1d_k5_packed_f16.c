@@ -50,7 +50,7 @@ void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
         for (; oc + block_cols <= out_c; oc += block_cols)
         {
             const float16_t *w_base = kernel_packed + ((size_t)oc / block_cols) * 5U * (size_t)in_c * block_cols;
-            float16x8_t vacc0 = b ? vld1q(b + oc) : vdupq_n_f16((float16_t)0.0f);
+            float16x8_t vacc0 = arm_nn_load_optional_bias_f16(b, oc);
             float16x8_t vacc1 = vacc0;
 
             for (int32_t ic = 0; ic < in_c; ++ic)
@@ -83,7 +83,7 @@ void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
             const int32_t valid_cols = out_c - oc;
             const mve_pred16_t p = vctp16q((uint32_t)valid_cols);
             const float16_t *w_base = kernel_packed + ((size_t)oc / block_cols) * 5U * (size_t)in_c * block_cols;
-            float16x8_t vacc0 = b ? vld1q_z(b + oc, p) : vdupq_n_f16((float16_t)0.0f);
+            float16x8_t vacc0 = arm_nn_load_optional_bias_z_f16(b, oc, p);
             float16x8_t vacc1 = vacc0;
 
             for (int32_t ic = 0; ic < in_c; ++ic)
@@ -125,7 +125,7 @@ void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
         for (; oc + block_cols <= out_c; oc += block_cols)
         {
             const float16_t *w_base = kernel_packed + ((size_t)oc / block_cols) * 5U * (size_t)in_c * block_cols;
-            float16x8_t vacc = b ? vld1q(b + oc) : vdupq_n_f16((float16_t)0.0f);
+            float16x8_t vacc = arm_nn_load_optional_bias_f16(b, oc);
 
             for (int32_t ic = 0; ic < in_c; ++ic)
             {
@@ -145,7 +145,7 @@ void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
             const int32_t valid_cols = out_c - oc;
             const mve_pred16_t p = vctp16q((uint32_t)valid_cols);
             const float16_t *w_base = kernel_packed + ((size_t)oc / block_cols) * 5U * (size_t)in_c * block_cols;
-            float16x8_t vacc = b ? vld1q_z(b + oc, p) : vdupq_n_f16((float16_t)0.0f);
+            float16x8_t vacc = arm_nn_load_optional_bias_z_f16(b, oc, p);
 
             for (int32_t ic = 0; ic < in_c; ++ic)
             {

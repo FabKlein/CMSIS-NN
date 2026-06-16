@@ -14,11 +14,18 @@ CMSIS-NN also provides experimental float32 and float16 APIs. The float API inte
 
 The float API is primarily intended for Cortex-M CPUs with Arm Helium Technology (MVE). Pure C scalar reference implementations are provided for correctness, bring-up, and fallback, but practical deployment is expected to target MVE-enabled CPUs. In general, float kernels should be reserved for specific use cases where integer quantization is not possible or not acceptable, and where the neural network remains modest enough for Cortex-M class devices. CMSIS-NN float support is intended to integrate with frameworks that can carry float16 operator flows, such as [ExecuTorch](https://executorch.ai/).
 
-For the float operators that support `arm_nn_weight_format_flt`, MVE
-performance is generally better when constant weights are provided in the
-packed `NTxN` layout instead of the standard `NT x T` layout. This avoids the
-gather-heavy RHS access pattern of the standard formulation and is therefore
-the preferred deployment format when offline repacking is available.
+`arm_nn_weight_format_flt` is an enum used by supported float operators to
+describe whether constant weights are passed in their standard layout or in an
+**offline-packed** layout prepared ahead of inference. This offline packing is an
+important deployment optimization: MVE performance is generally better with the
+packed `NT x N` layout instead of the standard `NT x T` layout because it
+avoids the gather-heavy RHS access pattern of the standard formulation. Such
+constant-weight repacking can be implemented as an offline graph/lowering pass,
+which is a flow supported by deployment frameworks such as ExecuTorch. The
+packed format stores a logical RHS matrix `[rows, cols]` as `[block][k][lane]`;
+for example, f16 packs rows `0..7`, cols `0..3` from `row0: a0 a1 a2 a3`,
+`row1: b0 b1 b2 b3`, etc. into `k=0: a0 b0 c0 d0 e0 f0 g0 h0`,
+`k=1: a1 b1 c1 d1 e1 f1 g1 h1`, etc...
 
 The floating-point scalar code can also be compiled for Arm A-class CPUs with `float16`
 support and may benefit from NEON or SVE auto-vectorization. However, this is

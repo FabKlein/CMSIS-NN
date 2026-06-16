@@ -1220,7 +1220,15 @@ __STATIC_FORCEINLINE void arm_nn_write_s8x4_ia(int8_t **in, int32_t value)
  */
 __STATIC_FORCEINLINE void arm_memset_s8(int8_t *dst, const int8_t val, uint32_t block_size)
 {
-#if defined(ARM_MATH_MVEI)
+#if defined(ARM_MATH_MVEI) && defined(ARM_NN_USE_MVE_INTRINSICS)
+    const int8x16_t vec = vdupq_n_s8(val);
+    uint32_t i = 0;
+    for (; i < block_size; i += 16U)
+    {
+        const mve_pred16_t p = vctp8q(block_size - i);
+        vstrbq_p_s8(dst + i, vec, p);
+    }
+#elif defined(ARM_MATH_MVEI)
     __asm volatile("   vdup.8                  q0, %[set_val]             \n"
                    "   wlstp.8                 lr, %[cnt], 1f             \n"
                    "2:                                                    \n"
@@ -1740,7 +1748,14 @@ __STATIC_FORCEINLINE int32_t arm_nn_requantize_s64(const int64_t val,
  */
 __STATIC_FORCEINLINE void arm_memcpy_s8(int8_t *__RESTRICT dst, const int8_t *__RESTRICT src, uint32_t block_size)
 {
-#if defined(ARM_MATH_MVEI)
+#if defined(ARM_MATH_MVEI) && defined(ARM_NN_USE_MVE_INTRINSICS)
+    uint32_t i = 0;
+    for (; i < block_size; i += 16U)
+    {
+        const mve_pred16_t p = vctp8q(block_size - i);
+        vstrbq_p_s8(dst + i, vldrbq_z_s8(src + i, p), p);
+    }
+#elif defined(ARM_MATH_MVEI)
     __asm volatile("   wlstp.8                 lr, %[cnt], 1f             \n"
                    "2:                                                    \n"
                    "   vldrb.8                 q0, [%[in]], #16            \n"
@@ -1907,7 +1922,7 @@ __STATIC_FORCEINLINE int32x4_t arm_doubling_high_mult_mve_32x4(const int32x4_t m
 
 __STATIC_FORCEINLINE int32x4_t arm_divide_by_power_of_two_mve_32x4(const int32x4_t dividend, const int32x4_t exponent)
 {
-    const int32x4_t shift = -exponent;
+    const int32x4_t shift = vsubq_s32(vdupq_n_s32(0), exponent);
     const int32x4_t fixup = vshrq_n_s32(vandq_s32(dividend, shift), 31);
     const int32x4_t fixed_up_dividend = vqaddq_s32(dividend, fixup);
     return vrshlq_s32(fixed_up_dividend, shift);
@@ -1930,7 +1945,7 @@ __STATIC_FORCEINLINE int32x4_t arm_requantize_mve_32x4(const int32x4_t val,
     const mve_pred16_t p = vcmpgtq_n_s32(shift, 0);
 
     const int32x4_t left_shift = vpselq_s32(shift, zz, p);
-    const int32x4_t right_shift = -vpselq_s32(zz, shift, p);
+    const int32x4_t right_shift = vsubq_s32(zz, vpselq_s32(zz, shift, p));
 
     return arm_divide_by_power_of_two_mve_32x4(arm_doubling_high_mult_mve_32x4(vshlq_s32(val, left_shift), multiplier),
                                                right_shift);

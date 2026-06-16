@@ -22,13 +22,25 @@ project(cmsis_nn_unit_tests VERSION 0.0.1)
 
 set(CMSIS_PATH "</path/to/CMSIS>" CACHE PATH "Path to CMSIS.")
 
-add_compile_options(-fomit-frame-pointer
-                    -Werror
-                    -Wimplicit-function-declaration
-                    -Wunused-variable
-                    -Wunused-function
-                    -Wno-redundant-decls
-                    -Wvla)
+if (CMAKE_C_COMPILER_ID STREQUAL "IAR")
+    # IAR supports Unity's C11 requirements with its default language mode, but
+    # CMake does not advertise a C11 flag for this compiler.
+    set(CMAKE_C11_STANDARD_COMPILE_OPTION "")
+    set(CMAKE_C11_EXTENSION_COMPILE_OPTION -e)
+    set(CMAKE_C11_STANDARD__HAS_FULL_SUPPORT ON)
+    # Pe068 warns when an integer conversion changes sign. CMSIS-NN unit-test
+    # code intentionally uses low-level masks, offsets, and lane values that can
+    # trigger this diagnostic while remaining covered by the same test vectors.
+    add_compile_options(--diag_suppress=Pe068)
+else()
+    add_compile_options(-fomit-frame-pointer
+                        -Werror
+                        -Wimplicit-function-declaration
+                        -Wunused-variable
+                        -Wunused-function
+                        -Wno-redundant-decls
+                        -Wvla)
+endif()
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wjump-misses-init)
@@ -50,7 +62,11 @@ endif()
 if(BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300)
     set(FVP_CORSTONE_300_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Corstone-300" CACHE PATH
         "Dependencies for using FVP based on Arm Corstone-300 software.")
-    set(CMAKE_EXECUTABLE_SUFFIX ".elf")
+    if(CMAKE_C_COMPILER_ID STREQUAL "IAR")
+        set(CMAKE_EXECUTABLE_SUFFIX ".out")
+    else()
+        set(CMAKE_EXECUTABLE_SUFFIX ".elf")
+    endif()
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
     # The host Clang regression build treats -Ofast as deprecated and Unity
     # relies on isnan/isinf checks, so use a conforming optimization level.
@@ -84,7 +100,7 @@ function(add_cmsis_nn_unit_test_executable)
     foreach(target ${ARGV})
         set(tmp "${tmp} ${target}")
         add_executable(${target})
-        if (BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        if (BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300 AND CMAKE_C_COMPILER_ID STREQUAL "GNU")
             target_link_options(${target} PRIVATE "--specs=nosys.specs")
         endif()
         add_dependencies(cmsis_nn_unit_tests ${target})
@@ -223,21 +239,40 @@ if(BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300)
     target_include_directories(cmsis_startup PUBLIC
         ${CMSIS_PATH}/Device/ARM/${ARM_CPU}/Include
         ${CMSIS_PATH}/CMSIS/Core/Include)
-    target_compile_options(cmsis_startup INTERFACE -include${ARM_CPU}${ARM_FEATURES}.h)
+    if(CMAKE_C_COMPILER_ID STREQUAL "IAR")
+        target_compile_options(cmsis_startup INTERFACE --preinclude ${ARM_CPU}${ARM_FEATURES}.h)
+    else()
+        target_compile_options(cmsis_startup INTERFACE -include${ARM_CPU}${ARM_FEATURES}.h)
+    endif()
     target_compile_definitions(cmsis_startup PRIVATE ${ARM_CPU}${ARM_FEATURES})
 
     # Linker file settings.
     set(LINK_FILE "${FVP_CORSTONE_300_PATH}/linker" CACHE PATH "Linker file.")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "ARMClang")
+    if (CMAKE_C_COMPILER_ID STREQUAL "ARMClang")
         set(LINK_FILE "${FVP_CORSTONE_300_PATH}/linker.scatter")
         set(LINK_FILE_OPTION "--scatter")
         set(LINK_ENTRY_OPTION "--entry")
         set(LINK_ENTRY "Reset_Handler")
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
         set(LINK_FILE "${FVP_CORSTONE_300_PATH}/linker.ld")
         set(LINK_FILE_OPTION "-T")
         set(LINK_ENTRY_OPTION "")
         set(LINK_ENTRY "")
+    elseif (CMAKE_C_COMPILER_ID STREQUAL "IAR")
+        set(LINK_FILE "${FVP_CORSTONE_300_PATH}/linker.icf")
+        set(LINK_FILE_OPTION "--config")
+        set(LINK_ENTRY_OPTION "--entry")
+        set(LINK_ENTRY "__iar_program_start")
+        # csolution flows provide these symbols from the linker regions file.
+        # This direct CMake build passes the equivalent IAR linker definitions
+        # explicitly because linker.icf references __ROM0_BASE/__RAM0_BASE.
+        set(LINK_CONFIG_DEFS
+            "--config_def=__ROM0_BASE=0x10000000"
+            "--config_def=__ROM0_SIZE=0x00080000"
+            "--config_def=__RAM0_BASE=0x30000000"
+            "--config_def=__RAM0_SIZE=0x00080000"
+            "--config_def=__HEAP_SIZE=0x00010000"
+            "--config_def=__STACK_SIZE=0x00008000")
     endif()
 
     # Link in FVP dependencies to every unit test.
@@ -250,7 +285,10 @@ if(BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300)
 
         target_compile_definitions(${target} PUBLIC USING_FVP_CORSTONE_300)
 
-        target_link_options(${target} PRIVATE ${LINK_FILE_OPTION} ${LINK_FILE} ${LINK_ENTRY_OPTION} ${LINK_ENTRY})
+        target_link_options(${target} PRIVATE
+                            ${LINK_FILE_OPTION} ${LINK_FILE}
+                            ${LINK_ENTRY_OPTION} ${LINK_ENTRY}
+                            ${LINK_CONFIG_DEFS})
         set_target_properties(${target} PROPERTIES LINK_DEPENDS ${LINK_FILE})
     endforeach()
 endif()

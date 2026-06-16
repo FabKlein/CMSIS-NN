@@ -427,6 +427,8 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
         input += (input_x * input_y * input_ch);
     }
     #endif
+    /* Return to application */
+    return ARM_CMSIS_NN_SUCCESS;
 #else
     /* Run the following code as reference implementation for Cortex-M0 and Cortex-M3 */
     return arm_depthwise_conv_s16(ctx,
@@ -441,9 +443,6 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
                                   output_dims,
                                   output);
 #endif /* ARM_MATH_MVEI | ARM_MATH_DSP */
-
-    /* Return to application */
-    return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**

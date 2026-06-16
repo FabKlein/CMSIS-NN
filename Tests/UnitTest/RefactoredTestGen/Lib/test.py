@@ -355,8 +355,15 @@ def write_c_array(data, fname, dtype, prefix, tensor_name, test_data_fpath, head
 
 
 def append_alias_to_c_array_file(fname, dtype, prefix, tensor_name, alias_name):
+    alias_value = f"{prefix}_{tensor_name}"
+    # Keep optional tensors as direct NULL aliases instead of aliasing a NULL
+    # pointer object. This improves portability for generated no-bias cases,
+    # especially with stricter embedded toolchains such as IAR.
+    if f"const {dtype} *const {prefix}_{tensor_name} = NULL;" in fname.read_text():
+        alias_value = "NULL"
+
     with fname.open("a") as f:
-        f.write(f"\nconst {dtype} *const {prefix}_{alias_name} = {prefix}_{tensor_name};\n")
+        f.write(f"\nconst {dtype} *const {prefix}_{alias_name} = {alias_value};\n")
 
 
 def format_output_file(file):

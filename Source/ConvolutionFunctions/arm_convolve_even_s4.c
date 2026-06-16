@@ -205,6 +205,9 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
         input_data += (input_x * input_y * input_ch);
         output_data += (output_x * output_y * output_ch);
     }
+
+    /* Return to application */
+    return ARM_CMSIS_NN_SUCCESS;
 #else
     (void)ctx;
     (void)conv_params;
@@ -220,9 +223,6 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
 
 #endif // #if defined(ARM_MATH_MVEI)
-
-    /* Return to application */
-    return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**

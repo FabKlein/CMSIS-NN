@@ -90,10 +90,10 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_n_packed_f32(const float32_t *__RESTRICT 
             const float32_t *rhs_block = rhs_packed + (size_t)b * rhs_cols * block_cols;
             const mve_pred16_t p = vctp32q((uint32_t)valid_cols);
 
-            float32x4_t vacc0 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
-            float32x4_t vacc1 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
-            float32x4_t vacc2 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
-            float32x4_t vacc3 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
+            float32x4_t vacc0 = arm_nn_load_optional_bias_z_f32(bias, c, p);
+            float32x4_t vacc1 = arm_nn_load_optional_bias_z_f32(bias, c, p);
+            float32x4_t vacc2 = arm_nn_load_optional_bias_z_f32(bias, c, p);
+            float32x4_t vacc3 = arm_nn_load_optional_bias_z_f32(bias, c, p);
 
             for (int32_t k = 0; k < rhs_cols; ++k)
             {
@@ -149,12 +149,19 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_n_packed_f32(const float32_t *__RESTRICT 
 
     #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
             const mve_pred16_t p = vctp32q((uint32_t)valid_cols);
-            float32x4_t vacc = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
+            float32x4_t vacc = arm_nn_load_optional_bias_z_f32(bias, c, p);
 
             for (int32_t k = 0; k < rhs_cols; ++k)
             {
-                const float32x4_t vrhs = (valid_cols == block_cols) ? vld1q(rhs_block + (size_t)k * block_cols)
-                                                                    : vld1q_z(rhs_block + (size_t)k * block_cols, p);
+                float32x4_t vrhs;
+                if (valid_cols == block_cols)
+                {
+                    vrhs = vld1q(rhs_block + (size_t)k * block_cols);
+                }
+                else
+                {
+                    vrhs = vld1q_z(rhs_block + (size_t)k * block_cols, p);
+                }
                 vacc = vfmaq(vacc, vrhs, lhs_row[k]);
             }
 

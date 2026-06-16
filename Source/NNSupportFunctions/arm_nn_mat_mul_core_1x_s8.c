@@ -38,6 +38,30 @@
  * @{
  */
 
+#if defined(ARM_NN_USE_MVE_INTRINSICS)
+static void arm_nn_mat_mul_core_1x_s8_mve(const int8_t *row_base,
+                                          const int8_t *col_base,
+                                          int32_t row_elements,
+                                          int32_t *sum,
+                                          int32_t *acc)
+{
+    int32_t sum_tmp = 0;
+    int32_t acc_n0 = 0;
+
+    for (int32_t j = 0; j < row_elements; j += 16)
+    {
+        const mve_pred16_t p = vctp8q((uint32_t)(row_elements - j));
+        const int8x16_t col = vldrbq_z_s8(col_base + j, p);
+        const int8x16_t row = vldrbq_z_s8(row_base + j, p);
+        sum_tmp = vaddvaq_p_s8(sum_tmp, col, p);
+        acc_n0 = vmladavaq_p_s8(acc_n0, col, row, p);
+    }
+
+    *sum = sum_tmp;
+    *acc = acc_n0;
+}
+#endif
+
 /*
  * s8 matrix multiplication to process 1 row
  *
@@ -77,6 +101,8 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s8(int32_t row_elements,
             sum_tmp += col;
             acc_n0 += row_base[j] * col;
         }
+    #elif defined(ARM_NN_USE_MVE_INTRINSICS)
+        arm_nn_mat_mul_core_1x_s8_mve(row_base, col_base, row_elements, &sum_tmp, &acc_n0);
     #else
         __ASM volatile(" .p2align 2                             \n"
                        "  vldrb.8         q0, [%[col]], #16     \n"

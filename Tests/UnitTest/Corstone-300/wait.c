@@ -18,12 +18,18 @@
 
 #include <stdint.h>
 
+#if defined(__ICCARM__)
+    #define TEST_WEAK __weak
+#else
+    #define TEST_WEAK __attribute__((weak))
+#endif
+
 /*
  * The board device-definition layer expects a sleep hook for a few peripheral
  * descriptors. The unit tests do not exercise those timed peripherals, so a
  * coarse busy-wait is sufficient here.
  */
-__attribute__((weak)) void wait_us(uint32_t usec)
+TEST_WEAK void wait_us(uint32_t usec)
 {
     while (usec-- != 0U)
     {

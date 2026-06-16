@@ -8,11 +8,13 @@
 
 import argparse
 import dataclasses
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterable
 
@@ -125,7 +127,32 @@ def resolve_size_tool(family: str, gcc_bin_dir: Path | None, ac6_bin_dir: Path |
             return ("section", size_tool)
         raise RuntimeError("Unable to find llvm-size or arm-none-eabi-size for CLANG builds.")
 
+    if family == "IAR":
+        # Resolved after the IAR bin directory is known.
+        return ("archive-only", "")
+
     raise RuntimeError(f"Unsupported toolchain family: {family}")
+
+
+def iar_cpu_name(cpu: str) -> str:
+    # IAR expects canonical Cortex names rather than GCC/Clang -mcpu spelling.
+    cpu_names = {
+        "cortex-m4": "Cortex-M4",
+        "cortex-m7": "Cortex-M7",
+        "cortex-m33": "Cortex-M33",
+        "cortex-m55": "Cortex-M55",
+        "cortex-m85": "Cortex-M85",
+    }
+    return cpu_names.get(cpu.lower(), cpu)
+
+
+def iar_fpu_name(cpu: str) -> str | None:
+    cpu_key = cpu.lower()
+    if cpu_key in {"cortex-m4", "cortex-m7"}:
+        return "VFPv4_sp"
+    if cpu_key in {"cortex-m55", "cortex-m85"}:
+        return "VFPv5_d16"
+    return None
 
 
 def clang_runtime_root(bin_dir: Path | None) -> Path | None:
@@ -193,6 +220,8 @@ def resolve_toolchain(requested: str, cpu: str, toolchain_bin: str | None) -> To
         generic_env_dir = Path(os.environ["AC6_TOOLCHAIN"]).resolve()
     elif family == "CLANG" and "CLANG_TOOLCHAIN" in os.environ:
         generic_env_dir = Path(os.environ["CLANG_TOOLCHAIN"]).resolve()
+    elif family == "IAR" and "IAR_TOOLCHAIN" in os.environ:
+        generic_env_dir = Path(os.environ["IAR_TOOLCHAIN"]).resolve()
 
     bin_dir = explicit_bin_dir or gcc_env_dir or generic_env_dir
 
@@ -244,7 +273,19 @@ def resolve_toolchain(requested: str, cpu: str, toolchain_bin: str | None) -> To
             flags = f"{flags} --sysroot {runtime_root}"
         return Toolchain(requested, family, cc, cxx, flags, flags, ar=ar, ranlib=ranlib, size_mode=size_mode, size_tool=size_tool)
 
-    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6, CLANG.")
+    if family == "IAR":
+        cc = resolve_tool(bin_dir, "iccarm")
+        ar = resolve_tool(bin_dir, "iarchive")
+        size_tool = resolve_tool(bin_dir, "ielfdumparm")
+        if not cc or not ar or not size_tool:
+            raise RuntimeError("Unable to resolve iccarm, iarchive, or ielfdumparm for IAR toolchain.")
+        flags = f"--cpu={iar_cpu_name(cpu)} -e"
+        fpu = iar_fpu_name(cpu)
+        if fpu:
+            flags = f"{flags} --fpu={fpu}"
+        return Toolchain(requested, family, cc, cc, flags, flags, ar=ar, size_mode="iar-archive", size_tool=size_tool)
+
+    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6, CLANG, IAR.")
 
 
 def should_count_as_code(section: str) -> bool:
@@ -331,7 +372,97 @@ def parse_fromelf_size_output(output: str) -> tuple[int, int, int, int, int]:
     return code_bytes, rodata_bytes, data_bytes, bss_bytes, other_bytes
 
 
+def should_count_iar_section(section: dict) -> bool:
+    name = str(section.get("name", ""))
+    if should_ignore_section(name):
+        return False
+    flags = section.get("flags", {})
+    return bool(flags.get("Alloc", False))
+
+
+def parse_iar_elf_json_output(output: str) -> tuple[int, int, int, int, int]:
+    code_bytes = 0
+    rodata_bytes = 0
+    data_bytes = 0
+    bss_bytes = 0
+    other_bytes = 0
+
+    payload_start = output.find("{")
+    if payload_start < 0:
+        raise RuntimeError(f"Unable to find JSON payload in ielfdumparm output:\n{output}")
+
+    # ielfdumparm can print banners before JSON; decode from the first payload.
+    parsed, _ = json.JSONDecoder().raw_decode(output[payload_start:])
+    for section in parsed.get("sections", []):
+        if not should_count_iar_section(section):
+            continue
+
+        size = int(section.get("size", 0))
+        section_type = str(section.get("section_type", ""))
+        flags = section.get("flags", {})
+
+        if flags.get("Executable", False):
+            code_bytes += size
+        elif flags.get("Write", False) and section_type == "nobits":
+            bss_bytes += size
+        elif flags.get("Write", False):
+            data_bytes += size
+        elif section_type == "nobits":
+            bss_bytes += size
+        elif str(section.get("name", "")).startswith((".rodata", ".constdata")):
+            rodata_bytes += size
+        else:
+            rodata_bytes += size
+
+    return code_bytes, rodata_bytes, data_bytes, bss_bytes, other_bytes
+
+
+def summarize_iar_archive(archive_path: Path, toolchain: Toolchain) -> tuple[int, int, int, int, int]:
+    if not toolchain.ar or not toolchain.size_tool:
+        raise RuntimeError("IAR archive summarization requires iarchive and ielfdumparm.")
+
+    # IAR does not provide a GNU-size equivalent for archives, so extract the
+    # archive and sum section sizes from each object file with ielfdumparm.
+    with tempfile.TemporaryDirectory(prefix="cmsis-nn-iar-archive-") as tmp:
+        tmp_path = Path(tmp)
+        extracted = subprocess.run(
+            [toolchain.ar, "--extract_overwrite", str(archive_path)],
+            cwd=tmp_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        if extracted.returncode != 0:
+            raise RuntimeError(f"iarchive failed for {archive_path}:\n{extracted.stdout}")
+
+        totals = [0, 0, 0, 0, 0]
+        object_paths = sorted(path for path in tmp_path.iterdir() if path.is_file())
+        if not object_paths:
+            raise RuntimeError(f"iarchive did not extract any object files from {archive_path}")
+
+        for object_path in object_paths:
+            dumped = subprocess.run(
+                [toolchain.size_tool, "--json", str(object_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            if dumped.returncode != 0:
+                raise RuntimeError(f"ielfdumparm failed for {object_path.name}:\n{dumped.stdout}")
+            sizes = parse_iar_elf_json_output(dumped.stdout)
+            for index, size in enumerate(sizes):
+                totals[index] += size
+
+    return tuple(totals)
+
+
 def summarize_archive(archive_path: Path, toolchain: Toolchain) -> tuple[int, int, int, int, int]:
+    if toolchain.size_mode == "iar-archive":
+        return summarize_iar_archive(archive_path, toolchain)
+
+    if toolchain.size_mode == "archive-only":
+        return 0, 0, 0, 0, 0
+
     if not toolchain.size_tool:
         raise RuntimeError("No size tool is configured.")
 
@@ -483,6 +614,16 @@ def parse_variants(selected: str) -> list[Variant]:
     return chosen
 
 
+def normalize_optimization(toolchain: Toolchain, optimization: str) -> str:
+    if toolchain.family != "IAR":
+        return optimization
+
+    # Map the script's GCC/Armclang default to the closest IAR high-speed level.
+    if optimization in {"", "-O3", "-Ofast"}:
+        return "-Oh"
+    return optimization
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build and summarize CMSIS-NN library configuration variants.")
     parser.add_argument(
@@ -541,13 +682,14 @@ def main() -> int:
     build_root = Path(args.build_root).resolve()
     cmsis_path = resolve_cmsis_path(args.cmsis_path or None, args.cmsis_pack_root or None, args.cmsis_version)
     variants = parse_variants(args.variants)
+    optimization = normalize_optimization(toolchain, args.optimization)
 
     results: list[VariantResult] = []
     failed = False
 
     for variant in variants:
         print(f"==> Building {variant.label} [{variant.key}] with {toolchain.requested}")
-        result = build_variant(REPO_ROOT, build_root, cmsis_path, toolchain, variant, args.cpu, args.optimization, args.jobs)
+        result = build_variant(REPO_ROOT, build_root, cmsis_path, toolchain, variant, args.cpu, optimization, args.jobs)
         results.append(result)
         if result.status != "PASS":
             failed = True

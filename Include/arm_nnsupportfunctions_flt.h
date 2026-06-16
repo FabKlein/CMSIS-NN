@@ -184,6 +184,30 @@ __STATIC_INLINE float32_t arm_nn_vec_reduce_add_f32(float32x4_t v)
 }
 
 /**
+ * @brief Load an optional float32 bias vector.
+ */
+__STATIC_INLINE float32x4_t arm_nn_load_optional_bias_f32(const float32_t *bias, int32_t offset)
+{
+    if (bias != NULL)
+    {
+        return vld1q(bias + offset);
+    }
+    return vdupq_n_f32(0.0f);
+}
+
+/**
+ * @brief Predicated load of an optional float32 bias vector.
+ */
+__STATIC_INLINE float32x4_t arm_nn_load_optional_bias_z_f32(const float32_t *bias, int32_t offset, mve_pred16_t p)
+{
+    if (bias != NULL)
+    {
+        return vld1q_z(bias + offset, p);
+    }
+    return vdupq_n_f32(0.0f);
+}
+
+/**
  * @brief MVE float32 exp approximation used by float softmax paths.
  */
 __STATIC_INLINE float32x4_t arm_nn_vexpq_poly_mve_f32(float32x4_t x)
@@ -214,7 +238,14 @@ __STATIC_INLINE float32x4_t arm_nn_vexpq_poly_mve_f32(float32x4_t x)
 __STATIC_FORCEINLINE void
 arm_memcpy_f32(float32_t *__RESTRICT dst, const float32_t *__RESTRICT src, uint32_t block_size)
 {
-    #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
+    #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE) && defined(ARM_NN_USE_MVE_INTRINSICS)
+    uint32_t i = 0;
+    for (; i < block_size; i += 4U)
+    {
+        const mve_pred16_t p = vctp32q(block_size - i);
+        vst1q_p(dst + i, vld1q_z(src + i, p), p);
+    }
+    #elif defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
     __asm volatile("   wlstp.32                lr, %[cnt], 1f             \n"
                    "2:                                                    \n"
                    "   vldrw.32                q0, [%[in]], #16           \n"
@@ -225,7 +256,7 @@ arm_memcpy_f32(float32_t *__RESTRICT dst, const float32_t *__RESTRICT src, uint3
                    : [cnt] "r"(block_size)
                    : "q0", "memory", "r14");
     #else
-    __builtin_memcpy(dst, src, (size_t)block_size * sizeof(float32_t));
+    memcpy(dst, src, (size_t)block_size * sizeof(float32_t));
     #endif
 }
 
@@ -615,6 +646,30 @@ __STATIC_INLINE float16_t arm_nn_vec_reduce_add_f16(float16x8_t in)
 }
 
 /**
+ * @brief Load an optional float16 bias vector.
+ */
+__STATIC_INLINE float16x8_t arm_nn_load_optional_bias_f16(const float16_t *bias, int32_t offset)
+{
+    if (bias != NULL)
+    {
+        return vld1q(bias + offset);
+    }
+    return vdupq_n_f16((float16_t)0.0f);
+}
+
+/**
+ * @brief Predicated load of an optional float16 bias vector.
+ */
+__STATIC_INLINE float16x8_t arm_nn_load_optional_bias_z_f16(const float16_t *bias, int32_t offset, mve_pred16_t p)
+{
+    if (bias != NULL)
+    {
+        return vld1q_z(bias + offset, p);
+    }
+    return vdupq_n_f16((float16_t)0.0f);
+}
+
+/**
  * @brief MVE float16 exp approximation used by float softmax paths.
  */
 __STATIC_INLINE float16x8_t arm_nn_vexpq_poly_mve_f16(float16x8_t x)
@@ -659,7 +714,14 @@ __STATIC_INLINE float16x8_t arm_nn_vexpq_poly_mve_f16(float16x8_t x)
 __STATIC_FORCEINLINE void
 arm_memcpy_f16(float16_t *__RESTRICT dst, const float16_t *__RESTRICT src, uint32_t block_size)
 {
-    #if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE)
+    #if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE) && defined(ARM_NN_USE_MVE_INTRINSICS)
+    uint32_t i = 0;
+    for (; i < block_size; i += 8U)
+    {
+        const mve_pred16_t p = vctp16q(block_size - i);
+        vst1q_p(dst + i, vld1q_z(src + i, p), p);
+    }
+    #elif defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE)
     __asm volatile("   wlstp.16                lr, %[cnt], 1f             \n"
                    "2:                                                    \n"
                    "   vldrh.16                q0, [%[in]], #16           \n"
@@ -670,7 +732,7 @@ arm_memcpy_f16(float16_t *__RESTRICT dst, const float16_t *__RESTRICT src, uint3
                    : [cnt] "r"(block_size)
                    : "q0", "memory", "r14");
     #else
-    __builtin_memcpy(dst, src, (size_t)block_size * sizeof(float16_t));
+    memcpy(dst, src, (size_t)block_size * sizeof(float16_t));
     #endif
 }
 

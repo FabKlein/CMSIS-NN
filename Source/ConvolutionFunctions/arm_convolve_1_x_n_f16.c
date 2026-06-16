@@ -111,9 +111,8 @@ __STATIC_INLINE arm_cmsis_nn_status arm_convolve_1_x_n_mat_mult_nt_t_strided_f16
                      c += ARM_NN_CONV_1XN_F16_MVE_DUAL_BLOCK_ROWS)
                 {
                     const float16_t *rhs_block = rhs + (size_t)c * rhs_cols;
-                    float16x8_t vacc_lo = bias ? vld1q(bias + c) : vdupq_n_f16((float16_t)0.0f);
-                    float16x8_t vacc_hi =
-                        bias ? vld1q(bias + c + ARM_NN_CONV_1XN_F16_MVE_BLOCK_ROWS) : vdupq_n_f16((float16_t)0.0f);
+                    float16x8_t vacc_lo = arm_nn_load_optional_bias_f16(bias, c);
+                    float16x8_t vacc_hi = arm_nn_load_optional_bias_f16(bias, c + ARM_NN_CONV_1XN_F16_MVE_BLOCK_ROWS);
 
                     for (int32_t k = 0; k < rhs_cols; ++k)
                     {
@@ -134,7 +133,7 @@ __STATIC_INLINE arm_cmsis_nn_status arm_convolve_1_x_n_mat_mult_nt_t_strided_f16
             for (; c + ARM_NN_CONV_1XN_F16_MVE_BLOCK_ROWS <= rhs_rows; c += ARM_NN_CONV_1XN_F16_MVE_BLOCK_ROWS)
             {
                 const float16_t *rhs_block = rhs + (size_t)c * rhs_cols;
-                float16x8_t vacc = bias ? vld1q(bias + c) : vdupq_n_f16((float16_t)0.0f);
+                float16x8_t vacc = arm_nn_load_optional_bias_f16(bias, c);
 
                 for (int32_t k = 0; k < rhs_cols; ++k)
                 {
@@ -154,7 +153,7 @@ __STATIC_INLINE arm_cmsis_nn_status arm_convolve_1_x_n_mat_mult_nt_t_strided_f16
                      c += ARM_NN_CONV_1XN_F16_MVE_SUB_BLOCK_ROWS)
                 {
                     const float16_t *rhs_block = rhs + (size_t)c * rhs_cols;
-                    float16x8_t vacc = bias ? vld1q_z(bias + c, p) : vdupq_n_f16((float16_t)0.0f);
+                    float16x8_t vacc = arm_nn_load_optional_bias_z_f16(bias, c, p);
 
                     for (int32_t k = 0; k < rhs_cols; ++k)
                     {

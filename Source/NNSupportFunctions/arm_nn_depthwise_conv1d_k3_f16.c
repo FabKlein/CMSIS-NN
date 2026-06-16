@@ -41,7 +41,7 @@ void arm_nn_depthwise_conv1d_k3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
         for (int32_t c = 0; c < in_c; c += 8)
         {
             const mve_pred16_t p = vctp16q((uint32_t)(in_c - c));
-            float16x8_t acc = b ? vld1q_z(b + c, p) : vdupq_n_f16((float16_t)0.0f);
+            float16x8_t acc = arm_nn_load_optional_bias_z_f16(b, c, p);
             acc = vfmaq_m(acc, vld1q_z(x0 + c, p), vld1q_z(kernel + c, p), p);
             acc = vfmaq_m(acc, vld1q_z(x1 + c, p), vld1q_z(kernel + in_c + c, p), p);
             acc = vfmaq_m(acc, vld1q_z(x2 + c, p), vld1q_z(kernel + (2 * in_c) + c, p), p);

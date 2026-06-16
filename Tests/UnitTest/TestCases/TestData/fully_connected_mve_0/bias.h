@@ -5,4 +5,4 @@
 
 const int32_t *const fully_connected_mve_0_bias = NULL;
 
-const int32_t *const fully_connected_mve_0_biases = fully_connected_mve_0_bias;
+const int32_t *const fully_connected_mve_0_biases = NULL;

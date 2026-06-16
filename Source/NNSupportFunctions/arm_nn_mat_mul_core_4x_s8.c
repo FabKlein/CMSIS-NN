@@ -37,6 +37,44 @@
  * @{
  */
 
+#if defined(ARM_NN_USE_MVE_INTRINSICS)
+static void arm_nn_mat_mul_core_4x_s8_mve(const int8_t *ip_row_0,
+                                          const int8_t *ip_row_1,
+                                          const int8_t *ip_row_2,
+                                          const int8_t *ip_row_3,
+                                          const int8_t *col_base,
+                                          int32_t row_elements,
+                                          int32_t *sum,
+                                          int32_t *acc_0,
+                                          int32_t *acc_1,
+                                          int32_t *acc_2,
+                                          int32_t *acc_3)
+{
+    int32_t sum_tmp = 0;
+    int32_t acc_n0 = 0;
+    int32_t acc_n1 = 0;
+    int32_t acc_n2 = 0;
+    int32_t acc_n3 = 0;
+
+    for (int32_t j = 0; j < row_elements; j += 16)
+    {
+        const mve_pred16_t p = vctp8q((uint32_t)(row_elements - j));
+        const int8x16_t col = vldrbq_z_s8(col_base + j, p);
+        sum_tmp = vaddvaq_p_s8(sum_tmp, col, p);
+        acc_n0 = vmladavaq_p_s8(acc_n0, col, vldrbq_z_s8(ip_row_0 + j, p), p);
+        acc_n1 = vmladavaq_p_s8(acc_n1, col, vldrbq_z_s8(ip_row_1 + j, p), p);
+        acc_n2 = vmladavaq_p_s8(acc_n2, col, vldrbq_z_s8(ip_row_2 + j, p), p);
+        acc_n3 = vmladavaq_p_s8(acc_n3, col, vldrbq_z_s8(ip_row_3 + j, p), p);
+    }
+
+    *sum = sum_tmp;
+    *acc_0 = acc_n0;
+    *acc_1 = acc_n1;
+    *acc_2 = acc_n2;
+    *acc_3 = acc_n3;
+}
+#endif
+
 /*
  * s8 matrix multiplication to process 4 rows and one column
  *
@@ -70,7 +108,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
         const int8_t *col_base = col_base_ref + i * row_elements;
         int32_t sum_tmp = 0;
 
-#if defined(ARM_MATH_AUTOVECTORIZE)
+    #if defined(ARM_MATH_AUTOVECTORIZE)
         for (int j = 0; j < row_elements; j++)
         {
             int32_t col = col_base[j];
@@ -80,7 +118,19 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
             acc_n2 += ip_row_2[j] * col;
             acc_n3 += ip_row_3[j] * col;
         }
-#else
+    #elif defined(ARM_NN_USE_MVE_INTRINSICS)
+        arm_nn_mat_mul_core_4x_s8_mve(ip_row_0,
+                                      ip_row_1,
+                                      ip_row_2,
+                                      ip_row_3,
+                                      col_base,
+                                      row_elements,
+                                      &sum_tmp,
+                                      &acc_n0,
+                                      &acc_n1,
+                                      &acc_n2,
+                                      &acc_n3);
+    #else
         __ASM volatile(" .p2align 2                             \n"
                        "   vldrb.8         q0, [%[col]], #16    \n"
                        "   wlstp.8         lr, %[cnt], 1f       \n"
@@ -109,7 +159,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
                          [out3] "+Te"(acc_n3)
                        : [cnt] "r"(row_elements)
                        : "q0", "q1", "q2", "q3", "q4", "memory", "r14");
-#endif
+    #endif
 
         int32x4_t res = {acc_n0, acc_n1, acc_n2, acc_n3};
         sum_tmp *= conv_params->input_offset;

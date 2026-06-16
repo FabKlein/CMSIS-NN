@@ -43,6 +43,7 @@ class Toolchain:
     cxx: str
     c_flags: str
     cxx_flags: str
+    ar: str | None = None
 
 
 @dataclass(frozen=True)
@@ -157,6 +158,8 @@ def resolve_toolchain(requested: str) -> Toolchain:
         search_dirs.extend(toolchain_dirs_from_env("GCC"))
     elif family == "AC6":
         search_dirs.extend(toolchain_dirs_from_env("AC6"))
+    elif family == "IAR":
+        search_dirs.extend(toolchain_dirs_from_env("IAR"))
     search_dirs.append(None)
 
     if family == "GCC":
@@ -189,7 +192,23 @@ def resolve_toolchain(requested: str) -> Toolchain:
         flags = "--target=arm-arm-none-eabi -mcpu=Cortex-M55"
         return Toolchain(requested=requested, family=family, cc=cc, cxx=cc, c_flags=flags, cxx_flags=flags)
 
-    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6.")
+    if family == "IAR":
+        cc = None
+        ar = None
+        for search_dir in search_dirs:
+            cc = resolve_tool(search_dir, "iccarm")
+            ar = resolve_tool(search_dir, "iarchive")
+            if cc and ar:
+                break
+        if not cc or not ar:
+            raise RuntimeError(
+                "Unable to resolve iccarm/iarchive. Export IAR_TOOLCHAIN "
+                "(or a versioned IAR_TOOLCHAIN_<version>) or add the compiler to PATH."
+            )
+        flags = "--cpu=Cortex-M55 --fpu=VFPv5_d16 -e"
+        return Toolchain(requested=requested, family=family, cc=cc, cxx=cc, c_flags=flags, cxx_flags=flags, ar=ar)
+
+    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6, IAR.")
 
 
 def resolve_pack_dir(pack_root: Path, vendor: str, name: str, preferred_version: str) -> Path:
@@ -250,6 +269,23 @@ def summarize_unity_ticks(output: str) -> str:
     return f"sum {sum(tick_matches)} ticks ({len(tick_matches)} tests)"
 
 
+def log_tail_detail(log_path: Path, fallback: str, max_lines: int = 8) -> str:
+    if not log_path.exists():
+        return fallback
+
+    lines = [line.strip() for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines() if line.strip()]
+    if not lines:
+        return fallback
+
+    interesting = [
+        line
+        for line in lines
+        if "error" in line.lower() or "warning" in line.lower() or "failed" in line.lower() or "unable" in line.lower()
+    ]
+    selected = interesting[-max_lines:] if interesting else lines[-max_lines:]
+    return "; ".join(selected)
+
+
 def _decode_timeout_output(stream: bytes | str | None) -> str:
     if stream is None:
         return ""
@@ -265,6 +301,10 @@ def configure_build(
     optimization_level: str,
     log_dir: Path,
 ) -> subprocess.CompletedProcess[str]:
+    optimization = optimization_level
+    if toolchain.family == "IAR" and optimization in {"", "-O3", "-Ofast"}:
+        optimization = "-Oh"
+
     cmd = [
         "cmake",
         "-S",
@@ -280,9 +320,12 @@ def configure_build(
         f"-DCMAKE_C_FLAGS={toolchain.c_flags}",
         f"-DCMAKE_CXX_FLAGS={toolchain.cxx_flags}",
         f"-DCMAKE_ASM_FLAGS={toolchain.c_flags}",
-        f"-DCMSIS_OPTIMIZATION_LEVEL={optimization_level}",
+        f"-DCMSIS_OPTIMIZATION_LEVEL={optimization}",
+        f"-DPython3_EXECUTABLE={sys.executable}",
         "-Wno-dev",
     ]
+    if toolchain.ar:
+        cmd.append(f"-DCMAKE_AR={toolchain.ar}")
     return run_command(cmd, log_dir / "configure.log")
 
 
@@ -298,15 +341,18 @@ def build_targets(
 
 
 def target_image(build_dir: Path, test_name: str, cmake_target: str) -> Path:
-    direct = build_dir / "TestCases" / test_name / f"{cmake_target}.elf"
-    if direct.exists():
-        return direct
+    image_suffixes = ("out", "elf")
+    for suffix in image_suffixes:
+        direct = build_dir / "TestCases" / test_name / f"{cmake_target}.{suffix}"
+        if direct.exists():
+            return direct
 
     test_dir = build_dir / "TestCases" / test_name
     if test_dir.exists():
-        matches = sorted(test_dir.glob("*.elf"))
-        if len(matches) == 1:
-            return matches[0]
+        for suffix in image_suffixes:
+            matches = sorted(test_dir.glob(f"*.{suffix}"))
+            if len(matches) == 1:
+                return matches[0]
 
     raise FileNotFoundError(f"Expected test image not found for {test_name} (target {cmake_target})")
 
@@ -372,7 +418,7 @@ def print_summary(results: list[StepResult]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build and run legacy CMSIS-NN integer unit tests on Corstone-300 FVP.")
     parser.add_argument("--tests", default="all", help="Comma-separated integer test targets to run, or all.")
-    parser.add_argument("--toolchains", default="GCC,AC6", help="Comma-separated toolchains to use. Supported: GCC, AC6.")
+    parser.add_argument("--toolchains", default="GCC,AC6", help="Comma-separated toolchains to use. Supported: GCC, AC6, IAR.")
     parser.add_argument("--list", action="store_true", help="List supported integer test targets and exit.")
     parser.add_argument("--build-fvp", action="store_true", help="Configure and build integer FVP tests.")
     parser.add_argument("--run-fvp", action="store_true", help="Run built integer FVP tests.")
@@ -444,15 +490,16 @@ def main() -> int:
                 log_dir,
             )
             if configure.returncode != 0:
+                detail = log_tail_detail(log_dir / "configure.log", "cmake configure failed")
                 for target in selected_tests:
-                    results.append(StepResult("build-fvp", target, toolchain.requested, "FAIL", "cmake configure failed"))
+                    results.append(StepResult("build-fvp", target, toolchain.requested, "FAIL", detail))
                 failed = True
                 continue
 
             cmake_targets = [INTEGER_TEST_MAP[test_name].cmake_target for test_name in selected_tests]
             build = build_targets(build_dir, toolchain, cmake_targets, args.jobs, log_dir)
             build_status = "PASS" if build.returncode == 0 else "FAIL"
-            build_detail = "" if build.returncode == 0 else "cmake build failed"
+            build_detail = "" if build.returncode == 0 else log_tail_detail(log_dir / "build.log", "cmake build failed")
             for test_name in selected_tests:
                 results.append(StepResult("build-fvp", test_name, toolchain.requested, build_status, build_detail))
             if build.returncode != 0:

@@ -59,7 +59,7 @@ extern "C" {
     #endif
 #endif
 
-#if (defined(__ARM_FEATURE_MVE) && (__ARM_FEATURE_MVE & 1))
+#if (defined(__ARM_FEATURE_MVE) && (__ARM_FEATURE_MVE & 1)) && !(defined(__ICCARM__) && defined(ARM_MATH_AUTOVECTORIZE))
     #ifndef ARM_MATH_MVEI
         #define ARM_MATH_MVEI 1
     #endif

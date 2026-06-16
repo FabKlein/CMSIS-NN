@@ -32,6 +32,7 @@
 #define ARM_DEPTHWISE_CONV_OPT_COMMON_H
 
 #include "Internal/arm_nn_compiler.h"
+#include "arm_nn_math_types.h"
 
 #define ARM_DW_SPEC_ENTRY(MATCH_FN, CALL_FN)                                                                           \
     {                                                                                                                  \

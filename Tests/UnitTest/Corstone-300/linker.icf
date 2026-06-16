@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2026 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+define memory mem with size = 4G;
+
+define region ROM0_region = mem : [from __ROM0_BASE to(__ROM0_BASE + __ROM0_SIZE - 1)];
+define region RAM0_region = mem : [from __RAM0_BASE to(__RAM0_BASE + __RAM0_SIZE - 1)];
+
+define block CSTACK with alignment = 8, size = __STACK_SIZE{};
+define block HEAP with alignment = 8, size = __HEAP_SIZE{};
+
+do not initialize { section .noinit };
+initialize by copy { readwrite };
+if (isdefinedsymbol(__USE_DLIB_PERTHREAD))
+{
+    initialize by copy with packing = none { section __DLIB_PERTHREAD };
+}
+
+place at address mem : __ROM0_BASE { readonly section .intvec };
+place in ROM0_region { readonly };
+place in RAM0_region { readwrite, block CSTACK, block HEAP };

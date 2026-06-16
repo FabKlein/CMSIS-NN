@@ -33,5 +33,9 @@ layer:
       for-compiler: CLANG
     - script: ../Corstone-300/linker.ld
       for-compiler: GCC
+    - script: ../Corstone-300/linker.icf
+      for-compiler: IAR
     - regions: ../Corstone-300/region_defs.h
       for-compiler: CLANG
+    - regions: ../Corstone-300/region_defs.h
+      for-compiler: IAR

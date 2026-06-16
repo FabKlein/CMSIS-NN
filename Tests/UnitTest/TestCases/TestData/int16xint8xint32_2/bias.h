@@ -5,4 +5,4 @@
 
 const int32_t *const int16xint8xint32_2_bias = NULL;
 
-const int32_t *const int16xint8xint32_2_biases = int16xint8xint32_2_bias;
+const int32_t *const int16xint8xint32_2_biases = NULL;

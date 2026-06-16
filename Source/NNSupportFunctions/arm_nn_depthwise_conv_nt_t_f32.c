@@ -63,7 +63,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_f32(const float32_t *__RESTRICT l
     const float32x4_t v_act_max = vdupq_n_f32(activation_max);
     for (; c + 4 <= total_ch; c += 4)
     {
-        float32x4_t acc0 = bias ? vld1q(bias + c) : vdupq_n_f32(0.0f);
+        float32x4_t acc0 = arm_nn_load_optional_bias_f32(bias, c);
         float32x4_t acc1 = acc0;
         float32x4_t acc2 = acc0;
         float32x4_t acc3 = acc0;
@@ -152,7 +152,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_f32(const float32_t *__RESTRICT l
     if (c < total_ch)
     {
         const mve_pred16_t p = vctp32q((uint32_t)(total_ch - c));
-        float32x4_t acc0 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
+        float32x4_t acc0 = arm_nn_load_optional_bias_z_f32(bias, c, p);
         float32x4_t acc1 = acc0;
         float32x4_t acc2 = acc0;
         float32x4_t acc3 = acc0;
