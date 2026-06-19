@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -114,3 +116,5 @@ arm_cmsis_nn_status arm_convolve_1x1_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

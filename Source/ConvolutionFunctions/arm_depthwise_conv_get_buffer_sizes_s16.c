@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup NNconv
  */
@@ -54,17 +56,17 @@ __STATIC_INLINE int32_t arm_depthwise_conv_fast_s16_get_buffer_size_dsp(const cm
 
 int32_t arm_depthwise_conv_fast_s16_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_DSP)
-    #if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_MVEI)
     return arm_depthwise_conv_fast_s16_get_buffer_size_mve(input_dims, filter_dims);
-    #else // ARM_MATH_DSP
+        #else // ARM_MATH_DSP
     return arm_depthwise_conv_fast_s16_get_buffer_size_dsp(input_dims, filter_dims);
-    #endif
-#else
+        #endif
+    #else
     (void)input_dims;
     (void)filter_dims;
     return 0;
-#endif
+    #endif
 }
 
 int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
@@ -121,3 +123,5 @@ int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size_dsp(const cmsis_nn_dw_con
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

@@ -16,9 +16,25 @@
 # limitations under the License.
 #
 
-file(GLOB SRC_S4 "./*_s4*.c")
-file(GLOB SRC_S8 "./*_s8*.c")
-file(GLOB SRC_S16 "./*_s16*.c")
+set(SRC_S4 "")
+set(SRC_S8 "")
+set(SRC_S16 "")
+if (ARM_NN_ENABLE_INT4)
+  file(GLOB SRC_S4 "./*_s4*.c")
+endif()
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8*.c" "./*_s8_s16.c" "./*_s8_s32.c")
+endif()
+if (ARM_NN_ENABLE_INT16)
+  list(APPEND SRC_S16 arm_convolve_s16.c
+                      arm_convolve_wrapper_s16.c
+                      arm_convolve_get_buffer_sizes_s16.c
+                      arm_depthwise_conv_s16.c
+                      arm_depthwise_conv_fast_s16.c
+                      arm_depthwise_conv_wrapper_s16.c
+                      arm_depthwise_conv_get_buffer_sizes_s16.c
+                      arm_nn_mat_mult_kernel_s16.c)
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_convolve_f32.c

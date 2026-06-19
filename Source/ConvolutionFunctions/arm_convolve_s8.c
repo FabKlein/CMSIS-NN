@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  *  @ingroup Public
  */
@@ -121,16 +123,16 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
     for (int i_batch = 0; i_batch < input_batches; i_batch++)
     {
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
         const int32_t aligned_rhs_cols_offset = aligned_rhs_cols - rhs_cols;
 
         /* Generate up to four columns from the input tensor a GEMM computation */
         int8_t *im2col_buf = (int8_t *)buffer_a;
-#else
+    #else
         /* Use as a ping-pong buffer for unordered elements */
         int8_t *im2col_buf = (int8_t *)buffer_a + aligned_rhs_cols * 2;
         int16_t *im2col_buf_start_s16 = buffer_a;
-#endif
+    #endif
         int32_t lhs_rows = 0;
 
         const int8_t *filter_data_ptr = &filter_data[0];
@@ -209,7 +211,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                     }
                     lhs_rows++;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                     im2col_buf += aligned_rhs_cols_offset;
 
                     /* Computation is filed for every 4 columns */
@@ -236,17 +238,17 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                         lhs_rows = 0;
                         im2col_buf = (int8_t *)buffer_a;
                     }
-#else
-    #if defined(ARM_MATH_DSP)
+    #else
+        #if defined(ARM_MATH_DSP)
                     /* Copy one column with input offset and no ordering */
                     arm_s8_to_s16_unordered_with_offset(
                         im2col_buf - rhs_cols, im2col_buf_start_s16, rhs_cols, (int16_t)input_offset);
-    #else
+        #else
 
                     arm_q7_to_q15_with_offset(
                         im2col_buf - rhs_cols, im2col_buf_start_s16, rhs_cols, (int16_t)input_offset);
 
-    #endif
+        #endif
                     im2col_buf_start_s16 += aligned_rhs_cols;
 
                     if (lhs_rows == 2)
@@ -288,7 +290,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                         im2col_buf = (int8_t *)buffer_a + aligned_rhs_cols * 2;
                         lhs_rows = 0;
                     }
-#endif
+    #endif
                 }
             }
 
@@ -300,7 +302,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
             /* Handle left over columns */
             if (lhs_rows != 0)
             {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                 arm_nn_mat_mult_nt_t_s8((int8_t *)buffer_a,
                                         filter_data_ptr,
                                         bias_data_ptr,
@@ -320,7 +322,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                 out += lhs_rows * output_ch;
                 lhs_rows = 0;
                 im2col_buf = (int8_t *)buffer_a;
-#else // #if defined(ARM_MATH_MVEI)
+    #else // #if defined(ARM_MATH_MVEI)
 
                 const int8_t *ker_a = filter_data_ptr;
                 int i;
@@ -336,7 +338,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
 
                     const int16_t *ip_as_col = buffer_a;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
                     /* 4 multiply and accumulates are done in one loop. */
                     uint16_t col_count = rhs_cols / 4;
                     while (col_count)
@@ -355,10 +357,10 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                     }
                     /* Handle left over mac */
                     col_count = rhs_cols & 0x3;
-    #else
+        #else
                     uint16_t col_count = rhs_cols;
 
-    #endif
+        #endif
                     while (col_count)
                     {
                         int8_t ker_a1 = *ker_a++;
@@ -378,7 +380,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                 im2col_buf_start_s16 = buffer_a;
                 im2col_buf = (int8_t *)buffer_a + aligned_rhs_cols * 2;
                 lhs_rows = 0;
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
             }
             filter_data_ptr += output_ch_per_group * rhs_cols;
             bias_data_ptr += output_ch_per_group;
@@ -397,3 +399,5 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

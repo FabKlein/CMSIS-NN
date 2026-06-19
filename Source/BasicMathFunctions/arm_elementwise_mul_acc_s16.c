@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup Public
  */
@@ -66,7 +68,7 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
     const int32_t activation_max = (out_activation_max > 0) ? out_activation_max : NN_Q15_MAX;
     const int32_t activation_min = (out_activation_max > 0) ? out_activation_min : NN_Q15_MIN;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     loop_count = block_size;
 
@@ -94,7 +96,7 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
         loop_count -= 4;
     }
 
-#else
+    #else
     int32_t input_1;
     int32_t input_2;
     int32_t mul_res;
@@ -107,13 +109,13 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
         two_halfword_1 = arm_nn_read_q15x2_ia(&input_1_vect);
         two_halfword_2 = arm_nn_read_q15x2_ia(&input_2_vect);
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         mul_res = SMULBB(two_halfword_1, two_halfword_2);
-    #else
+        #else
         input_1 = (int16_t)(two_halfword_1 & 0xFFFF);
         input_2 = (int16_t)(two_halfword_2 & 0xFFFF);
         mul_res = input_1 * input_2;
-    #endif
+        #endif
         mul_res = arm_nn_requantize(mul_res, out_mult, out_shift);
         mul_res += output[0];
 
@@ -121,13 +123,13 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
         mul_res = MIN(mul_res, activation_max);
         mul_1 = (int16_t)mul_res;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         mul_res = SMULTT(two_halfword_1, two_halfword_2);
-    #else
+        #else
         input_1 = (int16_t)(two_halfword_1 >> 16);
         input_2 = (int16_t)(two_halfword_2 >> 16);
         mul_res = input_1 * input_2;
-    #endif
+        #endif
         mul_res = arm_nn_requantize(mul_res, out_mult, out_shift);
         mul_res += output[1];
         mul_res = MAX(mul_res, activation_min);
@@ -158,10 +160,12 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
 
         loop_count--;
     }
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
     return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */

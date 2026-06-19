@@ -31,9 +31,11 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 static void compare_and_replace_if_larger_q7(int8_t *base, const int8_t *target, int32_t length)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t loop_count = (length + 15) / 16;
     for (int i = 0; i < loop_count; i++)
     {
@@ -46,7 +48,7 @@ static void compare_and_replace_if_larger_q7(int8_t *base, const int8_t *target,
         target += 16;
         length -= 16;
     }
-#else
+    #else
     int8_t *dst = base;
     const int8_t *src = target;
     union arm_nnword ref_max;
@@ -91,12 +93,12 @@ static void compare_and_replace_if_larger_q7(int8_t *base, const int8_t *target,
         src++;
         cnt--;
     }
-#endif
+    #endif
 }
 
 static void clamp_output(int8_t *source, int32_t length, const int32_t act_min, const int32_t act_max)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t loop_count = (length + 15) / 16;
     const int8x16_t vmin = vdupq_n_s8((int8_t)act_min);
     const int8x16_t vmax = vdupq_n_s8((int8_t)act_max);
@@ -111,7 +113,7 @@ static void clamp_output(int8_t *source, int32_t length, const int32_t act_min, 
         vstrbq_p_s8(source, res, p);
         source += 16;
     }
-#else
+    #else
     union arm_nnword in;
     int32_t cnt = length >> 2;
 
@@ -141,7 +143,7 @@ static void clamp_output(int8_t *source, int32_t length, const int32_t act_min, 
         *source++ = (int8_t)comp;
         cnt--;
     }
-#endif
+    #endif
 }
 
 /**
@@ -241,3 +243,5 @@ arm_cmsis_nn_status arm_max_pool_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of Pooling group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

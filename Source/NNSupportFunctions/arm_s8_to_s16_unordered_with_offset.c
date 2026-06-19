@@ -30,15 +30,17 @@
 
 #include "arm_nnsupportfunctions.h"
 
-/**
- * @ingroup groupSupport
- */
+#if ARM_NN_ENABLE_INT8
 
-/**
- * @addtogroup supportConversion
- * @{
- */
-#if defined(ARM_MATH_DSP)
+    /**
+     * @ingroup groupSupport
+     */
+
+    /**
+     * @addtogroup supportConversion
+     * @{
+     */
+    #if defined(ARM_MATH_DSP)
 void arm_s8_to_s16_unordered_with_offset(const int8_t *src, int16_t *dst, int32_t block_size, int16_t offset)
 {
     int32_t in_s8x4;
@@ -69,8 +71,10 @@ void arm_s8_to_s16_unordered_with_offset(const int8_t *src, int16_t *dst, int32_
         block_cnt--;
     }
 }
-#endif
+    #endif
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

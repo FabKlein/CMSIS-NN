@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  * @addtogroup Softmax
  * @{
@@ -120,3 +122,5 @@ arm_cmsis_nn_status arm_softmax_s16(const int16_t *input,
 /**
  * @} end of Softmax group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

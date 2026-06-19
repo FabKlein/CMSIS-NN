@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  * @ingroup groupSupport
  */
@@ -57,7 +59,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
                                     const cmsis_nn_bias_data *const bias_data,
                                     int16_t *out_0)
 {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
     const int64_t *bias_s64 = (const int64_t *)bias_data->data;
     const int32_t *bias_s32 = (const int32_t *)bias_data->data;
     const bool is_int32_bias = bias_data->is_int32_bias;
@@ -85,7 +87,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
         int32_t ch_1_out_0 = 0;
         int32_t ch_1_out_1 = 0;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         uint16_t col_count = num_col_a_fast / 4;
 
         /* Accumulate over the vector */
@@ -114,9 +116,9 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
             col_count--;
         }
         col_count = num_col_a_fast & 0x3;
-    #else
+        #else
         int32_t col_count = num_col_a_fast;
-    #endif
+        #endif
 
         while (col_count)
         {
@@ -246,7 +248,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
         int32_t ch_0_out_0 = 0;
         int32_t ch_0_out_1 = 0;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         uint16_t col_count = num_col_a_fast >> 2;
         while (col_count)
         {
@@ -267,9 +269,9 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
             col_count--;
         }
         col_count = num_col_a & 0x3;
-    #else
+        #else
         int32_t col_count = num_col_a_fast;
-    #endif
+        #endif
         while (col_count)
         {
             int8_t a0 = *ip_a0++;
@@ -348,7 +350,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
 
     /* Return the new output pointer with offset */
     return out_0;
-#else
+    #else
     (void)input_a;
     (void)input_b;
     (void)output_ch;
@@ -361,9 +363,11 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
     (void)out_0;
 
     return NULL;
-#endif
+    #endif
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

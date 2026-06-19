@@ -30,6 +30,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /*
  * Matrix-multiplication function for convolution with per-channel requantization.
  *
@@ -50,7 +52,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
                                       const int32_t *const output_bias,
                                       int8_t *OPTIONAL_RESTRICT_KEYWORD out_0)
 {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
     /* set up the second output pointers */
     int8_t *out_1 = out_0 + output_ch;
     const int32_t *bias = output_bias;
@@ -80,7 +82,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
             ch_1_out_1 = *bias++;
         }
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         int32_t col_count = num_col_a / 4;
         /* accumulate over the vector */
         while (col_count)
@@ -108,9 +110,9 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
             col_count--;
         } /* while over col_count */
         col_count = num_col_a & 0x3;
-    #else
+        #else
         int32_t col_count = num_col_a;
-    #endif
+        #endif
         while (col_count)
         {
             int8_t a0 = *ip_a0++;
@@ -175,7 +177,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
             ch_0_out_1 = *bias++;
         }
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
         int32_t col_count = num_col_a >> 2;
         while (col_count)
         {
@@ -196,9 +198,9 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
             col_count--;
         }
         col_count = num_col_a & 0x3;
-    #else
+        #else
         int32_t col_count = num_col_a;
-    #endif
+        #endif
         while (col_count)
         {
             int8_t a0 = *ip_a0++;
@@ -228,7 +230,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
 
     /* return the new output pointer with offset */
     return out_0;
-#else
+    #else
     (void)input_a;
     (void)input_b;
     (void)output_ch;
@@ -242,5 +244,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
     (void)out_0;
     /* To be completed */
     return NULL;
-#endif
+    #endif
 }
+
+#endif /* ARM_NN_ENABLE_INT8 */

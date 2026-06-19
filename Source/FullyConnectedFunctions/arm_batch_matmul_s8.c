@@ -30,6 +30,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup Public
  */
@@ -54,13 +56,13 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
                                         int8_t *output)
 {
     (void)ctx;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (ctx->buf == NULL)
     {
         return ARM_CMSIS_NN_ARG_ERROR;
     }
     int32_t *vector_sum_buf = (int32_t *)ctx->buf;
-#endif
+    #endif
     const int32_t output_batch = output_dims->n;
     const int32_t output_height = output_dims->h;
     const int32_t lhs_rows = input_lhs_dims->w;
@@ -80,7 +82,7 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
         for (int i_out_height = 0; i_out_height < output_height; i_out_height++)
         {
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
             arm_vector_sum_s8(vector_sum_buf,
                               rhs_cols,
                               rhs_rows,
@@ -88,16 +90,16 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
                               bmm_params->fc_params.input_offset,
                               bmm_params->fc_params.filter_offset,
                               NULL);
-#endif
+    #endif
             for (int i_lhs_rows = 0; i_lhs_rows < lhs_rows; i_lhs_rows++)
             {
                 arm_nn_vec_mat_mult_t_s8(input_lhs,
                                          input_rhs,
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                                          vector_sum_buf,
-#else
+    #else
                                          NULL,
-#endif
+    #endif
                                          NULL,
                                          output,
                                          bmm_params->fc_params.input_offset,
@@ -127,3 +129,5 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

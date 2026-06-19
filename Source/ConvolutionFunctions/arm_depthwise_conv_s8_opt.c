@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -73,7 +75,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
     {
         return ARM_CMSIS_NN_ARG_ERROR;
     }
-#ifdef ARM_MATH_DSP
+    #ifdef ARM_MATH_DSP
     (void)bias_dims;
     const int32_t input_x = input_dims->w;
     const int32_t input_y = input_dims->h;
@@ -93,7 +95,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
     const int32_t output_activation_max = dw_conv_params->activation.max;
     int16_t *buffer_a = (int16_t *)ctx->buf;
 
-    #ifdef ARM_MATH_MVEI
+        #ifdef ARM_MATH_MVEI
     /* Generate two columns from the input tensor */
     int8_t *lhs_buffer = (int8_t *)buffer_a;
     int8_t *out = output;
@@ -207,7 +209,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
         remaining_ch -= CH_IN_BLOCK_MVE;
     }
 
-    #else // ARM_MATH_DSP
+        #else // ARM_MATH_DSP
     /* Run the following code in cores using DSP extension */
     int16_t *const col_buffer_start = buffer_a;
     int16_t *col_buffer = col_buffer_start;
@@ -401,8 +403,8 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
             col_buffer = col_buffer_start;
         }
     }
-    #endif
-#else
+        #endif
+    #else
     /* Run the following code as reference implementation for Cortex-M0 and Cortex-M3 */
     return arm_depthwise_conv_s8(ctx,
                                  dw_conv_params,
@@ -415,7 +417,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
                                  bias,
                                  output_dims,
                                  output);
-#endif /* ARM_MATH_MVEI | ARM_MATH_DSP */
+    #endif /* ARM_MATH_MVEI | ARM_MATH_DSP */
 
     /* Return to application */
     return ARM_CMSIS_NN_SUCCESS;
@@ -424,3 +426,5 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

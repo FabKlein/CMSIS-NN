@@ -31,6 +31,8 @@
 #include "Internal/arm_nn_compiler.h"
 #include "arm_nnfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup NNConv
  */
@@ -53,11 +55,11 @@ __STATIC_INLINE int32_t arm_convolve_s16_get_buffer_size_mve(const cmsis_nn_dims
 
 int32_t arm_convolve_s16_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_convolve_s16_get_buffer_size_mve(input_dims, filter_dims);
-#else
+    #else
     return (2 * input_dims->c * filter_dims->w * filter_dims->h) * (int32_t)sizeof(int16_t);
-#endif
+    #endif
 }
 
 /*
@@ -100,3 +102,5 @@ int32_t arm_convolve_wrapper_s16_get_buffer_size_mve(const cmsis_nn_conv_params 
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

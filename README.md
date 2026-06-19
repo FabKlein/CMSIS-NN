@@ -16,7 +16,7 @@ The float API is primarily intended for Cortex-M CPUs with Arm Helium Technology
 
 For the float operators that support `arm_nn_weight_format_flt`, MVE
 performance is generally better when constant weights are provided in the
-packed `NTxN` layout instead of the standard `NT x T` layout. This avoids the
+packed `NT x N` layout instead of the standard `NT x T` layout. This avoids the
 gather-heavy RHS access pattern of the standard formulation and is therefore
 the preferred deployment format when offline repacking is available.
 
@@ -175,6 +175,14 @@ The compiler option *'-fno-builtin'* does not utilize optimized implementations 
 
 For processors with DSP extension, int4 and int8 convolutions make use of the restrict keyword for the output pointer. This can allow the compiler to make optimizations but the actual performance result depends on the Arm(R) Cortex(R)-M processor, the compiler and the model. This optimization can be enabled by providing the compiler with a defition of OPTIONAL_RESTRICT_KEYWORD=__restrict . In general Arm Cortex-M7 will benefit from this. Similar Arm Cortex-M4 and Cortex-M33, will generally not benefit from it, but it may still bring an uplift depending on the model and compiler. It is recommended to enable this for Cortex-M7.
 
+Integer support is enabled by default to preserve the legacy CMSIS-NN API
+surface. Expert users can selectively disable integer families to reduce
+library code size for constrained deployments. The `ARM_NN_ENABLE_INT8`
+umbrella also keeps mixed helper paths used by int8 model flows, for example
+selected s8/s16 LSTM support helpers. `ARM_NN_ENABLE_INT4` and
+`ARM_NN_ENABLE_INT16` are optional integer extensions on top of this int8 base;
+they are not supported without `ARM_NN_ENABLE_INT8`.
+
 Experimental float support is disabled by default. This is intentional to keep the library code size and public API surface small for integer-only builds. Enable the float options only when the application strictly needs them.
 
 For performance reasons, the current floating-point kernels do not
@@ -197,6 +205,9 @@ Further compile-time options:
 
 | Name | Explanation | Affects headers(*) |
 |------|-----|-----|
+| ARM_NN_ENABLE_INT8 | Enable int8/uint8 APIs and int8-oriented mixed helper paths. Enabled by default to preserve legacy CMSIS-NN integer builds. | Yes |
+| ARM_NN_ENABLE_INT16 | Enable int16 APIs. Requires `ARM_NN_ENABLE_INT8` and is enabled by default to preserve legacy CMSIS-NN integer builds. | Yes |
+| ARM_NN_ENABLE_INT4 | Enable int4 APIs, typically int4 weights with int8 activations. Requires `ARM_NN_ENABLE_INT8` and is enabled by default to preserve legacy CMSIS-NN integer builds. | Yes |
 | ARM_NN_ENABLE_F32 | Enable experimental float32 operator support. Leave disabled unless the application needs float32 kernels. | Yes |
 | ARM_NN_ENABLE_F16 | Enable experimental float16 operator support. Leave disabled unless the application needs float16 kernels and the toolchain/target support them. | Yes |
 | NN_DISABLE_SPECIALIZATION | Disable optional shape/layout-specific fast paths and force the corresponding generic implementations. Useful for debugging or validating specialized kernels against the generic path. | No |

@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  *  @ingroup Public
  */
@@ -94,7 +96,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
     const int32_t output_activation_max = dw_conv_params->activation.max;
     int16_t *buffer_a = (int16_t *)ctx->buf;
 
-#ifdef ARM_MATH_MVEI
+    #ifdef ARM_MATH_MVEI
     /* Generate two columns from the input tensor */
     int8_t *lhs_buffer = (int8_t *)buffer_a;
     int8_t *out = output;
@@ -248,7 +250,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
         active_ch = MIN(S4_CH_IN_BLOCK_MVE, remaining_ch);
         remaining_ch -= S4_CH_IN_BLOCK_MVE;
     }
-#else
+    #else
     int16_t *const col_buffer_start = buffer_a;
     int16_t *col_buffer = col_buffer_start;
     const int32_t *const bias_start_pos = bias;
@@ -341,7 +343,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
 
                     while (col_count)
                     {
-    #ifdef ARM_MATH_DSP
+        #ifdef ARM_MATH_DSP
                         /* General idea is to read 4 + 4 (input, kernel) pair and re-arrange them in the right order to
                            use in a SMLAD instruction . One run of this loop produces 4 partial outputs with 8 MACs. */
                         /* Note: variable names can be improved here to align with rows and columns. */
@@ -374,7 +376,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                         op_b = PKHTB(ip_a1, ip_b1, 16);
                         sum_4 = SMLAD(op_a, op_b, sum_4);
 
-    #else
+        #else
                         int8_t ker0, ker1, ker2, ker3, ker00, ker11;
 
                         ker00 = row_pos[0];
@@ -400,7 +402,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                         sum_3 += ker2 * col_pos[2 + input_ch];
                         sum_4 += ker3 * col_pos[3 + input_ch];
 
-    #endif
+        #endif
                         row_pos += (input_ch);
                         col_pos += input_ch << 1;
 
@@ -539,7 +541,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                     row_shift += 2;
                     col_shift += 4;
 
-    #ifdef ARM_MATH_DSP
+        #ifdef ARM_MATH_DSP
                     while (col_count)
                     {
                         /* General idea is to read 4 + 4 (input, kernel) pair and re-arrange them in the right order to
@@ -581,9 +583,9 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                     }
 
                     col_count = num_cols & 0x1;
-    #else
+        #else
                     col_count = num_cols;
-    #endif
+        #endif
                     while (col_count)
                     {
                         int8_t ker0, ker1, ker2, ker3, ker00, ker11;
@@ -679,7 +681,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
             col_buffer = col_buffer_start;
         }
     }
-#endif // ARM_MATH_MVEI
+    #endif // ARM_MATH_MVEI
     /* Return to application */
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -687,3 +689,5 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

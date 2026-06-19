@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -41,7 +43,7 @@
  * @{
  */
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 static arm_cmsis_nn_status arm_depthwise_conv_to_conv_s8(const cmsis_nn_context *ctx,
                                                          const cmsis_nn_dw_conv_params *dw_conv_params,
                                                          const cmsis_nn_per_channel_quant_params *quant_params,
@@ -61,7 +63,7 @@ static arm_cmsis_nn_status arm_depthwise_conv_to_conv_s8(const cmsis_nn_context 
                                               dw_conv_params->dilation,
                                               dw_conv_params->activation};
     const cmsis_nn_dims filter_output_dims = {filter_dims->c, filter_dims->h, filter_dims->w, filter_dims->n};
-    int8_t *w_buf = (int8_t*)ctx->buf +
+    int8_t *w_buf = (int8_t *)ctx->buf +
         arm_convolve_wrapper_s8_get_buffer_size(&conv_params, input_dims, &filter_output_dims, output_dims);
     const uint32_t perm[4] = {3, 1, 2, 0};
     const cmsis_nn_transpose_params transpose_params = {4, perm};
@@ -84,7 +86,7 @@ static arm_cmsis_nn_status arm_depthwise_conv_to_conv_s8(const cmsis_nn_context 
     }
     return status;
 }
-#endif
+    #endif
 
 /*
  *  s8 Depthwise conv wrapper function
@@ -106,7 +108,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
 {
     arm_cmsis_nn_status status = ARM_CMSIS_NN_SUCCESS;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (input_dims->c == 1 && output_dims->c > CONVERT_DW_CONV_WITH_ONE_INPUT_CH_AND_OUTPUT_CH_ABOVE_THRESHOLD)
     {
         return arm_depthwise_conv_to_conv_s8(ctx,
@@ -121,12 +123,12 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                              output_dims,
                                              output);
     }
-#endif
+    #endif
 
     if (1 == dw_conv_params->ch_mult && input_dims->n == 1 && dw_conv_params->dilation.w == 1 &&
         dw_conv_params->dilation.h == 1)
     {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
         if (filter_dims->w == 3 && filter_dims->h == 3 && dw_conv_params->padding.h <= 1 &&
             dw_conv_params->padding.w <= 1)
         {
@@ -143,7 +145,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                output);
         }
         else
-#endif
+    #endif
         {
             status = arm_depthwise_conv_s8_opt(ctx,
                                                dw_conv_params,
@@ -180,3 +182,5 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

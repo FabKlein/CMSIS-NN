@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup groupSupport
  */
@@ -43,7 +45,7 @@ void arm_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_si
 {
     int32_t block_cnt;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     int16x8_t source;
     const int16x8_t source_offset = vdupq_n_s16(offset);
@@ -61,7 +63,7 @@ void arm_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_si
 
     block_cnt = block_size & 0x7;
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     /* Run the below code for cores that support SIMD instructions  */
     int32_t in_q7x4;
     int32_t in_q15x2_1;
@@ -94,11 +96,11 @@ void arm_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_si
     /* Handle left over samples */
     block_cnt = block_size % 0x4;
 
-#else
+    #else
     /* Run the below code for Cortex-M0 */
     /* Loop over block_size number of values */
     block_cnt = block_size;
-#endif
+    #endif
 
     while (block_cnt > 0)
     {
@@ -112,3 +114,5 @@ void arm_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_si
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

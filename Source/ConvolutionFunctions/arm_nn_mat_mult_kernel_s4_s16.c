@@ -29,6 +29,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /*
  * Matrix-multiplication function for convolution with per-channel requantization and 4bit weights.
  *
@@ -84,7 +86,7 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
             ch_1_out_1 = *bias--;
         }
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
         int32_t col_count = num_col_a / 4;
         /* accumulate over the vector */
 
@@ -115,9 +117,9 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
             col_count--;
         } /* while over col_count */
         col_count = (num_col_a & 0x3) >> 1;
-#else
+    #else
         int32_t col_count = num_col_a >> 1;
-#endif
+    #endif
         while (col_count)
         {
             int8_t lower_a0 = (int8_t)(packed_ip_a0[0] << 4) >> 4;
@@ -231,7 +233,7 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
             ch_1_out_1 += spillover1 * b1;
         }
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
         col_count = num_col_a / 4;
         /* accumulate over the vector */
         while (col_count)
@@ -261,9 +263,9 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
             col_count--;
         } /* while over col_count */
         col_count = (num_col_a & 0x3) >> 1;
-#else
+    #else
         col_count = num_col_a >> 1;
-#endif
+    #endif
         while (col_count)
         {
             int8_t lower_a0 = (int8_t)(packed_ip_a0[0] << 4) >> 4;
@@ -358,7 +360,7 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
             ch_0_out_1 += spilled_column * b1;
         }
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
         int32_t col_count = num_col_a / 4;
         while (col_count)
         {
@@ -381,9 +383,9 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
         }
         col_count = (num_col_a & 0x3) >> 1;
 
-#else
+    #else
         int32_t col_count = num_col_a >> 1;
-#endif
+    #endif
 
         while (col_count)
         {
@@ -437,3 +439,5 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *packed_input_a,
     /* return the new output pointer with offset */
     return out_0;
 }
+
+#endif /* ARM_NN_ENABLE_INT4 */

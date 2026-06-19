@@ -32,6 +32,8 @@
 #include "arm_nn_tables.h"
 #include "arm_nnfunctions.h"
 
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup groupNN
  */
@@ -119,3 +121,5 @@ arm_cmsis_nn_status arm_nn_activation_s16(const int16_t *input,
 /**
  * @} end of Acti group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */

@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  *  @ingroup Public
  */
@@ -60,7 +62,7 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
 {
     (void)bias_dims;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     if (ctx->buf == NULL)
     {
@@ -205,7 +207,7 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
         input_data += (input_x * input_y * input_ch);
         output_data += (output_x * output_y * output_ch);
     }
-#else
+    #else
     (void)ctx;
     (void)conv_params;
     (void)quant_params;
@@ -219,7 +221,7 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
 
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
 
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
 
     /* Return to application */
     return ARM_CMSIS_NN_SUCCESS;
@@ -228,3 +230,5 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

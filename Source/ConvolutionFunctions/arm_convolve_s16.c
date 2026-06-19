@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup Public
  */
@@ -90,9 +92,9 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
     int32_t *output_mult = quant_params->multiplier;
     int32_t *output_shift = quant_params->shift;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const int32_t rhs_rows = output_dims->c;
-#endif
+    #endif
 
     for (int i_batch = 0; i_batch < input_batches; i_batch++)
     {
@@ -132,7 +134,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                 }
 
                 lhs_rows++;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                 /* Computation is filed for every 4 columns */
                 if (lhs_rows == 4)
                 {
@@ -152,7 +154,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                     lhs_rows = 0;
                     im2col = buffer_a;
                 }
-#else
+    #else
                 /* Computation is filed for every 2 columns */
                 if (lhs_rows == 2)
                 {
@@ -171,7 +173,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                     im2col = buffer_a;
                     lhs_rows = 0;
                 }
-#endif
+    #endif
             }
 
             if (out == NULL)
@@ -183,7 +185,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
         /* Handle left over columns */
         if (lhs_rows != 0)
         {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
             arm_nn_mat_mult_nt_t_s16(buffer_a,
                                      filter_data,
                                      bias_data,
@@ -198,7 +200,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
             out += lhs_rows * rhs_rows;
             lhs_rows = 0;
             im2col = buffer_a;
-#else // #if defined(ARM_MATH_MVEI)
+    #else // #if defined(ARM_MATH_MVEI)
 
             const int64_t *bias_s64 = (const int64_t *)bias_data->data;
             const int32_t *bias_s32 = (const int32_t *)bias_data->data;
@@ -214,7 +216,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                 /* Point to the beginning of the im2col buffer where the input is available as a rearranged column */
                 const int16_t *ip_as_col = buffer_a;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
                 /* 4 multiply and accumulates are done in one loop. */
                 int32_t col_count = rhs_cols >> 2;
 
@@ -234,10 +236,10 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                 }
                 /* Handle left over mac */
                 col_count = rhs_cols & 0x3;
-    #else
+        #else
                 uint16_t col_count = rhs_cols;
 
-    #endif
+        #endif
 
                 while (col_count)
                 {
@@ -275,7 +277,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
             }
             lhs_rows = 0;
 
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
         }
 
         /* Advance to the next batch */
@@ -290,3 +292,5 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -73,3 +75,5 @@ void arm_concatenation_s8_z(const int8_t *input,
 /**
  * @} end of Concatenation group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

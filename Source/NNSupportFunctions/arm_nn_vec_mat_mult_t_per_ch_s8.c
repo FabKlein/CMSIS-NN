@@ -30,31 +30,33 @@
 
 #include "arm_nnsupportfunctions.h"
 
-/**
- * @ingroup groupSupport
- */
+#if ARM_NN_ENABLE_INT8
 
-/**
- * @defgroup supportFC Fully Connected
- *
- * Support functions for Fully Connected
- *
- */
+    /**
+     * @ingroup groupSupport
+     */
 
-/**
- * @addtogroup supportFC
- * @{
- */
+    /**
+     * @defgroup supportFC Fully Connected
+     *
+     * Support functions for Fully Connected
+     *
+     */
 
-/*
- * s8 vector(lhs) by matrix (transposed) multiplication and per channel quant output
- *
- * Refer header file for details.
- *
- */
-#if !defined(ARM_MATH_MVEI) && defined(ARM_MATH_DSP) && !defined(__ARMCC_VERSION) && !defined(__ICCARM__)
-    #pragma GCC optimize("unroll-loops")
-#endif
+    /**
+     * @addtogroup supportFC
+     * @{
+     */
+
+    /*
+     * s8 vector(lhs) by matrix (transposed) multiplication and per channel quant output
+     *
+     * Refer header file for details.
+     *
+     */
+    #if !defined(ARM_MATH_MVEI) && defined(ARM_MATH_DSP) && !defined(__ARMCC_VERSION) && !defined(__ICCARM__)
+        #pragma GCC optimize("unroll-loops")
+    #endif
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
                                                     const int8_t *rhs,
                                                     const int32_t *kernel_sum,
@@ -73,7 +75,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
 {
     if (rhs_offset)
     {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
         (void)bias;
         (void)lhs_offset;
         const int32_t row_loop_cnt = rhs_rows / 4;
@@ -177,7 +179,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
         }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
         (void)kernel_sum;
 
         const int32_t row_loop_cnt = rhs_rows / 2;
@@ -298,7 +300,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
         }
 
-#else
+    #else
         (void)kernel_sum;
 
         const int32_t row_loop_cnt = rhs_rows / 3;
@@ -400,12 +402,12 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
             rhs += rhs_cols;
         }
-#endif
+    #endif
     }
 
     else
     {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
         const int32_t row_loop_cnt = rhs_rows / 4;
         const uint32x4_t address_offset_array = {0, address_offset, address_offset * 2, address_offset * 3};
 
@@ -501,7 +503,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
         }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
         (void)kernel_sum;
 
         const int32_t row_loop_cnt = rhs_rows / 2;
@@ -620,7 +622,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
         }
 
-#else
+    #else
         (void)kernel_sum;
 
         const int32_t row_loop_cnt = rhs_rows / 3;
@@ -721,7 +723,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
             dst += address_offset;
             rhs += rhs_cols;
         }
-#endif
+    #endif
     }
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -729,3 +731,5 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup Public
  */
@@ -50,7 +52,7 @@
 void arm_relu_q15(int16_t *data, uint16_t size)
 {
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
     /* Run the following code for M cores with DSP extension */
 
     uint16_t i = size >> 1;
@@ -82,7 +84,7 @@ void arm_relu_q15(int16_t *data, uint16_t size)
         }
         input++;
     }
-#else
+    #else
     /* Run the following code as reference implementation for M cores without DSP extension */
     uint16_t i;
 
@@ -92,9 +94,11 @@ void arm_relu_q15(int16_t *data, uint16_t size)
             data[i] = 0;
     }
 
-#endif /* ARM_MATH_DSP */
+    #endif /* ARM_MATH_DSP */
 }
 
 /**
  * @} end of Acti group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

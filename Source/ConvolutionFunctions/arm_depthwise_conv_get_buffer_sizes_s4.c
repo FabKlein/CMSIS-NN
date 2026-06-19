@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  *  @ingroup NNConv
  */
@@ -42,11 +44,11 @@
 
 int32_t arm_depthwise_conv_s4_opt_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_depthwise_conv_s8_opt_get_buffer_size_mve(input_dims, filter_dims);
-#else
+    #else
     return arm_depthwise_conv_s8_opt_get_buffer_size_dsp(input_dims, filter_dims);
-#endif
+    #endif
 }
 
 int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
@@ -92,3 +94,5 @@ int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size_mve(const cmsis_nn_dw_conv
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

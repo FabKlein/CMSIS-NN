@@ -93,6 +93,7 @@ extern "C" {
  *                  <code>ARM_CMSIS_NN_SUCCESS</code> on successful completion.
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_wrapper_s4(const cmsis_nn_context *ctx,
                                             const cmsis_nn_conv_params *conv_params,
                                             const cmsis_nn_per_channel_quant_params *quant_params,
@@ -104,6 +105,7 @@ arm_cmsis_nn_status arm_convolve_wrapper_s4(const cmsis_nn_context *ctx,
                                             const int32_t *bias_data,
                                             const cmsis_nn_dims *output_dims,
                                             int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s4
@@ -119,10 +121,12 @@ arm_cmsis_nn_status arm_convolve_wrapper_s4(const cmsis_nn_context *ctx,
  * @return         The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_wrapper_s4_get_buffer_size(const cmsis_nn_conv_params *conv_params,
                                                 const cmsis_nn_dims *input_dims,
                                                 const cmsis_nn_dims *filter_dims,
                                                 const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s4 for Arm(R) Helium Architecture case.
@@ -133,10 +137,12 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size(const cmsis_nn_conv_params *conv
  *             mve implementation, so dsp will be used.
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_wrapper_s4_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
                                                     const cmsis_nn_dims *input_dims,
                                                     const cmsis_nn_dims *filter_dims,
                                                     const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s4 for processors with DSP extension.
@@ -146,10 +152,12 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size_mve(const cmsis_nn_conv_params *
  *             arm_convolve_wrapper_s4_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_wrapper_s4_get_buffer_size_dsp(const cmsis_nn_conv_params *conv_params,
                                                     const cmsis_nn_dims *input_dims,
                                                     const cmsis_nn_dims *filter_dims,
                                                     const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief s8 convolution layer wrapper function with the main purpose to call the optimal kernel available in
@@ -178,6 +186,7 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size_dsp(const cmsis_nn_conv_params *
  *                  <code>ARM_CMSIS_NN_SUCCESS</code> on successful completion.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
                                             const cmsis_nn_conv_params *conv_params,
                                             const cmsis_nn_per_channel_quant_params *quant_params,
@@ -189,6 +198,7 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
                                             const int32_t *bias_data,
                                             const cmsis_nn_dims *output_dims,
                                             int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s8
@@ -204,10 +214,12 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
  * @return         The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_wrapper_s8_get_buffer_size(const cmsis_nn_conv_params *conv_params,
                                                 const cmsis_nn_dims *input_dims,
                                                 const cmsis_nn_dims *filter_dims,
                                                 const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s8 for Arm(R) Helium Architecture case.
@@ -217,10 +229,12 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size(const cmsis_nn_conv_params *conv
  *             arm_convolve_wrapper_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_wrapper_s8_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
                                                     const cmsis_nn_dims *input_dims,
                                                     const cmsis_nn_dims *filter_dims,
                                                     const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s8 for processors with DSP extension.
@@ -230,10 +244,12 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size_mve(const cmsis_nn_conv_params *
  *             arm_convolve_wrapper_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_wrapper_s8_get_buffer_size_dsp(const cmsis_nn_conv_params *conv_params,
                                                     const cmsis_nn_dims *input_dims,
                                                     const cmsis_nn_dims *filter_dims,
                                                     const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 convolution layer wrapper function with the main purpose to call the optimal kernel available in
@@ -263,6 +279,7 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size_dsp(const cmsis_nn_conv_params *
  *                  <code>ARM_CMSIS_NN_SUCCESS</code> on successful completion.
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_convolve_wrapper_s16(const cmsis_nn_context *ctx,
                                              const cmsis_nn_conv_params *conv_params,
                                              const cmsis_nn_per_channel_quant_params *quant_params,
@@ -274,6 +291,7 @@ arm_cmsis_nn_status arm_convolve_wrapper_s16(const cmsis_nn_context *ctx,
                                              const cmsis_nn_bias_data *bias_data,
                                              const cmsis_nn_dims *output_dims,
                                              int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s16.
@@ -289,10 +307,12 @@ arm_cmsis_nn_status arm_convolve_wrapper_s16(const cmsis_nn_context *ctx,
  * @return         The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_convolve_wrapper_s16_get_buffer_size(const cmsis_nn_conv_params *conv_params,
                                                  const cmsis_nn_dims *input_dims,
                                                  const cmsis_nn_dims *filter_dims,
                                                  const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s16 for for processors with DSP extension.
@@ -302,10 +322,12 @@ int32_t arm_convolve_wrapper_s16_get_buffer_size(const cmsis_nn_conv_params *con
  *             arm_convolve_wrapper_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_convolve_wrapper_s16_get_buffer_size_dsp(const cmsis_nn_conv_params *conv_params,
                                                      const cmsis_nn_dims *input_dims,
                                                      const cmsis_nn_dims *filter_dims,
                                                      const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_wrapper_s16 for Arm(R) Helium Architecture case.
@@ -315,10 +337,12 @@ int32_t arm_convolve_wrapper_s16_get_buffer_size_dsp(const cmsis_nn_conv_params 
  *             arm_convolve_wrapper_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_convolve_wrapper_s16_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
                                                      const cmsis_nn_dims *input_dims,
                                                      const cmsis_nn_dims *filter_dims,
                                                      const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Basic s4 convolution function
@@ -347,6 +371,7 @@ int32_t arm_convolve_wrapper_s16_get_buffer_size_mve(const cmsis_nn_conv_params 
  *    2. Additional memory is required for optimization. Refer to argument 'ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
                                     const cmsis_nn_conv_params *conv_params,
                                     const cmsis_nn_per_channel_quant_params *quant_params,
@@ -358,6 +383,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
                                     const int32_t *bias_data,
                                     const cmsis_nn_dims *output_dims,
                                     int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Basic s4 convolution function with a requirement of even number of kernels.
@@ -388,6 +414,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
  *    2. Additional memory is required for optimization. Refer to argument 'ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
                                          const cmsis_nn_conv_params *conv_params,
                                          const cmsis_nn_per_channel_quant_params *quant_params,
@@ -399,6 +426,7 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
                                          const int32_t *bias_data,
                                          const cmsis_nn_dims *output_dims,
                                          int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Basic s8 convolution function
@@ -433,6 +461,7 @@ arm_cmsis_nn_status arm_convolve_even_s4(const cmsis_nn_context *ctx,
  *    2. Additional memory is required for optimization. Refer to argument 'ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                                     const cmsis_nn_conv_params *conv_params,
                                     const cmsis_nn_per_channel_quant_params *quant_params,
@@ -445,6 +474,7 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
                                     const cmsis_nn_dims *upscale_dims,
                                     const cmsis_nn_dims *output_dims,
                                     int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for s4 convolution function
@@ -455,7 +485,9 @@ arm_cmsis_nn_status arm_convolve_s8(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_s4_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for s8 convolution function
@@ -466,7 +498,9 @@ int32_t arm_convolve_s4_get_buffer_size(const cmsis_nn_dims *input_dims, const c
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_s8_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Wrapper to select optimal transposed convolution algorithm depending on parameters.
@@ -503,6 +537,7 @@ int32_t arm_convolve_s8_get_buffer_size(const cmsis_nn_dims *input_dims, const c
  *    2. Additional memory is required for optimization. Refer to arguments 'ctx' and 'output_ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_transpose_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                   const cmsis_nn_context *output_ctx,
                                                   const cmsis_nn_transpose_conv_params *transpose_conv_params,
@@ -515,6 +550,7 @@ arm_cmsis_nn_status arm_transpose_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                   const int32_t *bias_data,
                                                   const cmsis_nn_dims *output_dims,
                                                   int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Basic s8 transpose convolution function
@@ -551,6 +587,7 @@ arm_cmsis_nn_status arm_transpose_conv_wrapper_s8(const cmsis_nn_context *ctx,
  *    2. Additional memory is required for optimization. Refer to arguments 'ctx' and 'output_ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                                           const cmsis_nn_context *output_ctx,
                                           const cmsis_nn_transpose_conv_params *transpose_conv_params,
@@ -563,6 +600,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                                           const int32_t *bias_data,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for ctx in s8 transpose conv function
@@ -575,10 +613,12 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_transpose_conv_s8_get_buffer_size(const cmsis_nn_transpose_conv_params *transposed_conv_params,
                                               const cmsis_nn_dims *input_dims,
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *out_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for output_ctx in s8 transpose conv function
@@ -590,9 +630,11 @@ int32_t arm_transpose_conv_s8_get_buffer_size(const cmsis_nn_transpose_conv_para
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_transpose_conv_s8_get_reverse_conv_buffer_size(const cmsis_nn_transpose_conv_params *transposed_conv_params,
                                                            const cmsis_nn_dims *input_dims,
                                                            const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_transpose_conv_s8() for Arm(R) Helium Architecture case.
@@ -602,10 +644,12 @@ int32_t arm_transpose_conv_s8_get_reverse_conv_buffer_size(const cmsis_nn_transp
  *             arm_transpose_conv_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_transpose_conv_s8_get_buffer_size_mve(const cmsis_nn_transpose_conv_params *transposed_conv_params,
                                                   const cmsis_nn_dims *input_dims,
                                                   const cmsis_nn_dims *filter_dims,
                                                   const cmsis_nn_dims *out_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Basic s16 convolution function
@@ -637,6 +681,7 @@ int32_t arm_transpose_conv_s8_get_buffer_size_mve(const cmsis_nn_transpose_conv_
  *    2. Additional memory is required for optimization. Refer to argument 'ctx' for details.
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                                      const cmsis_nn_conv_params *conv_params,
                                      const cmsis_nn_per_channel_quant_params *quant_params,
@@ -648,6 +693,7 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
                                      const cmsis_nn_bias_data *bias_data,
                                      const cmsis_nn_dims *output_dims,
                                      int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for s16 convolution function
@@ -658,7 +704,9 @@ arm_cmsis_nn_status arm_convolve_s16(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_convolve_s16_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Fast s4 version for 1x1 convolution (non-square shape)
@@ -691,6 +739,7 @@ int32_t arm_convolve_s16_get_buffer_size(const cmsis_nn_dims *input_dims, const 
  *      -# conv_params->stride.w = conv_params->stride.h = 1
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_1x1_s4_fast(const cmsis_nn_context *ctx,
                                              const cmsis_nn_conv_params *conv_params,
                                              const cmsis_nn_per_channel_quant_params *quant_params,
@@ -702,6 +751,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s4_fast(const cmsis_nn_context *ctx,
                                              const int32_t *bias_data,
                                              const cmsis_nn_dims *output_dims,
                                              int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief s4 version for 1x1 convolution with support for non-unity stride values
@@ -731,6 +781,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s4_fast(const cmsis_nn_context *ctx,
  *      -# conv_params->padding.w = conv_params->padding.h = 0
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_1x1_s4(const cmsis_nn_context *ctx,
                                         const cmsis_nn_conv_params *conv_params,
                                         const cmsis_nn_per_channel_quant_params *quant_params,
@@ -742,6 +793,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s4(const cmsis_nn_context *ctx,
                                         const int32_t *bias_data,
                                         const cmsis_nn_dims *output_dims,
                                         int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Fast s8 version for 1x1 convolution (non-square shape)
@@ -774,6 +826,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s4(const cmsis_nn_context *ctx,
  *      -# conv_params->stride.w = conv_params->stride.h = 1
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
                                              const cmsis_nn_conv_params *conv_params,
                                              const cmsis_nn_per_channel_quant_params *quant_params,
@@ -785,6 +838,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
                                              const int32_t *bias_data,
                                              const cmsis_nn_dims *output_dims,
                                              int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_1x1_s4_fast
@@ -793,7 +847,9 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
  * @return          The function returns the required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_1x1_s4_fast_get_buffer_size(const cmsis_nn_dims *input_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for arm_convolve_1x1_s8_fast
@@ -802,7 +858,9 @@ int32_t arm_convolve_1x1_s4_fast_get_buffer_size(const cmsis_nn_dims *input_dims
  * @return          The function returns the required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_1x1_s8_fast_get_buffer_size(const cmsis_nn_dims *input_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s8 version for 1x1 convolution with support for non-unity stride values
@@ -832,6 +890,7 @@ int32_t arm_convolve_1x1_s8_fast_get_buffer_size(const cmsis_nn_dims *input_dims
  *      -# conv_params->padding.w = conv_params->padding.h = 0
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_convolve_1x1_s8(const cmsis_nn_context *ctx,
                                         const cmsis_nn_conv_params *conv_params,
                                         const cmsis_nn_per_channel_quant_params *quant_params,
@@ -843,6 +902,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8(const cmsis_nn_context *ctx,
                                         const int32_t *bias_data,
                                         const cmsis_nn_dims *output_dims,
                                         int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief 1xn convolution
@@ -881,6 +941,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8(const cmsis_nn_context *ctx,
  *@todo  Remove constraint on output_dims->w to make the function generic.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
                                           const cmsis_nn_conv_params *conv_params,
                                           const cmsis_nn_per_channel_quant_params *quant_params,
@@ -892,6 +953,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
                                           const int32_t *bias_data,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief 1xn convolution for s4 weights
@@ -929,6 +991,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
  *@todo  Remove constraint on output_dims->w to make the function generic.
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
                                           const cmsis_nn_conv_params *conv_params,
                                           const cmsis_nn_per_channel_quant_params *quant_params,
@@ -940,6 +1003,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
                                           const int32_t *bias_data,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required additional buffer size for 1xn convolution
@@ -955,10 +1019,12 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_1_x_n_s8_get_buffer_size(const cmsis_nn_conv_params *conv_params,
                                               const cmsis_nn_dims *input_dims,
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required additional buffer size for 1xn convolution
@@ -974,10 +1040,12 @@ int32_t arm_convolve_1_x_n_s8_get_buffer_size(const cmsis_nn_conv_params *conv_p
  * @return          The function returns required buffer size(bytes)
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_convolve_1_x_n_s4_get_buffer_size(const cmsis_nn_conv_params *conv_params,
                                               const cmsis_nn_dims *input_dims,
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Wrapper function to pick the right optimized s8 depthwise convolution function
@@ -1015,6 +1083,7 @@ int32_t arm_convolve_1_x_n_s4_get_buffer_size(const cmsis_nn_conv_params *conv_p
  *    - Check details of arm_depthwise_conv_s8_opt() for potential data that can be accessed outside of the
  * boundary.
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                   const cmsis_nn_dw_conv_params *dw_conv_params,
                                                   const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1026,6 +1095,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                   const int32_t *bias_data,
                                                   const cmsis_nn_dims *output_dims,
                                                   int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Wrapper function to pick the right optimized s4 depthwise convolution function
@@ -1058,6 +1128,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_depthwise_conv_wrapper_s4(const cmsis_nn_context *ctx,
                                                   const cmsis_nn_dw_conv_params *dw_conv_params,
                                                   const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1069,6 +1140,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s4(const cmsis_nn_context *ctx,
                                                   const int32_t *bias_data,
                                                   const cmsis_nn_dims *output_dims,
                                                   int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s8()
@@ -1083,10 +1155,12 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s4(const cmsis_nn_context *ctx,
  * @return                         Size of additional memory required for optimizations in bytes.
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                       const cmsis_nn_dims *input_dims,
                                                       const cmsis_nn_dims *filter_dims,
                                                       const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s8() for processors with DSP extension.
@@ -1096,10 +1170,12 @@ int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size(const cmsis_nn_dw_conv_par
  *             arm_depthwise_conv_wrapper_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size_dsp(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                           const cmsis_nn_dims *input_dims,
                                                           const cmsis_nn_dims *filter_dims,
                                                           const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s8() for Arm(R) Helium Architecture case.
@@ -1109,10 +1185,12 @@ int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size_dsp(const cmsis_nn_dw_conv
  *             arm_depthwise_conv_wrapper_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size_mve(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                           const cmsis_nn_dims *input_dims,
                                                           const cmsis_nn_dims *filter_dims,
                                                           const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s4()
@@ -1127,10 +1205,12 @@ int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size_mve(const cmsis_nn_dw_conv
  * @return                         Size of additional memory required for optimizations in bytes.
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                       const cmsis_nn_dims *input_dims,
                                                       const cmsis_nn_dims *filter_dims,
                                                       const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s4() for processors with DSP extension.
@@ -1140,10 +1220,12 @@ int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size(const cmsis_nn_dw_conv_par
  *             arm_depthwise_conv_wrapper_s4_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size_dsp(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                           const cmsis_nn_dims *input_dims,
                                                           const cmsis_nn_dims *filter_dims,
                                                           const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s4() for Arm(R) Helium Architecture case.
@@ -1153,10 +1235,12 @@ int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size_dsp(const cmsis_nn_dw_conv
  *             arm_depthwise_conv_wrapper_s4_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size_mve(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                           const cmsis_nn_dims *input_dims,
                                                           const cmsis_nn_dims *filter_dims,
                                                           const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Basic s8 depthwise convolution function that doesn't have any constraints on the input dimensions.
@@ -1187,6 +1271,7 @@ int32_t arm_depthwise_conv_wrapper_s4_get_buffer_size_mve(const cmsis_nn_dw_conv
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_depthwise_conv_s8(const cmsis_nn_context *ctx,
                                           const cmsis_nn_dw_conv_params *dw_conv_params,
                                           const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1198,6 +1283,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8(const cmsis_nn_context *ctx,
                                           const int32_t *bias_data,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Basic s4 depthwise convolution function that doesn't have any constraints on the input dimensions.
@@ -1229,6 +1315,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8(const cmsis_nn_context *ctx,
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_depthwise_conv_s4(const cmsis_nn_context *ctx,
                                           const cmsis_nn_dw_conv_params *dw_conv_params,
                                           const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1240,6 +1327,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4(const cmsis_nn_context *ctx,
                                           const int32_t *bias,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Basic s16 depthwise convolution function that doesn't have any constraints on the input dimensions.
@@ -1270,6 +1358,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4(const cmsis_nn_context *ctx,
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_depthwise_conv_s16(const cmsis_nn_context *ctx,
                                            const cmsis_nn_dw_conv_params *dw_conv_params,
                                            const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1281,6 +1370,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s16(const cmsis_nn_context *ctx,
                                            const int64_t *bias_data,
                                            const cmsis_nn_dims *output_dims,
                                            int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Wrapper function to pick the right optimized s16 depthwise convolution function
@@ -1315,6 +1405,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s16(const cmsis_nn_context *ctx,
  *        -# arm_depthwise_conv_s16()
  *        -# arm_depthwise_conv_fast_s16()  - Cortex-M CPUs with DSP extension only
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_depthwise_conv_wrapper_s16(const cmsis_nn_context *ctx,
                                                    const cmsis_nn_dw_conv_params *dw_conv_params,
                                                    const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1326,6 +1417,7 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s16(const cmsis_nn_context *ctx,
                                                    const int64_t *bias_data,
                                                    const cmsis_nn_dims *output_dims,
                                                    int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s16()
@@ -1340,10 +1432,12 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s16(const cmsis_nn_context *ctx,
  * @return                         Size of additional memory required for optimizations in bytes.
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                        const cmsis_nn_dims *input_dims,
                                                        const cmsis_nn_dims *filter_dims,
                                                        const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s16() for processors with DSP extension.
@@ -1353,10 +1447,12 @@ int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size(const cmsis_nn_dw_conv_pa
  *             arm_depthwise_conv_wrapper_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size_dsp(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                            const cmsis_nn_dims *input_dims,
                                                            const cmsis_nn_dims *filter_dims,
                                                            const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_depthwise_conv_wrapper_s16() for Arm(R) Helium Architecture
@@ -1366,10 +1462,12 @@ int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size_dsp(const cmsis_nn_dw_con
  *             arm_depthwise_conv_wrapper_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size_mve(const cmsis_nn_dw_conv_params *dw_conv_params,
                                                            const cmsis_nn_dims *input_dims,
                                                            const cmsis_nn_dims *filter_dims,
                                                            const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Optimized s16 depthwise convolution function with constraint that in_channel equals out_channel.
@@ -1390,6 +1488,7 @@ int32_t arm_depthwise_conv_wrapper_s16_get_buffer_size_mve(const cmsis_nn_dw_con
  *    - Reccomended when number of channels is 4 or greater.
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
                                                 const cmsis_nn_dw_conv_params *dw_conv_params,
                                                 const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1401,6 +1500,7 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
                                                 const int64_t *bias_data,
                                                 const cmsis_nn_dims *output_dims,
                                                 int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for optimized s16 depthwise convolution
@@ -1411,7 +1511,9 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_depthwise_conv_fast_s16_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Optimized s8 depthwise convolution function for 3x3 kernel size with some constraints on
@@ -1431,6 +1533,7 @@ int32_t arm_depthwise_conv_fast_s16_get_buffer_size(const cmsis_nn_dims *input_d
  *      -# Padding along x is either 0 or 1.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
                                               const cmsis_nn_dw_conv_params *dw_conv_params,
                                               const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1442,6 +1545,7 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
                                               const int32_t *bias_data,
                                               const cmsis_nn_dims *output_dims,
                                               int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Optimized s8 depthwise convolution function with constraint that in_channel equals out_channel.
@@ -1465,6 +1569,7 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
  *    - Reccomended when number of channels is 4 or greater.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
                                               const cmsis_nn_dw_conv_params *dw_conv_params,
                                               const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1476,6 +1581,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
                                               const int32_t *bias_data,
                                               const cmsis_nn_dims *output_dims,
                                               int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Optimized s4 depthwise convolution function with constraint that in_channel equals out_channel.
@@ -1499,6 +1605,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s8_opt(const cmsis_nn_context *ctx,
  *    - Reccomended when number of channels is 4 or greater.
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                                               const cmsis_nn_dw_conv_params *dw_conv_params,
                                               const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1510,6 +1617,7 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
                                               const int32_t *bias_data,
                                               const cmsis_nn_dims *output_dims,
                                               int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Get the required buffer size for optimized s8 depthwise convolution
@@ -1520,7 +1628,9 @@ arm_cmsis_nn_status arm_depthwise_conv_s4_opt(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_s8_opt_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for optimized s4 depthwise convolution
@@ -1531,7 +1641,9 @@ int32_t arm_depthwise_conv_s8_opt_get_buffer_size(const cmsis_nn_dims *input_dim
  * @return          The function returns required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT4
 int32_t arm_depthwise_conv_s4_opt_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @defgroup FC Fully-connected Layer Functions
@@ -1582,6 +1694,7 @@ int32_t arm_depthwise_conv_s4_opt_get_buffer_size(const cmsis_nn_dims *input_dim
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_fully_connected_s4(const cmsis_nn_context *ctx,
                                            const cmsis_nn_fc_params *fc_params,
                                            const cmsis_nn_per_tensor_quant_params *quant_params,
@@ -1593,6 +1706,7 @@ arm_cmsis_nn_status arm_fully_connected_s4(const cmsis_nn_context *ctx,
                                            const int32_t *bias_data,
                                            const cmsis_nn_dims *output_dims,
                                            int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Basic s8 Fully Connected function.
@@ -1632,6 +1746,7 @@ arm_cmsis_nn_status arm_fully_connected_s4(const cmsis_nn_context *ctx,
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_fully_connected_s8(const cmsis_nn_context *ctx,
                                            const cmsis_nn_fc_params *fc_params,
                                            const cmsis_nn_per_tensor_quant_params *quant_params,
@@ -1643,6 +1758,7 @@ arm_cmsis_nn_status arm_fully_connected_s8(const cmsis_nn_context *ctx,
                                            const int32_t *bias_data,
                                            const cmsis_nn_dims *output_dims,
                                            int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Basic s8 Fully Connected function using per channel quantization.
@@ -1682,6 +1798,7 @@ arm_cmsis_nn_status arm_fully_connected_s8(const cmsis_nn_context *ctx,
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_fully_connected_per_channel_s8(const cmsis_nn_context *ctx,
                                                        const cmsis_nn_fc_params *fc_params,
                                                        const cmsis_nn_per_channel_quant_params *quant_params,
@@ -1693,6 +1810,7 @@ arm_cmsis_nn_status arm_fully_connected_per_channel_s8(const cmsis_nn_context *c
                                                        const int32_t *bias_data,
                                                        const cmsis_nn_dims *output_dims,
                                                        int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s8 Fully Connected layer wrapper function
@@ -1732,6 +1850,7 @@ arm_cmsis_nn_status arm_fully_connected_per_channel_s8(const cmsis_nn_context *c
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_fully_connected_wrapper_s8(const cmsis_nn_context *ctx,
                                                    const cmsis_nn_fc_params *fc_params,
                                                    const cmsis_nn_quant_params *quant_params,
@@ -1743,6 +1862,7 @@ arm_cmsis_nn_status arm_fully_connected_wrapper_s8(const cmsis_nn_context *ctx,
                                                    const int32_t *bias_data,
                                                    const cmsis_nn_dims *output_dims,
                                                    int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Calculate the sum of each row in vector_data, multiply by lhs_offset and optionally add s32 bias_data.
@@ -1756,6 +1876,7 @@ arm_cmsis_nn_status arm_fully_connected_wrapper_s8(const cmsis_nn_context *ctx,
  * @return              The function returns
  *                         <code>ARM_CMSIS_NN_SUCCESS</code> - Successful operation
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
                                       const int32_t vector_cols,
                                       const int32_t vector_rows,
@@ -1763,6 +1884,7 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
                                       const int32_t lhs_offset,
                                       const int32_t rhs_offset,
                                       const int32_t *bias_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Calculate the sum of each row in vector_data, multiply by lhs_offset and optionally add s64 bias_data.
@@ -1775,12 +1897,14 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
  * @return              The function returns
  *                         <code>ARM_CMSIS_NN_SUCCESS</code> - Successful operation
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_vector_sum_s8_s64(int64_t *vector_sum_buf,
                                           const int32_t vector_cols,
                                           const int32_t vector_rows,
                                           const int8_t *vector_data,
                                           const int32_t lhs_offset,
                                           const int64_t *bias_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s8().
@@ -1789,7 +1913,9 @@ arm_cmsis_nn_status arm_vector_sum_s8_s64(int64_t *vector_sum_buf,
  * @return         The function returns    required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_fully_connected_s8_get_buffer_size(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s8() for processors with DSP extension.
@@ -1799,7 +1925,9 @@ int32_t arm_fully_connected_s8_get_buffer_size(const cmsis_nn_dims *filter_dims)
  *             arm_fully_connected_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_fully_connected_s8_get_buffer_size_dsp(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s8() for Arm(R) Helium Architecture case.
@@ -1809,7 +1937,9 @@ int32_t arm_fully_connected_s8_get_buffer_size_dsp(const cmsis_nn_dims *filter_d
  *             arm_fully_connected_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_fully_connected_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Basic s16 Fully Connected function.
@@ -1846,6 +1976,7 @@ int32_t arm_fully_connected_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_d
  * @details
  *    - Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_fully_connected_s16(const cmsis_nn_context *ctx,
                                             const cmsis_nn_fc_params *fc_params,
                                             const cmsis_nn_per_tensor_quant_params *quant_params,
@@ -1857,6 +1988,7 @@ arm_cmsis_nn_status arm_fully_connected_s16(const cmsis_nn_context *ctx,
                                             const int64_t *bias_data,
                                             const cmsis_nn_dims *output_dims,
                                             int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s16().
@@ -1864,7 +1996,9 @@ arm_cmsis_nn_status arm_fully_connected_s16(const cmsis_nn_context *ctx,
  * @return         The function returns    required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_fully_connected_s16_get_buffer_size(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s16() for processors with DSP extension.
@@ -1874,7 +2008,9 @@ int32_t arm_fully_connected_s16_get_buffer_size(const cmsis_nn_dims *filter_dims
  *             arm_fully_connected_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_fully_connected_s16_get_buffer_size_dsp(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get size of additional buffer required by arm_fully_connected_s16() for Arm(R) Helium Architecture case.
@@ -1884,7 +2020,9 @@ int32_t arm_fully_connected_s16_get_buffer_size_dsp(const cmsis_nn_dims *filter_
  *             arm_fully_connected_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_fully_connected_s16_get_buffer_size_mve(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @defgroup groupElementwise Elementwise Functions
@@ -1913,6 +2051,7 @@ int32_t arm_fully_connected_s16_get_buffer_size_mve(const cmsis_nn_dims *filter_
  * @param[in]       block_size          number of samples
  * @return          The function returns    ARM_CMSIS_NN_SUCCESS
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
                                            const int8_t *input_2_vect,
                                            const int32_t input_1_offset,
@@ -1929,6 +2068,7 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
                                            const int32_t out_activation_min,
                                            const int32_t out_activation_max,
                                            const int32_t block_size);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 elementwise add of two vectors
@@ -1950,6 +2090,7 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
  * @param[in]       block_size          number of samples
  * @return          The function returns  ARM_CMSIS_NN_SUCCESS
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
                                             const int16_t *input_2_vect,
                                             const int32_t input_1_offset,
@@ -1966,6 +2107,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
                                             const int32_t out_activation_min,
                                             const int32_t out_activation_max,
                                             const int32_t block_size);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s8 elementwise multiplication
@@ -1984,6 +2126,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
  *
  * @details   Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
                                            const int8_t *input_2_vect,
                                            const int32_t input_1_offset,
@@ -1995,6 +2138,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
                                            const int32_t out_activation_min,
                                            const int32_t out_activation_max,
                                            const int32_t block_size);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 elementwise multiplication
@@ -2013,6 +2157,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
  *
  * @details   Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_elementwise_mul_s16(const int16_t *input_1_vect,
                                             const int16_t *input_2_vect,
                                             const int32_t input_1_offset,
@@ -2024,6 +2169,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16(const int16_t *input_1_vect,
                                             const int32_t out_activation_min,
                                             const int32_t out_activation_max,
                                             const int32_t block_size);
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */
 
 /**
  * @defgroup Acti Activation Functions
@@ -2038,21 +2184,27 @@ arm_cmsis_nn_status arm_elementwise_mul_s16(const int16_t *input_1_vect,
  * @param[in,out]   data        pointer to input
  * @param[in]       size        number of elements
  */
+#if ARM_NN_ENABLE_INT8
 void arm_relu_q7(int8_t *data, uint16_t size);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s8 ReLU6 function
  * @param[in,out]   data        pointer to input
  * @param[in]       size        number of elements
  */
+#if ARM_NN_ENABLE_INT8
 void arm_relu6_s8(int8_t *data, uint16_t size);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Q15 RELU function
  * @param[in,out]   data        pointer to input
  * @param[in]       size        number of elements
  */
+#if ARM_NN_ENABLE_INT16
 void arm_relu_q15(int16_t *data, uint16_t size);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s16 neural network activation function using direct table look-up
@@ -2068,11 +2220,13 @@ void arm_relu_q15(int16_t *data, uint16_t size);
  * This activation function must be bit precise congruent with the corresponding TFLM tanh and sigmoid activation
  * functions
  */
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_activation_s16(const int16_t *input,
                                           int16_t *output,
                                           const int32_t size,
                                           const int32_t left_shift,
                                           const arm_nn_activation_type type);
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */
 
 /**
  * @defgroup Pooling Pooling Functions
@@ -2107,6 +2261,7 @@ arm_cmsis_nn_status arm_nn_activation_s16(const int16_t *input,
  *    - Supported Framework: TensorFlow Lite
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_pool_params *pool_params,
                                    const cmsis_nn_dims *input_dims,
@@ -2114,6 +2269,7 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_dims *filter_dims,
                                    const cmsis_nn_dims *output_dims,
                                    int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for S8 average pooling function
@@ -2122,7 +2278,9 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_avgpool_s8_get_buffer_size(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for S8 average pooling function for processors with DSP extension.
@@ -2132,7 +2290,9 @@ int32_t arm_avgpool_s8_get_buffer_size(const int dim_dst_width, const int ch_src
  *             arm_avgpool_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_avgpool_s8_get_buffer_size_dsp(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for S8 average pooling function for Arm(R) Helium Architecture case.
@@ -2142,7 +2302,9 @@ int32_t arm_avgpool_s8_get_buffer_size_dsp(const int dim_dst_width, const int ch
  *             arm_avgpool_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_avgpool_s8_get_buffer_size_mve(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 average pooling function.
@@ -2170,6 +2332,7 @@ int32_t arm_avgpool_s8_get_buffer_size_mve(const int dim_dst_width, const int ch
  *    - Supported Framework: TensorFlow Lite
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
                                     const cmsis_nn_pool_params *pool_params,
                                     const cmsis_nn_dims *input_dims,
@@ -2177,6 +2340,7 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
                                     const cmsis_nn_dims *filter_dims,
                                     const cmsis_nn_dims *output_dims,
                                     int16_t *output_data);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for S16 average pooling function
@@ -2185,7 +2349,9 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
  * @return          The function returns required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_avgpool_s16_get_buffer_size(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for S16 average pooling function for processors with DSP extension.
@@ -2195,7 +2361,9 @@ int32_t arm_avgpool_s16_get_buffer_size(const int dim_dst_width, const int ch_sr
  *             arm_avgpool_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_avgpool_s16_get_buffer_size_dsp(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Get the required buffer size for S16 average pooling function for Arm(R) Helium Architecture case.
@@ -2205,7 +2373,9 @@ int32_t arm_avgpool_s16_get_buffer_size_dsp(const int dim_dst_width, const int c
  *             arm_avgpool_s16_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT16
 int32_t arm_avgpool_s16_get_buffer_size_mve(const int dim_dst_width, const int ch_src);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s8 max pooling function.
@@ -2234,6 +2404,7 @@ int32_t arm_avgpool_s16_get_buffer_size_mve(const int dim_dst_width, const int c
  *    - Supported Framework: TensorFlow Lite
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_max_pool_s8(const cmsis_nn_context *ctx,
                                     const cmsis_nn_pool_params *pool_params,
                                     const cmsis_nn_dims *input_dims,
@@ -2241,6 +2412,7 @@ arm_cmsis_nn_status arm_max_pool_s8(const cmsis_nn_context *ctx,
                                     const cmsis_nn_dims *filter_dims,
                                     const cmsis_nn_dims *output_dims,
                                     int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 max pooling function.
@@ -2269,6 +2441,7 @@ arm_cmsis_nn_status arm_max_pool_s8(const cmsis_nn_context *ctx,
  *    - Supported Framework: TensorFlow Lite
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_max_pool_s16(const cmsis_nn_context *ctx,
                                      const cmsis_nn_pool_params *pool_params,
                                      const cmsis_nn_dims *input_dims,
@@ -2276,6 +2449,7 @@ arm_cmsis_nn_status arm_max_pool_s16(const cmsis_nn_context *ctx,
                                      const cmsis_nn_dims *filter_dims,
                                      const cmsis_nn_dims *output_dims,
                                      int16_t *dst);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @defgroup Softmax Softmax Functions
@@ -2297,6 +2471,7 @@ arm_cmsis_nn_status arm_max_pool_s16(const cmsis_nn_context *ctx,
  * @note Supported framework: TensorFlow Lite micro (bit-accurate)
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_softmax_s8(const int8_t *input,
                     const int32_t num_rows,
                     const int32_t row_size,
@@ -2304,6 +2479,7 @@ void arm_softmax_s8(const int8_t *input,
                     const int32_t shift,
                     const int32_t diff_min,
                     int8_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief S8 to s16 softmax function
@@ -2319,6 +2495,7 @@ void arm_softmax_s8(const int8_t *input,
  * @note Supported framework: TensorFlow Lite micro (bit-accurate)
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_softmax_s8_s16(const int8_t *input,
                         const int32_t num_rows,
                         const int32_t row_size,
@@ -2326,6 +2503,7 @@ void arm_softmax_s8_s16(const int8_t *input,
                         const int32_t shift,
                         const int32_t diff_min,
                         int16_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief S16 softmax function
@@ -2348,6 +2526,7 @@ void arm_softmax_s8_s16(const int8_t *input,
  * @note Supported framework: TensorFlow Lite micro (bit-accurate)
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_softmax_s16(const int16_t *input,
                                     const int32_t num_rows,
                                     const int32_t row_size,
@@ -2355,6 +2534,7 @@ arm_cmsis_nn_status arm_softmax_s16(const int16_t *input,
                                     const int32_t shift,
                                     const cmsis_nn_softmax_lut_s16 *softmax_params,
                                     int16_t *output);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief U8 softmax function
@@ -2393,7 +2573,9 @@ void arm_softmax_u8(const uint8_t *input,
  * @note The output is expected to be in a memory area that does not overlap with the input's
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_reshape_s8(const int8_t *input, int8_t *output, const uint32_t total_size);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @defgroup Transpose Transpose Functions
@@ -2417,11 +2599,13 @@ void arm_reshape_s8(const int8_t *input, int8_t *output, const uint32_t total_si
  *                      <code>ARM_CMSIS_NN_SUCCESS</code> on successful completion.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_transpose_s8(const int8_t *input_data,
                                      int8_t *const output_data,
                                      const cmsis_nn_dims *const input_dims,
                                      const cmsis_nn_dims *const output_dims,
                                      const cmsis_nn_transpose_params *const transpose_params);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @defgroup Concatenation Concatenation Functions
@@ -2466,6 +2650,7 @@ arm_cmsis_nn_status arm_transpose_s8(const int8_t *input_data,
  * offset_x is less than output_x
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_concatenation_s8_x(const int8_t *input,
                             const uint16_t input_x,
                             const uint16_t input_y,
@@ -2474,6 +2659,7 @@ void arm_concatenation_s8_x(const int8_t *input,
                             int8_t *output,
                             const uint16_t output_x,
                             const uint32_t offset_x);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief int8/uint8 concatenation function to be used for concatenating N-tensors along the Y axis
@@ -2513,6 +2699,7 @@ void arm_concatenation_s8_x(const int8_t *input,
  * offset_y is less than output_y
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_concatenation_s8_y(const int8_t *input,
                             const uint16_t input_x,
                             const uint16_t input_y,
@@ -2521,6 +2708,7 @@ void arm_concatenation_s8_y(const int8_t *input,
                             int8_t *output,
                             const uint16_t output_y,
                             const uint32_t offset_y);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief int8/uint8 concatenation function to be used for concatenating N-tensors along the Z axis
@@ -2560,6 +2748,7 @@ void arm_concatenation_s8_y(const int8_t *input,
  * offset_z is less than output_z
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_concatenation_s8_z(const int8_t *input,
                             const uint16_t input_x,
                             const uint16_t input_y,
@@ -2568,6 +2757,7 @@ void arm_concatenation_s8_z(const int8_t *input,
                             int8_t *output,
                             const uint16_t output_z,
                             const uint32_t offset_z);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief int8/uint8 concatenation function to be used for concatenating N-tensors along the W axis (Batch size)
@@ -2603,6 +2793,7 @@ void arm_concatenation_s8_z(const int8_t *input,
  *                      It is user responsibility to provide the correct value
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_concatenation_s8_w(const int8_t *input,
                             const uint16_t input_x,
                             const uint16_t input_y,
@@ -2610,6 +2801,7 @@ void arm_concatenation_s8_w(const int8_t *input,
                             const uint16_t input_w,
                             int8_t *output,
                             const uint32_t offset_w);
+#endif /* ARM_NN_ENABLE_INT8 */
 /**
  * @defgroup SVDF SVDF Functions
  *
@@ -2652,6 +2844,7 @@ void arm_concatenation_s8_w(const int8_t *input,
  * @details
  *    1. Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
                                 const cmsis_nn_context *input_ctx,
                                 const cmsis_nn_context *output_ctx,
@@ -2670,6 +2863,7 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
                                 const int32_t *bias_data,
                                 const cmsis_nn_dims *output_dims,
                                 int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s8 SVDF function with 16 bit state tensor and 16 bit time weights
@@ -2701,6 +2895,7 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
  * @details
  *    1. Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_svdf_state_s16_s8(const cmsis_nn_context *input_ctx,
                                           const cmsis_nn_context *output_ctx,
                                           const cmsis_nn_svdf_params *svdf_params,
@@ -2718,6 +2913,7 @@ arm_cmsis_nn_status arm_svdf_state_s16_s8(const cmsis_nn_context *input_ctx,
                                           const int32_t *bias_data,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_svdf_s8().
@@ -2725,7 +2921,9 @@ arm_cmsis_nn_status arm_svdf_state_s16_s8(const cmsis_nn_context *input_ctx,
  * @return         The function returns    required buffer size in bytes
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_svdf_s8_get_buffer_size(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_svdf_s8() for processors with DSP extension.
@@ -2735,7 +2933,9 @@ int32_t arm_svdf_s8_get_buffer_size(const cmsis_nn_dims *filter_dims);
  *             arm_svdf_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_svdf_s8_get_buffer_size_dsp(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get size of additional buffer required by arm_svdf_s8() for Arm(R) Helium Architecture case.
@@ -2745,7 +2945,9 @@ int32_t arm_svdf_s8_get_buffer_size_dsp(const cmsis_nn_dims *filter_dims);
  *             arm_svdf_s8_get_buffer_size().
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_svdf_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @defgroup LSTM LSTM Layer Functions
@@ -2768,10 +2970,12 @@ int32_t arm_svdf_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_dims);
  *    1. Supported framework: TensorFlow Lite Micro
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_lstm_unidirectional_s8(const int8_t *input,
                                                int8_t *output,
                                                const cmsis_nn_lstm_params *params,
                                                cmsis_nn_lstm_context *buffers);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief LSTM unidirectional function with 16 bit input and output and 16 bit gate output, 64 bit bias.
@@ -2789,10 +2993,12 @@ arm_cmsis_nn_status arm_lstm_unidirectional_s8(const int8_t *input,
  *    1. Supported framework: TensorFlow Lite Micro
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_lstm_unidirectional_s16(const int16_t *input,
                                                 int16_t *output,
                                                 const cmsis_nn_lstm_params *params,
                                                 cmsis_nn_lstm_context *buffers);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Batch matmul function with 8 bit input and output.
@@ -2821,6 +3027,7 @@ arm_cmsis_nn_status arm_lstm_unidirectional_s16(const int16_t *input,
  *    2. Performs row * row matrix multiplication with the RHS transposed.
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
                                         const cmsis_nn_bmm_params *bmm_params,
                                         const cmsis_nn_per_tensor_quant_params *quant_params,
@@ -2830,6 +3037,7 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
                                         const int8_t *input_rhs,
                                         const cmsis_nn_dims *output_dims,
                                         int8_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Batch matmul function with 16 bit input and output.
@@ -2858,6 +3066,7 @@ arm_cmsis_nn_status arm_batch_matmul_s8(const cmsis_nn_context *ctx,
  *    2. Performs row * row matrix multiplication with the RHS transposed.
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_batch_matmul_s16(const cmsis_nn_context *ctx,
                                          const cmsis_nn_bmm_params *bmm_params,
                                          const cmsis_nn_per_tensor_quant_params *quant_params,
@@ -2867,6 +3076,7 @@ arm_cmsis_nn_status arm_batch_matmul_s16(const cmsis_nn_context *ctx,
                                          const int16_t *input_rhs,
                                          const cmsis_nn_dims *output_dims,
                                          int16_t *output);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @defgroup Pad Pad Layer Functions:
@@ -2886,12 +3096,14 @@ arm_cmsis_nn_status arm_batch_matmul_s16(const cmsis_nn_context *ctx,
  * @return     The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_pad_s8(const int8_t *input,
                                int8_t *output,
                                const int8_t pad_value,
                                const cmsis_nn_dims *input_size,
                                const cmsis_nn_dims *pre_pad,
                                const cmsis_nn_dims *post_pad);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Elementwise binary minimum with 8bit data.
@@ -2911,6 +3123,7 @@ arm_cmsis_nn_status arm_pad_s8(const int8_t *input,
  *    1. Supported framework: TensorFlow Lite Micro
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_minimum_s8(const cmsis_nn_context *ctx,
                                    const int8_t *input_1_data,
                                    const cmsis_nn_dims *input_1_dims,
@@ -2918,6 +3131,7 @@ arm_cmsis_nn_status arm_minimum_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_dims *input_2_dims,
                                    int8_t *output_data,
                                    const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Elementwise binary maximum with 8bit data.
@@ -2937,6 +3151,7 @@ arm_cmsis_nn_status arm_minimum_s8(const cmsis_nn_context *ctx,
  *    1. Supported framework: TensorFlow Lite Micro
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_maximum_s8(const cmsis_nn_context *ctx,
                                    const int8_t *input_1_data,
                                    const cmsis_nn_dims *input_1_dims,
@@ -2944,6 +3159,7 @@ arm_cmsis_nn_status arm_maximum_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_dims *input_2_dims,
                                    int8_t *output_data,
                                    const cmsis_nn_dims *output_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 #ifdef __cplusplus
 }

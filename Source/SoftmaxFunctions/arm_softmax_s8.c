@@ -31,12 +31,14 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
-#define ACCUM_BITS 12
+#if ARM_NN_ENABLE_INT8
 
-#if defined(ARM_MATH_MVEI) && !defined(ARM_GCC_12_2_ICE)
+    #define ACCUM_BITS 12
+
+    #if defined(ARM_MATH_MVEI) && !defined(ARM_GCC_12_2_ICE)
 static int32x4_t arm_exp_on_negative_values_mve_32x4(int32x4_t val)
 {
-    #define SHIFT_START (24)
+        #define SHIFT_START (24)
     int32_t shift = SHIFT_START;
     int32x4_t mask;
 
@@ -49,12 +51,12 @@ static int32x4_t arm_exp_on_negative_values_mve_32x4(int32x4_t val)
     const int32x4_t op_2 = x + DIV_POW2_MVE(MUL_SAT_MVE(op_1, vdupq_n_s32(715827883)) + x2, 1);
     int32x4_t result = vdupq_n_s32(1895147668) + MUL_SAT_MVE(vdupq_n_s32(1895147668), op_2);
 
-    #define SELECT_IF_NON_ZERO(x)                                                                                      \
-        {                                                                                                              \
-            mve_pred16_t p = vcmpneq_n_s32(remainder & vdupq_n_s32(1 << shift++), 0);                                  \
-            mask = vmvnq_m_s32(vdupq_n_s32(0), vdupq_n_s32(0), p);                                                     \
-            result = SELECT_USING_MASK(mask, MUL_SAT_MVE(result, vdupq_n_s32(x)), result);                             \
-        }
+        #define SELECT_IF_NON_ZERO(x)                                                                                  \
+            {                                                                                                          \
+                mve_pred16_t p = vcmpneq_n_s32(remainder & vdupq_n_s32(1 << shift++), 0);                              \
+                mask = vmvnq_m_s32(vdupq_n_s32(0), vdupq_n_s32(0), p);                                                 \
+                result = SELECT_USING_MASK(mask, MUL_SAT_MVE(result, vdupq_n_s32(x)), result);                         \
+            }
 
     SELECT_IF_NON_ZERO(1672461947)
     SELECT_IF_NON_ZERO(1302514674)
@@ -64,7 +66,7 @@ static int32x4_t arm_exp_on_negative_values_mve_32x4(int32x4_t val)
     SELECT_IF_NON_ZERO(720401)
     SELECT_IF_NON_ZERO(242)
 
-    #undef SELECT_IF_NON_ZERO
+        #undef SELECT_IF_NON_ZERO
 
     mve_pred16_t p = vcmpeqq_n_s32(val, 0);
     mask = vmvnq_m_s32(vdupq_n_s32(0), vdupq_n_s32(0), p);
@@ -72,7 +74,7 @@ static int32x4_t arm_exp_on_negative_values_mve_32x4(int32x4_t val)
     result = SELECT_USING_MASK(mask, vdupq_n_s32(NN_Q31_MAX), result);
     return result;
 }
-#endif
+    #endif
 
 /**
  *  @ingroup Public
@@ -91,10 +93,10 @@ void arm_softmax_s8(const int8_t *input,
                     const int32_t diff_min,
                     int8_t *output)
 {
-#if defined(ARM_MATH_MVEI) && !defined(ARM_GCC_12_2_ICE)
+    #if defined(ARM_MATH_MVEI) && !defined(ARM_GCC_12_2_ICE)
 
-    #define ACT_MIN ((int8_t)NN_Q7_MIN)
-    #define ACT_MAX ((int8_t)NN_Q7_MAX)
+        #define ACT_MIN ((int8_t)NN_Q7_MIN)
+        #define ACT_MAX ((int8_t)NN_Q7_MAX)
 
     const int32_t mask = (1 << shift);
 
@@ -205,11 +207,13 @@ void arm_softmax_s8(const int8_t *input,
         input += row_size;
         output += row_size;
     }
-#else
+    #else
     arm_nn_softmax_common_s8(input, num_rows, row_size, mult, shift, diff_min, false, (void *)output);
-#endif
+    #endif
 }
 
 /**
  * @} end of Softmax group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -30,6 +30,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  * @ingroup Public
  */
@@ -103,3 +105,5 @@ arm_cmsis_nn_status arm_batch_matmul_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

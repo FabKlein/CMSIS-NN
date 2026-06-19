@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  * @ingroup groupSupport
  */
@@ -57,7 +59,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                                              const int32_t activation_min,
                                              const int32_t activation_max)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     const uint32_t rhs_rows_offset = (uint32_t)rhs_rows * sizeof(int16_t);
     const uint32x4_t scatter_offset = {
@@ -86,7 +88,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
             const int16_t *ip_row_3 = lhs + (3 * rhs_cols);
             const int8_t *col_base = rhs + i * rhs_cols;
 
-    #if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
             for (int j = 0; j < rhs_cols_fast; j++)
             {
                 int8_t col = col_base[j];
@@ -95,7 +97,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                 acc_n2 += ip_row_2[j] * col;
                 acc_n3 += ip_row_3[j] * col;
             }
-    #else
+        #else
             // Note: If operand initialization is moved around, use '&' constraint to
             // specify earlyclobber operands.
             __ASM volatile(" .p2align 2                              \n"
@@ -128,7 +130,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                              [out3] "=Te"(acc_n3)
                            : [cnt] "r"(rhs_cols_fast)
                            : "q0", "q1", "q2", "q3", "q4", "memory", "r14");
-    #endif
+        #endif
 
             if (is_int32_bias)
             {
@@ -219,13 +221,13 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                 const int16_t *ip_row_0 = lhs;
                 const int8_t *col_base = rhs + i * rhs_cols;
 
-    #if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
                 for (int j = 0; j < rhs_cols; j++)
                 {
                     int32_t col = col_base[j];
                     acc_n0 += ip_row_0[j] * col;
                 }
-    #else
+        #else
                 __ASM volatile(" .p2align 2                              \n"
                                "   wlstp.32        lr, %[cnt], 1f        \n"
                                "   mov             %[out0], 0            \n"
@@ -238,7 +240,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                                : [col] "+l"(col_base), [row0] "+l"(ip_row_0), [out0] "=Te"(acc_n0)
                                : [cnt] "r"(rhs_cols)
                                : "q0", "q1", "memory", "r14");
-    #endif
+        #endif
                 if (bias_s32)
                 {
                     acc_n0 += bias_s32[i];
@@ -284,13 +286,13 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                 const int16_t *ip_row_0 = lhs;
                 const int8_t *col_base = rhs + i * rhs_cols;
 
-    #if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
                 for (int j = 0; j < rhs_cols_fast; j++)
                 {
                     int8_t col = col_base[j];
                     acc_n0 += ip_row_0[j] * col;
                 }
-    #else
+        #else
                 __ASM volatile(" .p2align 2                              \n"
                                "   wlstp.32        lr, %[cnt], 1f        \n"
                                "   mov             %[out0], 0            \n"
@@ -303,7 +305,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                                : [col] "+l"(col_base), [row0] "+l"(ip_row_0), [out0] "=Te"(acc_n0)
                                : [cnt] "r"(rhs_cols_fast)
                                : "q0", "q1", "memory", "r14");
-    #endif
+        #endif
 
                 acc_n0_s64 = acc_n0;
 
@@ -336,7 +338,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
         }
     }
 
-#else
+    #else
     (void)lhs;
     (void)rhs;
     (void)dst_multipliers;
@@ -351,10 +353,12 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
     (void)rhs_cols;
 
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
-#endif
+    #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

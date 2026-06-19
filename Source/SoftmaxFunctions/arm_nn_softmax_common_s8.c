@@ -29,7 +29,9 @@
 
 #include "arm_nnsupportfunctions.h"
 
-#define ACCUM_BITS 12
+#if ARM_NN_ENABLE_INT8
+
+    #define ACCUM_BITS 12
 
 /**
  * @ingroup groupSupport
@@ -146,3 +148,5 @@ void arm_nn_softmax_common_s8(const int8_t *input,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

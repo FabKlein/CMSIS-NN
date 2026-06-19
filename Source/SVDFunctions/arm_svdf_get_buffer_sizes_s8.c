@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup SVDF
  */
@@ -52,13 +54,15 @@ int32_t arm_svdf_s8_get_buffer_size_mve(const cmsis_nn_dims *weights_feature_dim
 
 int32_t arm_svdf_s8_get_buffer_size(const cmsis_nn_dims *weights_feature_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_svdf_s8_get_buffer_size_mve(weights_feature_dims);
-#else
+    #else
     return arm_svdf_s8_get_buffer_size_dsp(weights_feature_dims);
-#endif
+    #endif
 }
 
 /**
  * @} end of GetBufferSizeSVDF group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

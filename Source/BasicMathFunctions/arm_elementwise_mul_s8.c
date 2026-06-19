@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -61,7 +63,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
 {
 
     int32_t loop_count;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     loop_count = (block_size + 3) / 4;
     uint32_t num_elements = block_size;
@@ -92,12 +94,12 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
         num_elements -= 4;
     }
 
-#else
+    #else
     int32_t input_1;
     int32_t input_2;
     int32_t mul_res;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
     int32_t a_1, b_1, a_2, b_2;
 
     int32_t offset_1_packed, offset_2_packed;
@@ -157,9 +159,9 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
     }
 
     loop_count = block_size & 0x3;
-    #else
+        #else
     loop_count = block_size;
-    #endif
+        #endif
 
     while (loop_count > 0)
     {
@@ -179,10 +181,12 @@ arm_cmsis_nn_status arm_elementwise_mul_s8(const int8_t *input_1_vect,
         /* Decrement loop counter */
         loop_count--;
     }
-#endif
+    #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -40,9 +42,9 @@
  * @{
  */
 
-#if !(defined(__ARMCC_VERSION) || defined(_MSC_VER))
+    #if !(defined(__ARMCC_VERSION) || defined(_MSC_VER))
 __attribute__((optimize("no-unroll-loops")))
-#endif
+    #endif
 static void
 depthwise_conv_s8_mult_4(const int8_t *input,
                          const int32_t input_x,
@@ -99,9 +101,9 @@ depthwise_conv_s8_mult_4(const int8_t *input,
                         int32_t ker_idx = ker_h * (output_ch * kernel_x) + ker_w_start * output_ch + out_ch;
                         kernel = kernel_base + mult_tile + ker_idx;
                         int32_t in_idx = (in_h + ker_h) * (input_ch * input_x) + in_w * input_ch + in_ch;
-#if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-    #pragma clang loop unroll(disable)
-#endif
+    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+        #pragma clang loop unroll(disable)
+    #endif
                         for (int32_t ker_w = ker_w_start; ker_w < MIN(kernel_x, input_x - in_w);
                              ++ker_w, kernel += output_ch)
                         {
@@ -112,7 +114,7 @@ depthwise_conv_s8_mult_4(const int8_t *input,
                             out_buff[3] += in_val * kernel[3];
                         }
                     }
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                     int32x4_t res = vldrwq_s32(out_buff);
                     res = arm_requantize_mve_32x4(res, vldrwq_s32(output_mult), vldrwq_s32(output_shift));
                     output_mult += 4;
@@ -123,7 +125,7 @@ depthwise_conv_s8_mult_4(const int8_t *input,
                     res = vminq_s32(res, vdupq_n_s32(output_activation_max));
                     vstrbq_s32(output, res);
                     output += 4;
-#else
+    #else
                     out_buff[0] = arm_nn_requantize(out_buff[0], *output_mult++, *output_shift++);
                     out_buff[1] = arm_nn_requantize(out_buff[1], *output_mult++, *output_shift++);
                     out_buff[2] = arm_nn_requantize(out_buff[2], *output_mult++, *output_shift++);
@@ -144,7 +146,7 @@ depthwise_conv_s8_mult_4(const int8_t *input,
                     *output++ = (int8_t)out_buff[2];
                     *output++ = (int8_t)out_buff[3];
 
-#endif
+    #endif
                 }
             }
         }
@@ -352,3 +354,5 @@ arm_cmsis_nn_status arm_depthwise_conv_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -31,6 +31,8 @@
 #include "arm_nn_tables.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 /**
  * @ingroup groupSupport
  */
@@ -87,3 +89,5 @@ arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s16(const int16_t *data_in,
 /**
  * @} end of supportLSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

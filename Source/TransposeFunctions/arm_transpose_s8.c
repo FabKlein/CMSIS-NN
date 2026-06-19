@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -57,13 +59,13 @@ static arm_cmsis_nn_status arm_transpose_s8_nhcw(const int8_t *input,
     const uint16_t src_rows = w;
     const uint16_t src_cols = c;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     uint16x8_t vec_offsets;
     uint16x8_t vec_input;
 
     vec_offsets = vidupq_u16((uint32_t)0, 1);
     vec_offsets = vec_offsets * src_cols;
-#endif
+    #endif
 
     for (int32_t i = 0; i < n; i++)
     {
@@ -73,7 +75,7 @@ static arm_cmsis_nn_status arm_transpose_s8_nhcw(const int8_t *input,
         for (int32_t y = 0; y < h; y++)
         {
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
             const uint8_t *input_c = (const uint8_t *)input_h;
             uint8_t *output_c = (uint8_t *)output_h;
 
@@ -98,7 +100,7 @@ static arm_cmsis_nn_status arm_transpose_s8_nhcw(const int8_t *input,
                 input_c++;
                 output_c += src_rows;
             }
-#else
+    #else
             const uint8_t *input_w = (const uint8_t *)input_h;
             uint8_t *output_w = (uint8_t *)output_h;
 
@@ -112,7 +114,7 @@ static arm_cmsis_nn_status arm_transpose_s8_nhcw(const int8_t *input,
                     output_w += src_rows;
                 }
             }
-#endif
+    #endif
             input_h += in_strides[1];
             output_h += out_strides[1];
         }
@@ -228,12 +230,12 @@ arm_cmsis_nn_status arm_transpose_s8(const int8_t *input,
     out_strides[perm[2]] = output_dims->c;
     out_strides[perm[3]] = 1;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (perm[0] == 0 && perm[1] == 1)
     {
         return arm_transpose_s8_nhcw(input, output, input_dims, in_strides, out_strides);
     }
-#endif
+    #endif
 
     return arm_transpose_s8_default(input, output, input_dims, in_strides, out_strides);
 }
@@ -241,3 +243,5 @@ arm_cmsis_nn_status arm_transpose_s8(const int8_t *input,
 /**
  * @} end of Transpose group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

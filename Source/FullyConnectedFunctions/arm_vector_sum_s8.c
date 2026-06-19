@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  *  @ingroup Public
  */
@@ -65,7 +67,7 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
 
     if (lhs_offset)
     {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
         const int32_t row_loop_cnt = vector_rows / 5;
         for (int i_row_loop_cnt = 0; i_row_loop_cnt < row_loop_cnt; i_row_loop_cnt++)
@@ -150,7 +152,7 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
 
             vector_sum_buf[i_row_loop_cnt] += vector_sum_0;
         }
-#else
+    #else
         for (int i = 0; i < vector_rows; i++)
         {
             int32_t sum = 0;
@@ -164,7 +166,7 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
             }
             *vector_sum_buf++ += sum * lhs_offset;
         }
-#endif
+    #endif
     }
 
     return (ARM_CMSIS_NN_SUCCESS);
@@ -173,3 +175,5 @@ arm_cmsis_nn_status arm_vector_sum_s8(int32_t *vector_sum_buf,
 /**
  * @} end of FC group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

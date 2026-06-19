@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup FC
  */
@@ -52,13 +54,15 @@ int32_t arm_fully_connected_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_d
 
 int32_t arm_fully_connected_s8_get_buffer_size(const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_fully_connected_s8_get_buffer_size_mve(filter_dims);
-#else
+    #else
     return arm_fully_connected_s8_get_buffer_size_dsp(filter_dims);
-#endif
+    #endif
 }
 
 /**
  * @} end of GetBufferSizeFC group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

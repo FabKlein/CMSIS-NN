@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup Public
  */
@@ -79,7 +81,7 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
     (void)bias_dims;
     const int32_t input_x = input_dims->w;
     const int32_t input_y = input_dims->h;
@@ -98,7 +100,7 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
     const int32_t output_activation_max = dw_conv_params->activation.max;
     int16_t *buffer_a = (int16_t *)ctx->buf;
 
-    #if defined(ARM_MATH_MVEI)
+        #if defined(ARM_MATH_MVEI)
     int16_t *lhs_buffer = buffer_a;
     int16_t *out = output;
     int buffer_count = 0;
@@ -214,7 +216,7 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
         }
     }
 
-    #else // ARM_MATH_DSP
+        #else // ARM_MATH_DSP
 
     /* Run the following code in cores using DSP extension */
     int16_t *const col_buffer_start = buffer_a;
@@ -426,8 +428,8 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
         /* Advance to the next batch */
         input += (input_x * input_y * input_ch);
     }
-    #endif
-#else
+        #endif
+    #else
     /* Run the following code as reference implementation for Cortex-M0 and Cortex-M3 */
     return arm_depthwise_conv_s16(ctx,
                                   dw_conv_params,
@@ -440,7 +442,7 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
                                   bias,
                                   output_dims,
                                   output);
-#endif /* ARM_MATH_MVEI | ARM_MATH_DSP */
+    #endif /* ARM_MATH_MVEI | ARM_MATH_DSP */
 
     /* Return to application */
     return ARM_CMSIS_NN_SUCCESS;
@@ -449,3 +451,5 @@ arm_cmsis_nn_status arm_depthwise_conv_fast_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

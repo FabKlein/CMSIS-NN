@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -66,7 +68,7 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
                                            const int32_t out_activation_max,
                                            const int32_t block_size)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t count = block_size;
 
     while (count > 0)
@@ -103,13 +105,13 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
         output += 4;
         count -= 4;
     }
-#else
+    #else
     int32_t loop_count;
     int32_t input_1;
     int32_t input_2;
     int32_t sum;
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
     int32_t a_1, b_1, a_2, b_2;
 
     int32_t offset_1_packed, offset_2_packed;
@@ -197,9 +199,9 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
     }
 
     loop_count = block_size & 0x3;
-    #else
+        #else
     loop_count = block_size;
-    #endif
+        #endif
 
     while (loop_count > 0)
     {
@@ -224,7 +226,7 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
         loop_count--;
     }
 
-#endif /* ARM_MATH_MVEI */
+    #endif /* ARM_MATH_MVEI */
 
     return (ARM_CMSIS_NN_SUCCESS);
 }
@@ -232,3 +234,5 @@ arm_cmsis_nn_status arm_elementwise_add_s8(const int8_t *input_1_vect,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

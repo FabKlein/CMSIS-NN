@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -53,3 +55,5 @@ void arm_softmax_s8_s16(const int8_t *input,
 /**
  * @} end of Softmax group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

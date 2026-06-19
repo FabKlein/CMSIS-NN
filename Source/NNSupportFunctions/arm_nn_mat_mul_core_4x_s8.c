@@ -28,6 +28,8 @@
  * -------------------------------------------------------------------- */
 #include "arm_nn_types.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  * @ingroup groupSupport
  */
@@ -55,7 +57,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
                                   int8_t *output)
 {
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     for (int i = 0; i < out_ch; i++)
     {
         int32_t acc_n0 = 0;
@@ -70,7 +72,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
         const int8_t *col_base = col_base_ref + i * row_elements;
         int32_t sum_tmp = 0;
 
-#if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
         for (int j = 0; j < row_elements; j++)
         {
             int32_t col = col_base[j];
@@ -80,7 +82,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
             acc_n2 += ip_row_2[j] * col;
             acc_n3 += ip_row_3[j] * col;
         }
-#else
+        #else
         __ASM volatile(" .p2align 2                             \n"
                        "   vldrb.8         q0, [%[col]], #16    \n"
                        "   wlstp.8         lr, %[cnt], 1f       \n"
@@ -109,7 +111,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
                          [out3] "+Te"(acc_n3)
                        : [cnt] "r"(row_elements)
                        : "q0", "q1", "q2", "q3", "q4", "memory", "r14");
-#endif
+        #endif
 
         int32x4_t res = {acc_n0, acc_n1, acc_n2, acc_n3};
         sum_tmp *= conv_params->input_offset;
@@ -131,7 +133,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
     }
 
     return output + (3 * out_ch);
-#else
+    #else
     (void)row_elements;
     (void)offset;
     (void)row_base;
@@ -142,9 +144,11 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
     (void)bias;
     (void)output;
     return NULL;
-#endif
+    #endif
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

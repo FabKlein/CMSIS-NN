@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup groupSupport
  */
@@ -89,7 +91,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     int32_t result2 = 0;
                     int32_t result3 = 0;
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
                     const int16_t lhs_offset_s16 = (int16_t)lhs_offset;
                     const uint32_t lhs_offset_s16x2 = PKHBT(lhs_offset_s16, lhs_offset_s16, 16);
 
@@ -158,9 +160,9 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     *output_temp += result3;
 
                     output_ptr0 += output_channels;
-#else
+    #else
                     int32_t rhs_sum = 0;
-    #if defined(ARM_MATH_MVEI)
+        #if defined(ARM_MATH_MVEI)
 
                     int channel_count = input_channels;
                     for (int channel_i = 0; channel_i < (input_channels + 15) / 16; channel_i++)
@@ -191,7 +193,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                     rhs_ptr += channel_count;
 
-    #else
+        #else
                     for (int32_t channel_count = 0; channel_count < input_channels / 2; channel_count++)
                     {
                         const int8_t *lhs_temp = lhs_ptr0;
@@ -255,7 +257,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                         rhs_sum += rhs_val0;
                     }
-    #endif
+        #endif
                     int32_t *output_temp = output_ptr0;
                     *output_ptr0 += result0 + rhs_sum * lhs_offset;
                     output_temp += stride_x * output_channels;
@@ -266,7 +268,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     *output_temp += result3 + rhs_sum * lhs_offset;
 
                     output_ptr0 += output_channels;
-#endif
+    #endif
                 }
 
                 // Next row, wrapping around the circular buffer
@@ -302,7 +304,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     int32_t result0 = 0;
                     int32_t result1 = 0;
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
                     const int16_t lhs_offset_s16 = (int16_t)lhs_offset;
                     const uint32_t lhs_offset_s16x2 = PKHBT(lhs_offset_s16, lhs_offset_s16, 16);
 
@@ -349,9 +351,9 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     *output_temp += result1;
 
                     output_ptr0 += output_channels;
-#else
+    #else
                     int32_t rhs_sum = 0;
-    #if defined(ARM_MATH_MVEI)
+        #if defined(ARM_MATH_MVEI)
                     int channel_count = input_channels;
                     for (int channel_i = 0; channel_i < (input_channels + 15) / 16; channel_i++)
                     {
@@ -374,7 +376,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                     rhs_ptr += channel_count;
 
-    #else
+        #else
                     for (int32_t channel_count = 0; channel_count < input_channels; channel_count++)
                     {
                         const int8_t *lhs_temp = lhs_ptr0;
@@ -390,14 +392,14 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                         rhs_sum += rhs_val0;
                     }
-    #endif
+        #endif
                     int32_t *output_temp = output_ptr0;
                     *output_ptr0 += result0 + rhs_sum * lhs_offset;
                     output_temp += stride_x * output_channels;
                     *output_temp += result1 + rhs_sum * lhs_offset;
 
                     output_ptr0 += output_channels;
-#endif
+    #endif
                 }
 
                 // Next row, wrapping around the circular buffer
@@ -431,7 +433,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     const int8_t *lhs_ptr0 = lhs;
 
                     int32_t result0 = 0;
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
                     const int16_t lhs_offset_s16 = (int16_t)lhs_offset;
                     const uint32_t lhs_offset_s16x2 = PKHBT(lhs_offset_s16, lhs_offset_s16, 16);
 
@@ -462,8 +464,8 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                         result0 += lhs_val00 * rhs_val0;
                     }
-#else
-    #if defined(ARM_MATH_MVEI)
+    #else
+        #if defined(ARM_MATH_MVEI)
                     int channel_count = input_channels;
                     for (int channel_i = 0; channel_i < (input_channels + 15) / 16; channel_i++)
                     {
@@ -482,7 +484,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                     }
 
                     rhs_ptr += channel_count;
-    #else
+        #else
                     for (int32_t channel_count = 0; channel_count < input_channels; channel_count++)
                     {
                         const int32_t lhs_val00 = *lhs_ptr0;
@@ -492,8 +494,8 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 
                         result0 += (lhs_val00 + lhs_offset) * rhs_val0;
                     }
+        #endif
     #endif
-#endif
                     *output_ptr0 += result0;
                     output_ptr0 += output_channels;
                 }
@@ -513,3 +515,5 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

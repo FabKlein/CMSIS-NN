@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup Public
  */
@@ -70,12 +72,12 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
     (void)state_dims;
     (void)output_dims;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (ctx->buf == NULL)
     {
         return (ARM_CMSIS_NN_ARG_ERROR);
     }
-#endif
+    #endif
 
     const int32_t multiplier_in = input_quant_params->multiplier;
     const int32_t shift_in = input_quant_params->shift;
@@ -112,15 +114,15 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
     // Left shift state
     // Using memcpy on overlapping data is in general undefined behaviour, but since the behaviour of arm_memcpy_s8 is
     // known it is certain that the data has been copied before it is overwritten in this case.
-#ifdef ARM_MATH_MVEI
+    #ifdef ARM_MATH_MVEI
     arm_memcpy_s8(state_data,
                   state_data + 1,
                   (size_t)((input_batches * feature_batches * time_batches - 1) * (int32_t)sizeof(int8_t)));
-#else
+    #else
     memmove(state_data,
             state_data + 1,
             (size_t)((input_batches * feature_batches * time_batches - 1) * (int32_t)sizeof(int8_t)));
-#endif
+    #endif
 
     // Matrix multiplication input * feature weight
     for (int i_batch = 0; i_batch < input_batches; i_batch++)
@@ -162,7 +164,7 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
             {
                 *ptr_a = 0;
                 int32_t sum = 0;
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
                 // Perform matrix multiplication in blocks of four
                 int j = 0;
                 int32_t block_count = time_batches >> 2;
@@ -184,14 +186,14 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
                     v1++;
                     v2++;
                 }
-#else
+    #else
                 for (int j = 0; j < time_batches; j++)
                 {
                     sum += *v1 * *v2;
                     v1++;
                     v2++;
                 }
-#endif
+    #endif
 
                 *ptr_a = sum;
                 ptr_a++;
@@ -255,7 +257,7 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
         }
     }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t num_elements = input_batches * unit_count;
     const int32_t loop_count = (num_elements + 3) / 4;
     for (int i_op = 0; i_op < loop_count; i_op++)
@@ -273,13 +275,13 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
         buffer_b += 4;
         num_elements -= 4;
     }
-#else
+    #else
     for (int i = 0; i < input_batches * unit_count; i++)
     {
         output_data[i] = (int8_t)CLAMP(
             arm_nn_requantize(buffer_b[i], multiplier_out, shift_2) + zp_out, out_activation_max, out_activation_min);
     }
-#endif
+    #endif
 
     return (ARM_CMSIS_NN_SUCCESS);
 }
@@ -287,3 +289,5 @@ arm_cmsis_nn_status arm_svdf_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of SVDF group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup groupSupport
  */
@@ -62,7 +64,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                                             const int32_t lhs_cols_offset)
 {
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int i_items = 0;
     for (; i_items <= (lhs_rows - 4); i_items += 4)
     {
@@ -80,7 +82,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
             const int8_t *col_base = rhs + i * rhs_cols;
             int32_t sum_tmp = 0;
 
-    #if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
             for (int j = 0; j < rhs_cols; j++)
             {
                 int32_t col = col_base[j];
@@ -90,7 +92,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                 acc_n2 += ip_row_2[j] * col;
                 acc_n3 += ip_row_3[j] * col;
             }
-    #else
+        #else
             // Note: If operand initialization is moved around, use '&' constraint to
             // specify earlyclobber operands.
             __ASM volatile(" .p2align 2                             \n"
@@ -126,7 +128,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                              [out3] "=Te"(acc_n3)
                            : [cnt] "r"(rhs_cols)
                            : "q0", "q1", "q2", "q3", "q4", "memory", "r14");
-    #endif
+        #endif
             int32x4_t res = {acc_n0, acc_n1, acc_n2, acc_n3};
             sum_tmp *= lhs_offset;
             if (bias)
@@ -162,14 +164,14 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
             const int8_t *col_base = rhs + i * rhs_cols;
             int32_t sum_tmp = 0;
 
-    #if defined(ARM_MATH_AUTOVECTORIZE)
+        #if defined(ARM_MATH_AUTOVECTORIZE)
             for (int j = 0; j < rhs_cols; j++)
             {
                 int32_t col = col_base[j];
                 sum_tmp += col;
                 acc_n0 += lhs_vec[j] * col;
             }
-    #else
+        #else
             __ASM volatile(" .p2align 2                             \n"
                            "   wlstp.8         lr, %[cnt], 1f       \n"
                            "   mov             %[sum], 0            \n"
@@ -185,7 +187,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                            : [col] "+r"(col_base), [sum] "=Te"(sum_tmp), [row0] "+r"(lhs_vec), [out0] "=Te"(acc_n0)
                            : [cnt] "r"(rhs_cols)
                            : "q0", "q1", "memory", "r14");
-    #endif
+        #endif
             sum_tmp *= lhs_offset;
             sum_tmp += acc_n0;
             if (bias)
@@ -222,7 +224,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
         dst += row_address_offset - rhs_rows;
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     (void)row_address_offset;
     const int32_t rhs_off0 = rhs_cols - 4;
     const int32_t lhs_off0 = lhs_cols_offset - 4;
@@ -621,7 +623,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
             dst_ptr += rhs_rows;
         }
     }
-#else
+    #else
     (void)row_address_offset;
     for (int32_t rhs_rows_idx = 0; rhs_rows_idx <= (rhs_rows - 2); rhs_rows_idx += 2)
     {
@@ -792,10 +794,12 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
             dst_ptr += rhs_rows;
         }
     }
-#endif
+    #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

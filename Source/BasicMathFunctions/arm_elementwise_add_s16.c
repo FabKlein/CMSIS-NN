@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup Public
  */
@@ -70,7 +72,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
     (void)input_2_offset;
     (void)out_offset;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     int32_t count = block_size;
 
@@ -103,7 +105,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
         count -= 4;
     }
 
-#else  // #if defined(ARM_MATH_MVEI)
+    #else  // #if defined(ARM_MATH_MVEI)
     int32_t input_1;
     int32_t input_2;
     int32_t sum;
@@ -161,10 +163,12 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
         /* Decrement loop counter */
         loop_count--;
     }
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
     return (ARM_CMSIS_NN_SUCCESS);
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

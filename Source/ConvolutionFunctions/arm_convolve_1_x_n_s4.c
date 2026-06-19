@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 /**
  *  @ingroup Public
  */
@@ -67,7 +69,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     (void)bias_dims;
     const uint16_t input_x = input_dims->w;
     const uint16_t kernel_x = filter_dims->w;
@@ -175,7 +177,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
         /* Advance to the next batch */
         input_data += (input_x * input_ch);
     }
-#else
+    #else
     status = arm_convolve_s4(ctx,
                              conv_params,
                              quant_params,
@@ -188,7 +190,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
                              output_dims,
                              output_data);
 
-#endif
+    #endif
 
     /* Return to application */
     return status;
@@ -197,3 +199,5 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s4(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

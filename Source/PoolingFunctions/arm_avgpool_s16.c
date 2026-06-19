@@ -31,7 +31,9 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+#if ARM_NN_ENABLE_INT16
+
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
 
 static void scale_q31_to_q15_and_clamp(const int32_t *buffer,
                                        int16_t *target,
@@ -52,7 +54,7 @@ static void scale_q31_to_q15_and_clamp(const int32_t *buffer,
         target[i] = (int16_t)sum;
     }
 }
-#endif
+    #endif
 
 /**
  *  @ingroup Public
@@ -99,7 +101,7 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     (void)ctx;
 
     const int32_t batch_output = output_x * output_y * ch_src;
@@ -197,7 +199,7 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
         batch_cnt--;
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     /* Run the following code for CPU's with DSP extension
      */
     int32_t *buffer = (int32_t *)ctx->buf;
@@ -265,7 +267,7 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
         batch_cnt--;
     }
 
-#else
+    #else
     /* Reference C code adapted from CMSIS-NN arm_avgpool_s8.c.
      */
     const int32_t batch_output = output_x * output_y * ch_src;
@@ -318,7 +320,7 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
 
         batch_cnt--;
     }
-#endif
+    #endif
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -326,3 +328,5 @@ arm_cmsis_nn_status arm_avgpool_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of Pooling group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

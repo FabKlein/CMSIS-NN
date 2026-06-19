@@ -16,13 +16,18 @@
 # limitations under the License.
 #
 
-file(GLOB SRC "./*_s8.c")
+set(SRC "")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8.c")
+  list(APPEND SRC ${SRC_S8} arm_softmax_s8_s16.c arm_nn_softmax_common_s8.c)
+endif()
+if (ARM_NN_ENABLE_INT16)
+  list(APPEND SRC arm_softmax_s16.c)
+endif()
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC arm_softmax_f32.c)
 endif()
 if (ARM_NN_ENABLE_F16)
   list(APPEND SRC arm_softmax_f16.c)
 endif()
-target_sources(cmsis-nn PRIVATE ${SRC} arm_softmax_s8_s16.c
-                                       arm_softmax_s16.c
-                                       arm_nn_softmax_common_s8.c)
+target_sources(cmsis-nn PRIVATE ${SRC})

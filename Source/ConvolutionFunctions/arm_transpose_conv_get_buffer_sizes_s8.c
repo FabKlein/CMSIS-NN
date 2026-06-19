@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup NNConv
  */
@@ -53,9 +55,9 @@ int32_t arm_transpose_conv_s8_get_buffer_size(const cmsis_nn_transpose_conv_para
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *out_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_transpose_conv_s8_get_buffer_size_mve(transpose_conv_params, input_dims, filter_dims, out_dims);
-#else
+    #else
     const bool reverse_conv_possible =
         ((transpose_conv_params->stride.w <= 2) && (transpose_conv_params->stride.h <= 2));
     const bool reverse_conv_efficient = (input_dims->c > REVERSE_TCOL_EFFICIENT_THRESHOLD);
@@ -76,7 +78,7 @@ int32_t arm_transpose_conv_s8_get_buffer_size(const cmsis_nn_transpose_conv_para
         const int32_t buf_y = MAX(filter_dims->h, transpose_conv_params->stride.h);
         return buf_x * buf_y * sizeof(int32_t);
     }
-#endif
+    #endif
 }
 
 int32_t arm_transpose_conv_s8_get_buffer_size_mve(const cmsis_nn_transpose_conv_params *transpose_conv_params,
@@ -129,3 +131,5 @@ int32_t arm_transpose_conv_s8_get_reverse_conv_buffer_size(const cmsis_nn_transp
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

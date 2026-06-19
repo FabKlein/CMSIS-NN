@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 /**
  * @ingroup Public
  */
@@ -126,3 +128,5 @@ arm_cmsis_nn_status arm_lstm_unidirectional_s16(const int16_t *input,
 /**
  * @} end of LSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

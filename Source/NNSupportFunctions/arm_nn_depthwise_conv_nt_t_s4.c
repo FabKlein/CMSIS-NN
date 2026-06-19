@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  * @ingroup groupSupport
  */
@@ -60,7 +62,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
                                                   const int32_t *const output_bias,
                                                   int8_t *out)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const int32_t *bias = output_bias;
     int32_t loop_count = (active_ch + 3) / 4;
     uint32_t num_ch_to_process = active_ch;
@@ -204,7 +206,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
     }
 
     return ARM_CMSIS_NN_SUCCESS;
-#else
+    #else
     (void)lhs;
     (void)rhs;
     (void)input_offset;
@@ -219,9 +221,11 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
     (void)output_bias;
     (void)out;
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
-#endif
+    #endif
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

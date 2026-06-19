@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup NNConv
  */
@@ -74,15 +76,15 @@ int32_t arm_depthwise_conv_s8_opt_get_buffer_size_dsp(const cmsis_nn_dims *input
 
 int32_t arm_depthwise_conv_s8_opt_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_depthwise_conv_s8_opt_get_buffer_size_mve(input_dims, filter_dims);
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     return arm_depthwise_conv_s8_opt_get_buffer_size_dsp(input_dims, filter_dims);
-#else
+    #else
     (void)input_dims;
     (void)filter_dims;
     return 0;
-#endif
+    #endif
 }
 
 int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size(const cmsis_nn_dw_conv_params *dw_conv_params,
@@ -92,23 +94,23 @@ int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size(const cmsis_nn_dw_conv_par
 {
     int32_t size = 0;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (input_dims->c == 1 && output_dims->c > CONVERT_DW_CONV_WITH_ONE_INPUT_CH_AND_OUTPUT_CH_ABOVE_THRESHOLD)
     {
         return arm_deptwise_conv_s8_one_in_ch_get_buffer_size_mve(dw_conv_params, input_dims, filter_dims, output_dims);
     }
-#endif
+    #endif
 
     if (input_dims->c == output_dims->c && input_dims->n == 1 && dw_conv_params->dilation.w == 1 &&
         dw_conv_params->dilation.h == 1)
     {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
         if (filter_dims->w == 3 && filter_dims->h == 3 && dw_conv_params->padding.h <= 1 &&
             dw_conv_params->padding.w <= 1)
         {
             return size;
         }
-#endif
+    #endif
         size = arm_depthwise_conv_s8_opt_get_buffer_size(input_dims, filter_dims);
     }
 
@@ -168,3 +170,5 @@ int32_t arm_depthwise_conv_wrapper_s8_get_buffer_size_mve(const cmsis_nn_dw_conv
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

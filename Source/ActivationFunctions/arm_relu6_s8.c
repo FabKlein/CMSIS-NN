@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -63,3 +65,5 @@ void arm_relu6_s8(int8_t *data, uint16_t size)
 /**
  * @} end of Acti group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

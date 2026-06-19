@@ -31,9 +31,11 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 static void compare_and_replace_if_larger(int16_t *base, const int16_t *target, int32_t length)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t loop_count = (length + 7) / 8;
     for (int i = 0; i < loop_count; i++)
     {
@@ -46,7 +48,7 @@ static void compare_and_replace_if_larger(int16_t *base, const int16_t *target, 
         target += 8;
         length -= 8;
     }
-#else
+    #else
     int16_t *dst = base;
     const int16_t *src = target;
     union arm_nnword ref_max;
@@ -79,12 +81,12 @@ static void compare_and_replace_if_larger(int16_t *base, const int16_t *target, 
             *dst = *src;
         }
     }
-#endif
+    #endif
 }
 
 static void clamp_output(int16_t *source, int32_t length, const int16_t act_min, const int16_t act_max)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const int16x8_t min = vdupq_n_s16((int16_t)act_min);
     const int16x8_t max = vdupq_n_s16((int16_t)act_max);
 
@@ -99,7 +101,7 @@ static void clamp_output(int16_t *source, int32_t length, const int16_t act_min,
         vstrhq_p_s16(source, res, p);
         source += 8;
     }
-#else
+    #else
     union arm_nnword in;
     int32_t cnt = length >> 1;
 
@@ -123,7 +125,7 @@ static void clamp_output(int16_t *source, int32_t length, const int16_t act_min,
         comp = MIN(comp, act_max);
         *source = comp;
     }
-#endif
+    #endif
 }
 
 /**
@@ -225,3 +227,5 @@ arm_cmsis_nn_status arm_max_pool_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of Pooling group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

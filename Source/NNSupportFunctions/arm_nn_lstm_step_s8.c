@@ -29,6 +29,8 @@
  * -------------------------------------------------------------------- */
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  * @ingroup groupSupport
  */
@@ -108,3 +110,5 @@ arm_cmsis_nn_status arm_nn_lstm_step_s8(const int8_t *data_in,
 /**
  * @} end of supportLSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

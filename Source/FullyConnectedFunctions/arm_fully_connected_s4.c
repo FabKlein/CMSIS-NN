@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  *  @ingroup Public
  */
@@ -91,3 +93,5 @@ arm_cmsis_nn_status arm_fully_connected_s4(const cmsis_nn_context *ctx,
 /**
  * @} end of FC group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

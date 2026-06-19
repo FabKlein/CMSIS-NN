@@ -31,7 +31,9 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+#if ARM_NN_ENABLE_INT8
+
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
 static void scale_q31_to_q7_and_clamp(const int32_t *buffer,
                                       int8_t *target,
                                       int32_t length,
@@ -51,7 +53,7 @@ static void scale_q31_to_q7_and_clamp(const int32_t *buffer,
         target[i] = (int8_t)sum;
     }
 }
-#endif
+    #endif
 
 /**
  *  @ingroup Public
@@ -69,7 +71,7 @@ static void scale_q31_to_q7_and_clamp(const int32_t *buffer,
  *
  */
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
 arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_pool_params *pool_params,
@@ -232,7 +234,7 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
     return ARM_CMSIS_NN_SUCCESS;
 }
 
-#else
+    #else
 arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
                                    const cmsis_nn_pool_params *pool_params,
                                    const cmsis_nn_dims *input_dims,
@@ -266,7 +268,7 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
     /* Run the following code for CPU's with DSP extension
      */
     const int32_t batch_size = input_x * input_y * ch_src;
@@ -329,7 +331,7 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
         batch_cnt--;
     }
 
-    #else
+        #else
 
     /* Reference C code adapted from CMSIS-NN arm_avepool_q7_HWC.
      */
@@ -378,12 +380,14 @@ arm_cmsis_nn_status arm_avgpool_s8(const cmsis_nn_context *ctx,
         batch_cnt--;
     }
 
-    #endif
+        #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
-#endif /* ARM_MATH_MVEI */
+    #endif /* ARM_MATH_MVEI */
 
 /**
  * @} end of Pooling group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

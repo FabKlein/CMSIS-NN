@@ -29,6 +29,8 @@
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 /**
  */
 
@@ -67,20 +69,20 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
     const int rhs_offset = rhs_cols * row_loop_cnt;
     const int8_t *rhs_ptr = &packed_rhs[0];
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const int rhs_cols_offset = rhs_cols % 16;
-#else
+    #else
     const int rhs_cols_offset = rhs_cols;
-#endif
+    #endif
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
     const int16_t lhs_offset_s16 = (int16_t)lhs_offset;
     const uint32_t lhs_offset_s16x2 = PKHBT(lhs_offset_s16, lhs_offset_s16, 16);
-#endif
+    #endif
 
     int32_t spillover0, spillover1;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const mve_pred16_t lower_nibble_mask = 21845; // 0101010101010101
     const uint8x16_t gather_offset = {0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7};
     const int32_t col_loop_cnt = rhs_cols >> 5;
@@ -299,7 +301,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
         dst += 2;
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
 
     for (int32_t i_row_loop_cnt = 0; i_row_loop_cnt < row_loop_cnt; ++i_row_loop_cnt)
     {
@@ -468,7 +470,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
         dst++;
     }
 
-#else
+    #else
 
     for (int i_row_loop_cnt = 0; i_row_loop_cnt < row_loop_cnt; ++i_row_loop_cnt)
     {
@@ -595,7 +597,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
         dst++;
     }
 
-#endif
+    #endif
 
     const int8_t *lhs_ptr = &lhs[0];
     spillover0 = 0;
@@ -609,7 +611,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
             ++bias;
         }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
         int32_t rhs_sum_0 = 0;
 
         for (int i = 0; i < col_loop_cnt; i++)
@@ -646,9 +648,9 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
         }
 
         res0 += lhs_offset * rhs_sum_0;
-#endif
+    #endif
 
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
         for (int32_t rhs_cols_idx = 0; rhs_cols_idx < rhs_cols_offset / 4; ++rhs_cols_idx)
         {
             int32_t lhs_high, rhs_high0, rhs_low0, lhs_low;
@@ -679,7 +681,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
             ++rhs_ptr;
             lhs_ptr += 2;
         }
-#else
+    #else
         for (int32_t rhs_cols_idx = 0; rhs_cols_idx < rhs_cols_offset / 2; ++rhs_cols_idx)
         {
             const int32_t rhs_low0 = (int8_t)(rhs_ptr[rhs_offset] << 4) >> 4;
@@ -694,7 +696,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
             ++rhs_ptr;
             lhs_ptr += 2;
         }
-#endif
+    #endif
 
         if ((rhs_cols % 2 == 1) && (i_row_loop_cnt % 2 == 0))
         {
@@ -736,3 +738,5 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

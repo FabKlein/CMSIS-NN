@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT4
+
 /**
  * @ingroup groupSupport
  */
@@ -61,7 +63,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
                                                              const int32_t activation_max,
                                                              const int32_t lhs_cols_offset)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     const int rhs_cols_offset = rhs_cols % 16;
     const int32_t blk_cnt = rhs_cols >> 5;
@@ -534,7 +536,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
         }
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     const int32_t lhs_cols_off1 = lhs_cols_offset - 4;
     const int16_t i16_lhs_offset = (int16_t)lhs_offset;
     const uint32_t ui32_lhs_offset_i16x2 = PKHBT(i16_lhs_offset, i16_lhs_offset, 16);
@@ -1487,7 +1489,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
 
         ++dst;
     }
-#else
+    #else
 
     const int32_t rhs_cols_int4 = rhs_cols >> 1;
 
@@ -1869,7 +1871,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
         ++dst;
     }
 
-#endif
+    #endif
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -1877,3 +1879,5 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

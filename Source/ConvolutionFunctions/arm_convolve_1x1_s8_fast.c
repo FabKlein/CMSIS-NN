@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -71,7 +73,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
     const int32_t rhs_rows = output_dims->c;
     int32_t lhs_rows = input_dims->w * input_dims->h * input_dims->n;
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI) && defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI) && defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
     if (ctx->buf != NULL) /* Fall back to non buffered version if no additional memory buffer provided */
     {
         const int32_t batch = input_dims->n;
@@ -169,9 +171,9 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
         }
         return ARM_CMSIS_NN_SUCCESS;
     }
-#else
+    #else
     (void)ctx;
-#endif
+    #endif
 
     arm_nn_mat_mult_nt_t_s8(input_data,
                             filter_data,
@@ -196,3 +198,5 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

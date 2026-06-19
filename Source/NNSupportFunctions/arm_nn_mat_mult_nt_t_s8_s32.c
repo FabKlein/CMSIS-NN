@@ -30,6 +30,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup groupSupport
  */
@@ -56,7 +58,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
 {
     int32_t rhs_rows_idx = rhs_rows;
     const int32_t dst_idx_col_offset = dst_idx_offset * rhs_cols;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     for (; rhs_rows_idx >= 16; rhs_rows_idx -= 16)
     {
         int32_t *dst_ptr = &dst[0];
@@ -196,7 +198,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
         }
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     int16_t lhs_offset_s16 = (int16_t)lhs_offset;
     const uint32_t lhs_offset_s16x2 = PKHBT(lhs_offset_s16, lhs_offset_s16, 16);
     for (; rhs_rows_idx >= 8; rhs_rows_idx -= 8)
@@ -378,7 +380,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
         rhs += 2;
         lhs += 2;
     }
-#else
+    #else
     for (; rhs_rows_idx >= 2; rhs_rows_idx -= 2)
     {
         int32_t *dst_ptr = &dst[0];
@@ -437,8 +439,8 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
         rhs += 2;
         lhs += 2;
     }
-#endif
-#if !defined(ARM_MATH_MVEI)
+    #endif
+    #if !defined(ARM_MATH_MVEI)
     if (rhs_rows_idx)
     {
         const int8_t *lhs_ptr = &lhs[0];
@@ -461,10 +463,12 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
             lhs_ptr += rhs_rows;
         }
     }
-#endif
+    #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

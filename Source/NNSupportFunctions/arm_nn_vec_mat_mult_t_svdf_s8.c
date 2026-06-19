@@ -31,6 +31,8 @@
 
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  * @ingroup groupSupport
  */
@@ -63,7 +65,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t row_loop_cnt = rhs_rows / 3;
 
     for (int i_row_loop_cnt = 0; i_row_loop_cnt < row_loop_cnt; i_row_loop_cnt++)
@@ -159,7 +161,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
         dst += dst_offset;
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     int32_t row_loop_cnt = rhs_rows / 2;
 
     const int16_t lhs_offset_s16 = lhs_offset;
@@ -179,9 +181,9 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
 
         int32_t vec_0, vec_1, ker_0, ker_1;
 
-    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-        #pragma clang loop unroll(disable)
-    #endif
+        #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+            #pragma clang loop unroll(disable)
+        #endif
         for (; rhs_cols_idx <= (rhs_cols - 16); rhs_cols_idx += 16)
         {
             // 4 x MAC acc_0, acc1
@@ -245,9 +247,9 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
             acc_1 = SMLAD(ker_0, vec_0, acc_1);
         }
 
-    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-        #pragma clang loop unroll(disable)
-    #endif
+        #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+            #pragma clang loop unroll(disable)
+        #endif
         for (; rhs_cols_idx <= (rhs_cols - 4); rhs_cols_idx += 4)
         {
             vec_0 = arm_nn_read_s8x4_ia(&lhs_vec);
@@ -270,9 +272,9 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
             acc_1 = SMLAD(ker_0, vec_0, acc_1);
         }
 
-    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-        #pragma clang loop unroll(disable)
-    #endif
+        #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+            #pragma clang loop unroll(disable)
+        #endif
         for (; rhs_cols_idx < rhs_cols; ++rhs_cols_idx)
         {
             const int32_t lhs_temp = (*lhs_vec + lhs_offset);
@@ -330,7 +332,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
         dst += dst_offset;
     }
 
-#else
+    #else
 
     int32_t row_loop_cnt = rhs_rows / 3;
 
@@ -411,7 +413,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
         dst += dst_offset;
         rhs += rhs_cols;
     }
-#endif
+    #endif
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -419,3 +421,5 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

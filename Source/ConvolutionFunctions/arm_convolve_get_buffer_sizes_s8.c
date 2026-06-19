@@ -32,6 +32,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup NNConv
  */
@@ -42,12 +44,12 @@
  */
 __STATIC_INLINE int32_t arm_convolve_1x1_s8_fast_get_buffer_size_dsp(const cmsis_nn_dims *input_dims)
 {
-#if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
     return (2 * input_dims->c) * (int32_t)sizeof(int16_t);
-#else
+    #else
     (void)input_dims;
     return 0;
-#endif
+    #endif
 }
 
 __STATIC_INLINE int32_t arm_convolve_1_x_n_s8_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
@@ -83,14 +85,14 @@ __STATIC_INLINE int32_t arm_convolve_1_x_n_s8_get_buffer_size_mve(const cmsis_nn
 
 int32_t arm_convolve_s8_get_buffer_size(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_convolve_s8_get_buffer_size_mve(input_dims, filter_dims);
-#else
+    #else
     const int32_t rhs_cols = filter_dims->w * filter_dims->h * input_dims->c;
     const int32_t remainder = rhs_cols % 4;
     const int32_t aligned_rhs_cols = remainder != 0 ? rhs_cols + 4 - remainder : rhs_cols;
     return (2 * aligned_rhs_cols) * (int32_t)sizeof(int16_t);
-#endif
+    #endif
 }
 
 int32_t arm_convolve_s8_get_buffer_size_mve(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims)
@@ -108,23 +110,23 @@ int32_t arm_convolve_1_x_n_s8_get_buffer_size(const cmsis_nn_conv_params *conv_p
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *output_dims)
 {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
     (void)conv_params;
     (void)output_dims;
 
     return arm_convolve_s8_get_buffer_size(input_dims, filter_dims);
-#else
+    #else
     return arm_convolve_1_x_n_s8_get_buffer_size_mve(conv_params, input_dims, filter_dims, output_dims);
-#endif
+    #endif
 }
 
 int32_t arm_convolve_1x1_s8_fast_get_buffer_size(const cmsis_nn_dims *input_dims)
 {
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
     return arm_convolve_1x1_s8_fast_get_buffer_size_dsp(input_dims);
-#else
+    #else
     (void)input_dims;
-#endif
+    #endif
     return 0;
 }
 
@@ -140,11 +142,11 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size(const cmsis_nn_conv_params *conv
                                                 const cmsis_nn_dims *filter_dims,
                                                 const cmsis_nn_dims *output_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_convolve_wrapper_s8_get_buffer_size_mve(conv_params, input_dims, filter_dims, output_dims);
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     return arm_convolve_wrapper_s8_get_buffer_size_dsp(conv_params, input_dims, filter_dims, output_dims);
-#else
+    #else
     (void)output_dims;
     if (arm_nn_is_convolve_1x1(conv_params, input_dims, filter_dims))
     {
@@ -165,7 +167,7 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size(const cmsis_nn_conv_params *conv
     {
         return arm_convolve_s8_get_buffer_size(input_dims, filter_dims);
     }
-#endif
+    #endif
 }
 
 int32_t arm_convolve_wrapper_s8_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
@@ -225,3 +227,5 @@ int32_t arm_convolve_wrapper_s8_get_buffer_size_dsp(const cmsis_nn_conv_params *
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

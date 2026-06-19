@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -55,3 +57,5 @@ void arm_reshape_s8(const int8_t *input, int8_t *output, const uint32_t total_si
 /**
  * @} end of Reshape group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

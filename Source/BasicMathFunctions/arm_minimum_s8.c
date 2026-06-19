@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -43,7 +45,7 @@
 static arm_cmsis_nn_status
 arm_min_no_broadcast_s8(const int8_t *input_1, const int8_t *input_2, int8_t *output, int32_t flat_size)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     while (flat_size > 0)
     {
         mve_pred16_t p = vctp8q(flat_size);
@@ -57,7 +59,7 @@ arm_min_no_broadcast_s8(const int8_t *input_1, const int8_t *input_2, int8_t *ou
         output += 16;
         flat_size -= 16;
     }
-#else
+    #else
     while (flat_size > 0)
     {
         int8_t in1 = *input_1++;
@@ -65,7 +67,7 @@ arm_min_no_broadcast_s8(const int8_t *input_1, const int8_t *input_2, int8_t *ou
         *output++ = in1 >= in2 ? in2 : in1;
         --flat_size;
     }
-#endif
+    #endif
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -73,7 +75,7 @@ arm_min_no_broadcast_s8(const int8_t *input_1, const int8_t *input_2, int8_t *ou
 static arm_cmsis_nn_status
 arm_min_scalar_s8(const int8_t *input_1, const int8_t *input_2, int8_t *output, int32_t flat_size)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int8x16_t scalar_vec = vdupq_n_s8(*input_1);
 
     while (flat_size > 0)
@@ -87,7 +89,7 @@ arm_min_scalar_s8(const int8_t *input_1, const int8_t *input_2, int8_t *output, 
         output += 16;
         flat_size -= 16;
     }
-#else
+    #else
     int8_t in1 = *input_1;
     while (flat_size > 0)
     {
@@ -95,7 +97,7 @@ arm_min_scalar_s8(const int8_t *input_1, const int8_t *input_2, int8_t *output, 
         *output++ = in1 >= in2 ? in2 : in1;
         --flat_size;
     }
-#endif
+    #endif
     return ARM_CMSIS_NN_SUCCESS;
 }
 
@@ -260,3 +262,5 @@ arm_cmsis_nn_status arm_minimum_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 
+#if ARM_NN_ENABLE_INT16
+
 /**
  *  @ingroup FC
  */
@@ -58,3 +60,5 @@ int32_t arm_fully_connected_s16_get_buffer_size_mve(const cmsis_nn_dims *filter_
 /**
  * @} end of GetBufferSizeFC group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */
