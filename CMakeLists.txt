@@ -23,6 +23,7 @@ set(CMSIS_OPTIMIZATION_LEVEL
 option(ARM_NN_ENABLE_AOT "Enable opt-in ahead-of-time for existing integer path." OFF)
 option(ARM_NN_ENABLE_F32 "Enable CMSIS-NN float32 extensions." OFF)
 option(ARM_NN_ENABLE_F16 "Enable CMSIS-NN float16 extensions." OFF)
+option(ARM_NN_ENABLE_ASSERTS "Enable CMSIS-NN internal assertions." OFF)
 
 project(CMSISNN C CXX)
 
@@ -50,7 +51,8 @@ target_compile_options(cmsis-nn PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
 target_compile_definitions(
   cmsis-nn PUBLIC ARM_NN_ENABLE_AOT=${ARM_NN_ENABLE_AOT_VALUE}
                   ARM_NN_ENABLE_F32=${ARM_NN_ENABLE_F32_VALUE}
-                  ARM_NN_ENABLE_F16=${ARM_NN_ENABLE_F16_VALUE})
+                  ARM_NN_ENABLE_F16=${ARM_NN_ENABLE_F16_VALUE}
+                  ARM_NN_ENABLE_ASSERTS=$<BOOL:${ARM_NN_ENABLE_ASSERTS}>)
 
 target_include_directories(cmsis-nn PUBLIC "Include")
 

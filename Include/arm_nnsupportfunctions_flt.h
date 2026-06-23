@@ -21,8 +21,8 @@
  * Title:        arm_nnsupportfunctions_flt.h
  * Description:  Floating-point support API extensions for CMSIS-NN
  *
- * $Date:        17 March 2026
- * $Revision:    V.1.0.0
+ * $Date:        7 September 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -269,6 +269,45 @@ void arm_nn_depthwise_conv1d_k3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
                                          int32_t out_w);
 
 /**
+ * @brief Specialized NHWC depthwise 1D kernel for `k=9` (float32).
+ *
+ * Processes one NHWC row using valid `1x9` depthwise convolution: stride and
+ * dilation are one, padding is zero, `ch_mult > 0`, and
+ * `out_w == in_w - 8`. Output channels equal `in_c * ch_mult`; the kernel uses
+ * KC layout `[9][in_c * ch_mult]`. Bias is optional and has one value per
+ * output channel when present. This helper does not apply activation clamping.
+ */
+void arm_nn_depthwise_conv1d_k9_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
+                                         int32_t in_c,
+                                         int32_t in_w,
+                                         int32_t ch_mult,
+                                         const float32_t *__RESTRICT kernel,
+                                         const float32_t *__RESTRICT b,
+                                         float32_t *__RESTRICT out,
+                                         int32_t out_w);
+
+/**
+ * @brief Specialized NHWC depthwise `2x5` kernel (float32).
+ *
+ * Implements valid convolution for `[N, 2, W, in_c]`: stride and dilation are
+ * one, padding is zero, `ch_mult > 0`, and `out_w == in_w - 4`. Output shape is
+ * `[N, 1, out_w, in_c * ch_mult]`; the kernel uses KC layout
+ * `[2 * 5][in_c * ch_mult]`. Bias is optional and has one value per output
+ * channel when present. Activation clamping is applied by this helper.
+ */
+void arm_nn_depthwise_conv2x5_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
+                                       int32_t batches,
+                                       int32_t in_c,
+                                       int32_t in_w,
+                                       int32_t ch_mult,
+                                       const float32_t *__RESTRICT kernel,
+                                       const float32_t *__RESTRICT b,
+                                       float32_t *__RESTRICT out,
+                                       int32_t out_w,
+                                       float32_t act_min,
+                                       float32_t act_max);
+
+/**
  * @brief Specialized NHWC depthwise `3x3` kernel (float32, `ch_mult=1`).
  */
 void arm_nn_depthwise_conv3x3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
@@ -304,6 +343,10 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_f32(const float32_t *__RESTRICT l
 
 /**
  * @brief Specialized NHWC 1D convolution kernel for `k=5` (float32).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 4`. Weights use `[out_c][5][in_c]`.
  */
 void arm_nn_conv1d_k5_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
                                int32_t in_c,
@@ -318,7 +361,9 @@ void arm_nn_conv1d_k5_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
  * @brief Specialized NHWC 1D convolution kernel for `k=5` (float32, packed weights).
  *
  * The packed kernel uses the same `NTxN` RHS layout as
- * `arm_nn_mat_mult_nt_n_packed_f32`, i.e. `[(5 * in_c)][out_c_block_of_4]`.
+ * `arm_nn_mat_mult_nt_n_packed_f32`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 4`. Weights use
+ * `[ceil(out_c / 4)][5 * in_c][4]`.
  */
 void arm_nn_conv1d_k5_packed_f32(const float32_t *__RESTRICT x_nhwc,
                                  int32_t in_c,
@@ -330,7 +375,116 @@ void arm_nn_conv1d_k5_packed_f32(const float32_t *__RESTRICT x_nhwc,
                                  int32_t out_w);
 
 /**
+ * @brief Specialized NHWC 1D convolution kernel for `k=2` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 1`. Weights use `[ceil(out_c / 4)][2 * in_c][4]`.
+ */
+void arm_nn_conv1d_k2_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float32_t *__RESTRICT kernel_packed,
+                                 const float32_t *__RESTRICT b,
+                                 float32_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x2` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 1`. Weights use
+ * `[ceil(out_c / 4)][2 * 2 * in_c][4]`.
+ */
+void arm_nn_conv2d_2x2_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float32_t *__RESTRICT kernel_packed,
+                                  const float32_t *__RESTRICT b,
+                                  float32_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x3` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 2`. Weights use
+ * `[ceil(out_c / 4)][2 * 3 * in_c][4]`.
+ */
+void arm_nn_conv2d_2x3_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float32_t *__RESTRICT kernel_packed,
+                                  const float32_t *__RESTRICT b,
+                                  float32_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x5` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 4`. Weights use
+ * `[ceil(out_c / 4)][2 * 5 * in_c][4]`.
+ */
+void arm_nn_conv2d_2x5_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float32_t *__RESTRICT kernel_packed,
+                                  const float32_t *__RESTRICT b,
+                                  float32_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=9` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 8`. Weights use `[ceil(out_c / 4)][9 * in_c][4]`.
+ */
+void arm_nn_conv1d_k9_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float32_t *__RESTRICT kernel_packed,
+                                 const float32_t *__RESTRICT b,
+                                 float32_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=7` (float32, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 6`. Weights use `[ceil(out_c / 4)][7 * in_c][4]`.
+ */
+void arm_nn_conv1d_k7_packed_f32(const float32_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float32_t *__RESTRICT kernel_packed,
+                                 const float32_t *__RESTRICT b,
+                                 float32_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
  * @brief Specialized NHWC 1D convolution kernel for `k=3` (float32).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 2`. Weights use `[out_c][3][in_c]`.
  */
 void arm_nn_conv1d_k3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
                                int32_t in_c,
@@ -345,7 +499,9 @@ void arm_nn_conv1d_k3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
  * @brief Specialized NHWC 1D convolution kernel for `k=3` (float32, packed weights).
  *
  * The packed kernel uses the same `NTxN` RHS layout as
- * `arm_nn_mat_mult_nt_n_packed_f32`, i.e. `[(3 * in_c)][out_c_block_of_4]`.
+ * `arm_nn_mat_mult_nt_n_packed_f32`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 2`. Weights use
+ * `[ceil(out_c / 4)][3 * in_c][4]`.
  */
 void arm_nn_conv1d_k3_packed_f32(const float32_t *__RESTRICT x_nhwc,
                                  int32_t in_c,
@@ -701,6 +857,16 @@ __STATIC_FORCEINLINE void arm_memset_f16(float16_t *__RESTRICT dst, const float1
 
 /**
  * @brief Specialized NHWC depthwise `2x5` kernel (float16).
+ *
+ * @note The direct depthwise `1x9` and `2x5` helpers are intentional
+ * float16-only specializations. Other data types and geometries use the
+ * generic depthwise implementation.
+ *
+ * Implements valid convolution for `[N, 2, W, in_c]`: stride and dilation are
+ * one, padding is zero, `ch_mult > 0`, and `out_w == in_w - 4`. Output shape is
+ * `[N, 1, out_w, in_c * ch_mult]`; the kernel uses KC layout
+ * `[2 * 5][in_c * ch_mult]`. Bias is optional and has one value per output
+ * channel when present. Activation clamping is applied by this helper.
  */
 void arm_nn_depthwise_conv2x5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                        int32_t batches,
@@ -720,6 +886,24 @@ void arm_nn_depthwise_conv2x5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
 void arm_nn_depthwise_conv1d_k3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                          int32_t in_c,
                                          int32_t in_w,
+                                         const float16_t *__RESTRICT kernel,
+                                         const float16_t *__RESTRICT b,
+                                         float16_t *__RESTRICT out,
+                                         int32_t out_w);
+
+/**
+ * @brief Specialized NHWC depthwise 1D kernel for `k=9` (float16).
+ *
+ * Processes one NHWC row using valid `1x9` depthwise convolution: stride and
+ * dilation are one, padding is zero, `ch_mult > 0`, and
+ * `out_w == in_w - 8`. Output channels equal `in_c * ch_mult`; the kernel uses
+ * KC layout `[9][in_c * ch_mult]`. Bias is optional and has one value per
+ * output channel when present. This helper does not apply activation clamping.
+ */
+void arm_nn_depthwise_conv1d_k9_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
+                                         int32_t in_c,
+                                         int32_t in_w,
+                                         int32_t ch_mult,
                                          const float16_t *__RESTRICT kernel,
                                          const float16_t *__RESTRICT b,
                                          float16_t *__RESTRICT out,
@@ -760,7 +944,11 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_f16(const float16_t *__RESTRICT l
                                                    float16_t activation_max);
 
 /**
- * @copydoc arm_nn_conv1d_k5_nhwc_f32
+ * @brief Specialized NHWC 1D convolution kernel for `k=5` (float16).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 4`. Weights use `[out_c][5][in_c]`.
  */
 void arm_nn_conv1d_k5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                int32_t in_c,
@@ -772,10 +960,120 @@ void arm_nn_conv1d_k5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                int32_t out_w);
 
 /**
+ * @brief Specialized NHWC 1D convolution kernel for `k=2` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 1`. Weights use
+ * `[ceil(out_c / 8)][2 * in_c][8]`.
+ */
+void arm_nn_conv1d_k2_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x2` (float16, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 1`. Weights use
+ * `[ceil(out_c / 8)][2 * 2 * in_c][8]`.
+ */
+void arm_nn_conv2d_2x2_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x3` (float16, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 2`. Weights use
+ * `[ceil(out_c / 8)][2 * 3 * in_c][8]`.
+ */
+void arm_nn_conv2d_2x3_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x5` (float16, packed weights).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding,
+ * `out_h == in_h - 1`, and `out_w == in_w - 4`. Weights use
+ * `[ceil(out_c / 8)][2 * 5 * in_c][8]`.
+ */
+void arm_nn_conv2d_2x5_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=9` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 8`. Weights use
+ * `[ceil(out_c / 8)][9 * in_c][8]`.
+ */
+void arm_nn_conv1d_k9_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=7` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 6`. Weights use
+ * `[ceil(out_c / 8)][7 * in_c][8]`.
+ */
+void arm_nn_conv1d_k7_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
  * @brief Specialized NHWC 1D convolution kernel for `k=5` (float16, packed weights).
  *
  * The packed kernel uses the same `NTxN` RHS layout as
- * `arm_nn_mat_mult_nt_n_packed_f16`, i.e. `[(5 * in_c)][out_c_block_of_8]`.
+ * `arm_nn_mat_mult_nt_n_packed_f16`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 4`. Weights use
+ * `[ceil(out_c / 8)][5 * in_c][8]`.
  */
 void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
                                  int32_t in_c,
@@ -787,7 +1085,11 @@ void arm_nn_conv1d_k5_packed_f16(const float16_t *__RESTRICT x_nhwc,
                                  int32_t out_w);
 
 /**
- * @copydoc arm_nn_conv1d_k3_nhwc_f32
+ * @brief Specialized NHWC 1D convolution kernel for `k=3` (float16).
+ *
+ * @par Preconditions
+ * Uses valid convolution with unit stride and dilation, zero padding, and
+ * `out_w == in_w - 2`. Weights use `[out_c][3][in_c]`.
  */
 void arm_nn_conv1d_k3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                int32_t in_c,
@@ -802,7 +1104,9 @@ void arm_nn_conv1d_k3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
  * @brief Specialized NHWC 1D convolution kernel for `k=3` (float16, packed weights).
  *
  * The packed kernel uses the same `NTxN` RHS layout as
- * `arm_nn_mat_mult_nt_n_packed_f16`, i.e. `[(3 * in_c)][out_c_block_of_8]`.
+ * `arm_nn_mat_mult_nt_n_packed_f16`. It requires valid convolution with unit
+ * stride and dilation, zero padding, and `out_w == in_w - 2`. Weights use
+ * `[ceil(out_c / 8)][3 * in_c][8]`.
  */
 void arm_nn_conv1d_k3_packed_f16(const float16_t *__RESTRICT x_nhwc,
                                  int32_t in_c,

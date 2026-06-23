@@ -21,14 +21,17 @@
  * Title:        arm_get_buffer_size_f32.c
  * Description:  Buffer size helpers (float32)
  *
- * $Date:        31 March 2026
- * $Revision:    V.1.0.0
+ * $Date:        9 September 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
-#include "Internal/arm_conv_opt_common.h"
+#include "Internal/arm_conv_select_f32.h"
+#include "Internal/arm_conv_specialized_common.h"
+#include "Internal/arm_depthwise_conv_select_f32.h"
+#include "Internal/arm_depthwise_conv_specialized_common.h"
 #include "arm_get_buffer_size_common.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
@@ -55,6 +58,22 @@ int32_t arm_depthwise_conv_f32_get_buffer_size(const cmsis_nn_dw_conv_params_f32
     {
         return 0;
     }
+
+#ifndef NN_DISABLE_SPECIALIZATION
+    if (layout == ARM_NN_LAYOUT_NHWC &&
+        arm_depthwise_conv_geometry_is_valid(input_dims,
+                                             filter_dims,
+                                             output_dims,
+                                             dw_conv_params->stride,
+                                             dw_conv_params->padding,
+                                             dw_conv_params->dilation,
+                                             dw_conv_params->ch_mult) &&
+        arm_depthwise_conv_select_specialized_f32(
+            dw_conv_params, input_dims, filter_dims, output_dims, ARM_NN_DW_KERNEL_KC, NULL))
+    {
+        return 0;
+    }
+#endif
 
 #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
     if (layout == ARM_NN_LAYOUT_NHWC && input_dims->c == 1 &&
@@ -146,6 +165,13 @@ int32_t arm_convolve_f32_get_buffer_size(const cmsis_nn_conv_params_f32 *conv_pa
         return 0;
     }
 
+#ifndef NN_DISABLE_SPECIALIZATION
+    if (arm_conv_select_specialized_f32(conv_params, input_dims, filter_dims, output_dims, NULL))
+    {
+        return 0;
+    }
+#endif
+
     if (filter_dims->h == 1 && filter_dims->w == 1 && conv_params->padding.h == 0 && conv_params->padding.w == 0)
     {
         return arm_convolve_1x1_f32_get_buffer_size(conv_params, input_dims, filter_dims, output_dims, layout);
@@ -153,9 +179,7 @@ int32_t arm_convolve_f32_get_buffer_size(const cmsis_nn_conv_params_f32 *conv_pa
 
     if (input_dims->h == 1 && output_dims->h == 1 && filter_dims->h == 1 && filter_dims->w > 1 &&
         conv_params->stride.h == 1 && conv_params->stride.w > 0 && conv_params->padding.h == 0 &&
-        conv_params->dilation.h == 1 && conv_params->dilation.w == 1 &&
-        !((input_dims->n == 1 && filter_dims->w == 3 && conv_params->stride.w == 1 && conv_params->padding.w == 0) ||
-          (input_dims->n == 1 && filter_dims->w == 5 && conv_params->stride.w == 1 && conv_params->padding.w == 0)))
+        conv_params->dilation.h == 1 && conv_params->dilation.w == 1)
     {
         return arm_convolve_1_x_n_f32_get_buffer_size(conv_params, input_dims, filter_dims, output_dims, layout);
     }

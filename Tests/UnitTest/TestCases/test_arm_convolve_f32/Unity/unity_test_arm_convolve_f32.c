@@ -77,3 +77,34 @@ void test_conv_match_1x1_basic_f32_arm_convolve_f32_packed(void) { conv_match_1x
 void test_conv_basic_f32_arm_convolve_f32_packed(void) { conv_basic_f32_arm_convolve_f32_packed(); }
 void test_conv_k3_opt_f32_arm_convolve_f32_packed(void) { conv_k3_opt_f32_arm_convolve_f32_packed(); }
 void test_conv_k5_opt_f32_arm_convolve_f32_packed(void) { conv_k5_opt_f32_arm_convolve_f32_packed(); }
+void test_conv_k5_output_width_boundaries_f32(void) { conv_k5_output_width_boundaries_f32(); }
+void test_conv_k5_batch2_rows2_tails_null_bias_f32_arm_convolve_f32_packed(void)
+{
+    conv_k5_batch2_rows2_tails_null_bias_f32_arm_convolve_f32_packed();
+}
+void test_conv_k7_opt_f32_arm_convolve_f32_packed(void) { conv_k7_opt_f32_arm_convolve_f32_packed(); }
+void test_conv_k9_exact_six_f32_arm_convolve_f32_packed(void) { conv_k9_exact_six_f32_arm_convolve_f32_packed(); }
+void test_conv_k9_opt_f32_arm_convolve_f32_packed(void) { conv_k9_opt_f32_arm_convolve_f32_packed(); }
+void test_conv_k2_packed_valid_f32_arm_convolve_f32_packed(void) { conv_k2_packed_valid_f32_arm_convolve_f32_packed(); }
+void test_conv_kernel_2x2_f32_arm_convolve_f32_packed(void) { conv_kernel_2x2_f32_arm_convolve_f32_packed(); }
+void test_conv_2x3_packed_valid_f32_arm_convolve_f32_packed(void)
+{
+    conv_2x3_packed_valid_f32_arm_convolve_f32_packed();
+}
+void test_conv_2x5_packed_valid_f32_arm_convolve_f32_packed(void)
+{
+    conv_2x5_packed_valid_f32_arm_convolve_f32_packed();
+}
+
+void test_conv_2x2_packed_tiles_f32(void) { conv_2x2_packed_tiles_f32(); }
+void test_conv_2x3_packed_tiles_f32(void) { conv_2x3_packed_tiles_f32(); }
+void test_conv_2x5_packed_tiles_f32(void) { conv_2x5_packed_tiles_f32(); }
+
+void test_conv_k7_packed_cancellation_f32(void) { conv_k7_packed_cancellation_f32(); }
+void test_conv_k9_packed_cancellation_f32(void) { conv_k9_packed_cancellation_f32(); }
+
+void test_conv_specialized_registry_f32(void) { conv_specialized_registry_f32(); }
+
+void test_conv_specialized_geometry_f32(void) { conv_specialized_geometry_f32(); }
+
+void test_conv_specialized_stride2_adapter_f32(void) { conv_specialized_stride2_adapter_f32(); }

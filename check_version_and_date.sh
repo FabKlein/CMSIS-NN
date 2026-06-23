@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SPDX-FileCopyrightText: Copyright 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+# SPDX-FileCopyrightText: Copyright 2024-2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,13 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Version: 1.0
-# Date: 2024-05-21
+# Version: 1.1
+# Date: 2026-09-09
 # This bash script checks that files changed in the Source and Include directory have 
 # modifed the Revision and Date fields below the license in each file.
 
 SHA=$(git rev-parse origin/upstream/main)
-CHANGED_FILES=$(git diff --name-only ${SHA} HEAD -- Source Include)
+# Deleted files have no current header metadata to update.
+CHANGED_FILES=$(git diff --diff-filter=d --name-only ${SHA} HEAD -- Source Include)
 ANY_FAILURE=0
 
 echo "++ Checking if version and date was updated in changed files"

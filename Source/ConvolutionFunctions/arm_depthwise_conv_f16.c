@@ -21,15 +21,15 @@
  * Title:        arm_depthwise_conv_f16.c
  * Description:  Convolution: depthwise (float16)
  *
- * $Date:        23 Feb 2026
- * $Revision:    V.1.0.0
+ * $Date:        9 September 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
-#include "Internal/arm_depthwise_conv_opt_common.h"
-#include "Internal/arm_depthwise_conv_opt_f16.h"
+#include "Internal/arm_depthwise_conv_specialized_common.h"
+#include "Internal/arm_depthwise_conv_specialized_f16.h"
 #include "Internal/arm_nn_activation_flt.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
@@ -601,6 +601,18 @@ static arm_cmsis_nn_status arm_depthwise_conv_f16_validate(const cmsis_nn_dw_con
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
+    /* Validate before specialization matching or any kernel computes int32_t geometry. */
+    if (!arm_depthwise_conv_geometry_is_valid(input_dims,
+                                              filter_dims,
+                                              output_dims,
+                                              dw_conv_params->stride,
+                                              dw_conv_params->padding,
+                                              dw_conv_params->dilation,
+                                              dw_conv_params->ch_mult))
+    {
+        return ARM_CMSIS_NN_ARG_ERROR;
+    }
+
     *kernel_layout = forced_kernel_layout;
 
     return ARM_CMSIS_NN_SUCCESS;
@@ -619,20 +631,12 @@ static arm_cmsis_nn_status arm_depthwise_conv_nhwc_dispatch_f16(const cmsis_nn_c
                                                                 arm_nn_dw_kernel_layout_f16 kernel_layout)
 {
 #ifndef NN_DISABLE_SPECIALIZATION
-    /* First try exact-shape NHWC specializations such as 1D-k3, 2x5, and 3x3 kernels. */
-    ARM_DW_DISPATCH(arm_dw_spec_nhwc_f16,
-                    ARM_DW_ARRAY_SIZE(arm_dw_spec_nhwc_f16),
-                    ctx,
-                    dw_conv_params,
-                    input_dims,
-                    input,
-                    filter_dims,
-                    kernel,
-                    bias_dims,
-                    bias,
-                    output_dims,
-                    output,
-                    kernel_layout);
+    const arm_dw_call_f16 specialized =
+        arm_dw_select_nhwc_f16(dw_conv_params, input_dims, filter_dims, output_dims, kernel_layout);
+    if (specialized)
+    {
+        return specialized(dw_conv_params, input_dims, input, kernel, bias, output_dims, output);
+    }
 #endif
 
     /* Then try the broader ch_mult=1 fast NHWC routes before falling back to the generic kernel. */
