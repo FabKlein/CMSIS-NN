@@ -57,6 +57,9 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
     set(CMSIS_OPTIMIZATION_LEVEL "-O3" CACHE STRING "Compiler optimization level." FORCE)
 endif()
 
+# Exercise internal invariants in tests unless explicitly disabled by the caller.
+option(ARM_NN_ENABLE_ASSERTS "Enable CMSIS-NN internal assertions." ON)
+
 # Build the functions to be tested.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. cmsis-nn)
 if(NOT BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300 AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
@@ -233,6 +236,24 @@ if(BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300)
         set(LINK_FILE_OPTION "--scatter")
         set(LINK_ENTRY_OPTION "--entry")
         set(LINK_ENTRY "Reset_Handler")
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        # LLVM's picolibc runtime needs its own section layout and UART streams.
+        set(LINK_FILE "${CMAKE_CURRENT_BINARY_DIR}/linker_clang.ld")
+        separate_arguments(CLANG_TARGET_FLAGS NATIVE_COMMAND "${CMAKE_C_FLAGS}")
+        add_custom_command(
+            OUTPUT "${LINK_FILE}"
+            COMMAND ${CMAKE_C_COMPILER} ${CLANG_TARGET_FLAGS} -E -P -x c
+                    -include "${FVP_CORSTONE_300_PATH}/region_defs.h"
+                    "${FVP_CORSTONE_300_PATH}/linker_clang.sct" -o "${LINK_FILE}"
+            DEPENDS "${FVP_CORSTONE_300_PATH}/linker_clang.sct"
+                    "${FVP_CORSTONE_300_PATH}/region_defs.h"
+                    "${FVP_CORSTONE_300_PATH}/region_limits.h"
+            VERBATIM)
+        add_custom_target(cmsis_nn_clang_linker DEPENDS "${LINK_FILE}")
+        target_sources(retarget PRIVATE "${FVP_CORSTONE_300_PATH}/retarget_clang.c")
+        set(LINK_FILE_OPTION "-T")
+        set(LINK_ENTRY_OPTION "")
+        set(LINK_ENTRY "")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(LINK_FILE "${FVP_CORSTONE_300_PATH}/linker.ld")
         set(LINK_FILE_OPTION "-T")
@@ -247,6 +268,9 @@ if(BUILD_CMSIS_NN_UNIT_TESTS_FOR_FVP_BASED_CORSTONE_300)
         target_link_libraries(${target} PRIVATE retarget)
         target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:cmsis_startup> cmsis_startup)
         add_dependencies(${target} retarget cmsis_startup)
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            add_dependencies(${target} cmsis_nn_clang_linker)
+        endif()
 
         target_compile_definitions(${target} PUBLIC USING_FVP_CORSTONE_300)
 

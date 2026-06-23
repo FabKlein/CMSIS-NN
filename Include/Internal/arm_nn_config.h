@@ -21,8 +21,8 @@
  * Title:        arm_nn_config.h
  * Description:  Internal optional feature configuration for CMSIS-NN
  *
- * $Date:        24 April 2026
- * $Revision:    V.1.0.0
+ * $Date:        9 September 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -60,6 +60,37 @@
 #endif
 
 #define ARM_NN_FLOAT_API_ENABLED (ARM_NN_ENABLE_F32 || ARM_NN_ENABLE_F16)
+
+/*
+ * ARM_NN_ENABLE_ASSERTS controls internal invariant checks independently of
+ * optimization and build type. Set to 1 when compiling the library to enable
+ * ARM_NN_ASSERT; the default is 0 (disabled). Public argument validation is
+ * unaffected. Disabled assertions do not evaluate their expressions, so library
+ * code must never depend on side effects inside them. The default failure hook
+ * loops forever; an overridden ARM_NN_ASSERT_FAIL must not return.
+ */
+#ifndef ARM_NN_ENABLE_ASSERTS
+    #define ARM_NN_ENABLE_ASSERTS 0
+#endif
+
+#if ARM_NN_ENABLE_ASSERTS
+    #ifndef ARM_NN_ASSERT_FAIL
+        #define ARM_NN_ASSERT_FAIL()                                                                                   \
+            do                                                                                                         \
+            {                                                                                                          \
+            } while (1)
+    #endif
+    #define ARM_NN_ASSERT(cond)                                                                                        \
+        do                                                                                                             \
+        {                                                                                                              \
+            if (!(cond))                                                                                               \
+            {                                                                                                          \
+                ARM_NN_ASSERT_FAIL();                                                                                  \
+            }                                                                                                          \
+        } while (0)
+#else
+    #define ARM_NN_ASSERT(cond) ((void)0)
+#endif
 
 /*
  * NN_DISABLE_SPECIALIZATION disables optional shape/layout-specific fast paths

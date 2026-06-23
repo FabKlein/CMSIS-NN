@@ -10,22 +10,49 @@ The library follows the [int8](https://www.tensorflow.org/lite/performance/quant
 This means CMSIS-NN is bit-exact with Tensorflow Lite reference kernels. In some cases TFL and TFLM reference kernels may not be bit-exact. In that case CMSIS-NN follows TFLM reference kernels. The unit test readme provides an [overview](https://github.com/ARM-software/CMSIS-NN/blob/main/Tests/UnitTest/README.md#tests-depending-on-tflm-interpreter).
 
 ### Experimental Float API
-CMSIS-NN also provides experimental float32 and float16 APIs. The float API intentionally follows the same CMSIS-NN integer style, which is itself shaped by TFLM integration patterns, to keep the public surface consistent across data types. This includes float16 even though TFLM does not define a float16 operator contract.
 
-The float API is primarily intended for Cortex-M CPUs with Arm Helium Technology (MVE). Pure C scalar reference implementations are provided for correctness, bring-up, and fallback, but practical deployment is expected to target MVE-enabled CPUs. In general, float kernels should be reserved for specific use cases where integer quantization is not possible or not acceptable, and where the neural network remains modest enough for Cortex-M class devices. CMSIS-NN float support is intended to integrate with frameworks that can carry float16 operator flows, such as [ExecuTorch](https://executorch.ai/).
+CMSIS-NN provides experimental float16 and float32 APIs, enabled with
+`ARM_NN_ENABLE_F16` and `ARM_NN_ENABLE_F32`. They follow the integer API conventions,
+including float16, for which TFLM has no operator contract. The primary target is
+Cortex-M with Helium (MVE); scalar C implementations provide reference and fallback
+paths. Arm A-class CPUs are not a performance target. Float support is intended for
+modest models where quantization is unsuitable, including integration with frameworks
+such as [ExecuTorch](https://executorch.ai/).
 
-For the float operators that support `arm_nn_weight_format_flt`, MVE
-performance is generally better when constant weights are provided in the
-packed `NTxN` layout instead of the standard `NT x T` layout. This avoids the
-gather-heavy RHS access pattern of the standard formulation and is therefore
-the preferred deployment format when offline repacking is available.
+Supported operators use `arm_nn_weight_format_flt` to select standard weights or
+`ARM_NN_WEIGHT_FORMAT_NT_N_PACKED`. Packed weights are transformed offline from a
+logical `[N, K]` matrix to `[N block][K][lane]`, with 8 output channels per block for
+float16 or 4 for float32, enabling contiguous MVE vector loads.
 
-The floating-point scalar code can also be compiled for Arm A-class CPUs with `float16`
-support and may benefit from NEON or SVE auto-vectorization. However, this is
-not an intended deployment target for CMSIS-NN float support, and the resulting
-performance is expected to be suboptimal compared to libraries designed for that
-class of processor. For Arm A-class CPUs, prefer optimized inference libraries
-such as Arm Compute Library or XNNPACK.
+The following specializations are available for **both float16 and float32**.
+All use **NHWC, dilation 1, and no scratch buffer**. Compatible cases are selected
+automatically; other valid configurations use the generic fallback.
+
+**Convolution** — all current kernels require stride 1 and zero padding on both axes.
+
+| Filter (H × W) | Weight formats |
+| --- | --- |
+| 1×3, 1×5 | Standard or packed |
+| 1×2, 1×7, 1×9 | Packed |
+| 2×2, 2×3, 2×5 | Packed |
+
+**Depthwise convolution** — all current kernels use KC weights.
+
+| Filter (H × W) | Channel multiplier | Stride | Padding | Additional restriction |
+| --- | --- | --- | --- | --- |
+| 1×3 | 1 | 1 | 0 | — |
+| 1×9 | Any positive | 1 | 0 | — |
+| 2×5 | Any positive | 1 | 0 | Input height must be 2 |
+| 3×3 | 1 | Any | Any | — |
+
+Stride must be greater than zero; padding must be zero or greater. These requirements
+apply independently to both axes. The 1D kernels support multiple input rows and batches.
+Floating-point results may vary with accumulation order and compiler options.
+
+To add kernels, use the `arm_conv_specialized_registry_f16.h` / `_f32.h` and
+`arm_depthwise_conv_specialized_registry_f16.h` / `_f32.h` headers in
+`Include/Internal/`. Each entry declares the implementation's supported geometry;
+the registry comments describe the registration contract and selection order.
 
 ## Branches and Tags
 There is a single branch called 'main'.
@@ -199,6 +226,7 @@ Further compile-time options:
 |------|-----|-----|
 | ARM_NN_ENABLE_F32 | Enable experimental float32 operator support. Leave disabled unless the application needs float32 kernels. | Yes |
 | ARM_NN_ENABLE_F16 | Enable experimental float16 operator support. Leave disabled unless the application needs float16 kernels and the toolchain/target support them. | Yes |
+| ARM_NN_ENABLE_ASSERTS | Enable internal invariant assertions with `1` (CMake: `ON`). Defaults to `0` (`OFF`); public argument validation remains active. | Yes |
 | NN_DISABLE_SPECIALIZATION | Disable optional shape/layout-specific fast paths and force the corresponding generic implementations. Useful for debugging or validating specialized kernels against the generic path. | No |
 | ARM_NN_USE_EXP_LUT | Select the LUT-based scalar float softmax exp approximation. This is the default if no softmax exp macro is defined. | No |
 | ARM_NN_USE_EXP_TAYLOR | Select the Taylor/Estrin scalar float softmax exp approximation to avoid the extra LUT storage. | No |
@@ -206,6 +234,33 @@ Further compile-time options:
 | CMSIS_NN_USE_REQUANTIZE_INLINE_ASSEMBLY | Use inline assembly for `arm_nn_requantize`. This code branch is faster on Cortex-M4, but slower on others. Results should be bit-identical, but was observed to cause differences with Arm Compiler and Cortex-M7. | Yes |
 
 (*) If you enable an option that affects headers, also enable the equivalent option in TFL/TFLM.
+
+`ARM_NN_ENABLE_ASSERTS` controls internal assertions independently of optimization
+and build type.
+Enable it when compiling CMSIS-NN sources; setting it only on an application that
+links an already-built library cannot enable checks in that library. Assertions
+check internal invariants and must not contain required side effects. When enabled,
+the default failure hook loops forever; a custom `ARM_NN_ASSERT_FAIL()` must not
+return.
+
+The float unit-test csolution explicitly enables assertions at solution scope:
+
+```yaml
+define:
+  - ARM_NN_ENABLE_ASSERTS: 1
+```
+
+CMake unit tests also default to assertions enabled; configure with
+`-DARM_NN_ENABLE_ASSERTS=OFF` to test without them. Standalone library CMake builds
+default to `OFF`, including Debug builds; use `-DARM_NN_ENABLE_ASSERTS=ON` to enable.
+
+For strict library builds, `Tests/UnitTest/build_lib_variants.py` accepts
+`--strict-warnings` and `--build-type Release` or `--build-type Debug`.
+The script explicitly sets `ARM_NN_ENABLE_ASSERTS=OFF` for Release and `ON` for
+Debug, so the library variant CI exercises both assertion settings. The
+`--optimization` option controls optimization independently in either build type.
+Builds and logs are separated under `<build-root>/<toolchain>/<build-type>/<variant>`.
+The library variant CI runs both configurations for GCC and AC6.
 
 
 ### Supported Compilers

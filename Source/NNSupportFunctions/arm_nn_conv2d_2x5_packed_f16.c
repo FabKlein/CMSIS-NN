@@ -1,0 +1,31 @@
+/*
+ * SPDX-FileCopyrightText: Copyright 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* ----------------------------------------------------------------------
+ * Project:      CMSIS NN Library
+ * Title:        arm_nn_conv2d_2x5_packed_f16.c
+ * Description:  Support: NHWC specialized convolution kernel size 2x5 for packed f16 weights
+ *
+ * $Date:        9 September 2026
+ * $Revision:    V.1.0.1
+ *
+ * Target :  Arm(R) M-Profile Architecture
+ *
+ * -------------------------------------------------------------------- */
+
+#include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_F16
+
+    #define ARM_NN_CONV2D_PACKED_NAME arm_nn_conv2d_2x5_packed_f16
+    #define ARM_NN_CONV2D_PACKED_KERNEL_H 2
+    #define ARM_NN_CONV2D_PACKED_KERNEL_W 5
+    #include "Internal/arm_nn_conv2d_packed_f16_template.h"
+    #undef ARM_NN_CONV2D_PACKED_KERNEL_W
+    #undef ARM_NN_CONV2D_PACKED_KERNEL_H
+    #undef ARM_NN_CONV2D_PACKED_NAME
+
+#endif /* ARM_NN_ENABLE_F16 */

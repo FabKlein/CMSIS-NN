@@ -21,8 +21,8 @@
  * Title:        arm_nnfunctions_flt.h
  * Description:  Public floating-point API extensions for CMSIS-NN
  *
- * $Date:        31 March 2026
- * $Revision:    V.1.0.0
+ * $Date:        9 September 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -66,6 +66,18 @@ extern "C" {
  * @note When @p ctx->buf is used for internal kernel repacking, it must be aligned to the element type stored in
  * scratch: at least 4-byte aligned for float32_t and, via @copydoc, at least 2-byte aligned for float16_t.
  *
+ * @note Stride, dilation, channel multiplier, and tensor extents must be positive; padding must be nonnegative.
+ * Input and output batches must match, and output channels must equal input channels times the channel multiplier.
+ * Padded extents, coordinate calculations (including dilated-kernel clipping), and tensor element counts must fit
+ * signed 32-bit indexing. Unsupported geometry returns `ARM_CMSIS_NN_ARG_ERROR` before writing output, including
+ * when assertions are disabled. Output extents need not imply symmetric padding.
+ *
+ * @par Specialized float depthwise-convolution kernels
+ * Compatible calls are selected automatically from an internal specialization
+ * table before using the generic fallback. Float16 and float32 currently
+ * specialize 1x3, 1x9, 2x5, and 3x3 filters. Further variants can be
+ * registered in the table without changing this public API.
+ *
  * @return `ARM_CMSIS_NN_SUCCESS` on success or `ARM_CMSIS_NN_ARG_ERROR` on invalid arguments.
  */
 arm_cmsis_nn_status arm_depthwise_nhwc_conv_f32(const cmsis_nn_context *ctx,
@@ -98,6 +110,12 @@ arm_cmsis_nn_status arm_depthwise_nhwc_conv_f32(const cmsis_nn_context *ctx,
  * @note When @p ctx->buf is used for internal kernel repacking, it must be aligned to the element type stored in
  * scratch: at least 4-byte aligned for float32_t and, via @copydoc, at least 2-byte aligned for float16_t.
  *
+ * @note Stride, dilation, channel multiplier, and tensor extents must be positive; padding must be nonnegative.
+ * Input and output batches must match, and output channels must equal input channels times the channel multiplier.
+ * Padded extents, coordinate calculations (including dilated-kernel clipping), and tensor element counts must fit
+ * signed 32-bit indexing. Unsupported geometry returns `ARM_CMSIS_NN_ARG_ERROR` before writing output, including
+ * when assertions are disabled. Output extents need not imply symmetric padding.
+ *
  * @return `ARM_CMSIS_NN_SUCCESS` on success or `ARM_CMSIS_NN_ARG_ERROR` on invalid arguments.
  */
 arm_cmsis_nn_status arm_depthwise_conv_f32(const cmsis_nn_context *ctx,
@@ -129,6 +147,12 @@ arm_cmsis_nn_status arm_depthwise_conv_f32(const cmsis_nn_context *ctx,
  * @note When @p ctx->buf is used for internal kernel repacking, it must be aligned to the element type stored in
  * scratch: at least 4-byte aligned for float32_t and, via @copydoc, at least 2-byte aligned for float16_t.
  *
+ * @note Stride, dilation, channel multiplier, and tensor extents must be positive; padding must be nonnegative.
+ * Input and output batches must match, and output channels must equal input channels times the channel multiplier.
+ * Padded extents, coordinate calculations (including dilated-kernel clipping), and tensor element counts must fit
+ * signed 32-bit indexing. Unsupported geometry returns `ARM_CMSIS_NN_ARG_ERROR` before writing output, including
+ * when assertions are disabled. Output extents need not imply symmetric padding.
+ *
  * @return `ARM_CMSIS_NN_SUCCESS` on success or `ARM_CMSIS_NN_ARG_ERROR` on invalid arguments.
  */
 arm_cmsis_nn_status arm_depthwise_conv_wrapper_f32(const cmsis_nn_context *ctx,
@@ -150,6 +174,9 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_f32(const cmsis_nn_context *ctx,
  * @param[in] filter_dims    Filter tensor dimensions.
  * @param[in] output_dims    Output tensor dimensions.
  * @param[in] layout         Tensor layout selector.
+ *
+ * @note Compatible registered specializations require no scratch and return 0.
+ * Defining NN_DISABLE_SPECIALIZATION makes this query size the fallback path instead.
  *
  * @return Required buffer size in bytes, or 0 when no scratch buffer is needed.
  */
@@ -198,8 +225,18 @@ arm_cmsis_nn_status arm_convolve_nhwc_f32(const cmsis_nn_context *ctx,
  *
  * @note When `conv_params->weight_format` is set to
  *       `ARM_NN_WEIGHT_FORMAT_NT_N_PACKED`, the matmul-backed convolution
- *       paths interpret @p filter_data as an already prepacked `NTxN` RHS
- *       buffer instead of the standard public filter layout.
+ *       paths interpret @p filter_data as an offline-packed
+ *       `[N block][K][lane]` buffer instead of the standard public filter
+ *       layout.
+ *
+ * @par Specialized float convolution kernels
+ * Valid NHWC convolutions with unit stride and dilation and no padding can be
+ * dispatched directly to kernels tuned for their filter shape. Current
+ * float16 and float32 specializations support standard weights for 1x3 and
+ * 1x5 filters, and packed weights for 1x2, 1x3, 1x5, 1x7, 1x9, 2x2, 2x3, and
+ * 2x5 filters. An internal matcher selects a compatible entry from the
+ * specialization tables; unsupported shapes retain the generic fallback.
+ * Further variants can be registered there without changing this public API.
  *
  * @return `ARM_CMSIS_NN_SUCCESS` on success or `ARM_CMSIS_NN_ARG_ERROR` on invalid arguments.
  */

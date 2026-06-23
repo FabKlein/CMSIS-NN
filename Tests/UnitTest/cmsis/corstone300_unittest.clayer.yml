@@ -5,6 +5,20 @@
 layer:
   description: Corstone-300 FVP support for CMSIS-NN float unit tests
 
+  # CMSIS-Toolbox 2.14.0's CLANG cmake emits -mfpu=fpv5-sp-d16 for
+  # Cortex-M55. This disables scalar FP16 arithmetic
+  # and floating-point MVE, and triggers a Clang backend crash in the F16 tests.
+  # Override it consistently for compilation and linking.
+  # Revisit this workaround when the toolbox used by CI preserves the Cortex-M55 FP16/MVE features, ON if -mfpu is omitted
+  misc:
+    - for-compiler: CLANG
+      C-CPP:
+        - -mfpu=fp-armv8-fullfp16-sp-d16
+      ASM:
+        - -mfpu=fp-armv8-fullfp16-sp-d16
+      Link:
+        - -mfpu=fp-armv8-fullfp16-sp-d16
+
   groups:
     - group: Corstone-300
       files:

@@ -42,6 +42,27 @@ void test_depthwise_k3_1d_opt_nhwc_f32_arm_depthwise_conv_f32(void)
 {
     depthwise_k3_1d_opt_nhwc_f32_arm_depthwise_conv_f32();
 }
+void test_depthwise_k2_1d_opt_nhwc_f32_arm_depthwise_conv_f32(void)
+{
+    depthwise_k2_1d_opt_nhwc_f32_arm_depthwise_conv_f32();
+}
+void test_depthwise_k5_1d_opt_nhwc_f32_arm_depthwise_conv_f32(void)
+{
+    depthwise_k5_1d_opt_nhwc_f32_arm_depthwise_conv_f32();
+}
+void test_depthwise_k7_1d_opt_nhwc_f32_arm_depthwise_conv_f32(void)
+{
+    depthwise_k7_1d_opt_nhwc_f32_arm_depthwise_conv_f32();
+}
+void test_depthwise_k9_1d_opt_nhwc_f32_arm_depthwise_conv_f32(void)
+{
+    depthwise_k9_1d_opt_nhwc_f32_arm_depthwise_conv_f32();
+}
+void test_depthwise_k9_1d_mult3_batch2_null_bias_f32_arm_depthwise_conv_f32(void)
+{
+    depthwise_k9_1d_mult3_batch2_null_bias_f32_arm_depthwise_conv_f32();
+}
+void test_depthwise_k9_1d_mult9_f32_arm_depthwise_conv_f32(void) { depthwise_k9_1d_mult9_f32_arm_depthwise_conv_f32(); }
 void test_depthwise_2x5_opt_batch2_f32_arm_depthwise_conv_f32(void)
 {
     depthwise_2x5_opt_batch2_f32_arm_depthwise_conv_f32();
@@ -77,3 +98,23 @@ void test_depthwise_ic1_to_conv_nhwc_f32_arm_depthwise_conv_f32_no_ctx(void)
 {
     depthwise_ic1_to_conv_nhwc_f32_arm_depthwise_conv_f32_no_ctx();
 }
+
+void test_depthwise_invalid_geometry_f32(void) { depthwise_invalid_geometry_f32(); }
+
+void test_depthwise_geometry_limits_f32(void) { depthwise_geometry_limits_f32(); }
+
+void test_depthwise_dilated_clipping_boundaries_f32(void)
+{
+    depthwise_dilated_clipping_boundaries_f32();
+}
+
+void test_depthwise_specialization_selection_f32(void)
+{
+    depthwise_specialization_selection_f32();
+}
+
+void test_depthwise_specialization_requirements_f32(void) { depthwise_specialization_requirements_f32(); }
+
+void test_depthwise_small_multiplier_vectors_f32(void) { depthwise_small_multiplier_vectors_f32(); }
+
+void test_depthwise_specialized_scratch_f32(void) { depthwise_specialized_scratch_f32(); }

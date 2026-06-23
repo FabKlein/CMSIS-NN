@@ -21,8 +21,8 @@
  * Title:        arm_convolve_f32.c
  * Description:  Generic float32 convolution
  *
- * $Date:        31 March 2026
- * $Revision:    V.1.0.0
+ * $Date:        8 September 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,8 +30,8 @@
 
 /* Generic float32 convolution. */
 
-#include "Internal/arm_conv_opt_common.h"
-#include "Internal/arm_conv_opt_f32.h"
+#include "Internal/arm_conv_specialized_common.h"
+#include "Internal/arm_conv_specialized_f32.h"
 #include "Internal/arm_nn_activation_flt.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
@@ -68,15 +68,17 @@ __STATIC_INLINE float32_t arm_conv_dot_f32(const float32_t *lhs, const float32_t
 __STATIC_INLINE bool arm_conv_nhwc_use_patch_gemm_f32(const cmsis_nn_context *ctx,
                                                       int32_t patch_len,
                                                       int32_t output_c,
-                                                      int32_t output_positions)
+                                                      int32_t output_positions,
+                                                      arm_nn_weight_format_flt weight_format)
 {
     if (!ctx || !ctx->buf || ctx->size <= 0 || patch_len <= 0)
     {
         return false;
     }
 
-    if (patch_len < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_K || output_c < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_OC ||
-        output_positions < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_POS)
+    if (weight_format != ARM_NN_WEIGHT_FORMAT_NT_N_PACKED &&
+        (patch_len < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_K || output_c < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_OC ||
+         output_positions < ARM_NN_CONV_NHWC_PATCH_GEMM_F32_MIN_POS))
     {
         return false;
     }
@@ -139,6 +141,12 @@ __STATIC_INLINE bool arm_conv_nhwc_use_1xn_f32(const cmsis_nn_context *ctx,
         return false;
     }
 
+    /* Packed weights are consumed by the packed patch-GEMM path below. */
+    if (conv_params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+    {
+        return false;
+    }
+
     /* This helper only selects the generic 1xN NHWC kernel family. */
     if (input_dims->h != 1 || output_dims->h != 1 || filter_dims->h != 1 || filter_dims->w <= 1 ||
         conv_params->stride.h != 1 || conv_params->stride.w <= 0 || conv_params->padding.h != 0 ||
@@ -146,18 +154,6 @@ __STATIC_INLINE bool arm_conv_nhwc_use_1xn_f32(const cmsis_nn_context *ctx,
     {
         return false;
     }
-
-#ifndef NN_DISABLE_SPECIALIZATION
-    /*
-     * If a direct specialization already claims the shape, let the normal
-     * specialization dispatcher handle it instead of forcing the generic 1xN
-     * implementation to know kernel-specific details.
-     */
-    if (arm_conv_spec_nhwc_f32_matches_any(ctx, conv_params, input_dims, filter_dims, output_dims))
-    {
-        return false;
-    }
-#endif
 
     /* Remaining 1xN shapes use the generic packed-input helper when workspace is available. */
     const int32_t buf_size =
@@ -299,6 +295,16 @@ arm_cmsis_nn_status arm_convolve_nhwc_f32(const cmsis_nn_context *ctx,
     const int32_t patch_len = kernel_h * kernel_w * input_c;
     const int32_t output_positions = output_h * output_w;
 
+#ifndef NN_DISABLE_SPECIALIZATION
+    arm_conv_selection_f32 selection;
+    if (arm_conv_select_specialized_f32(conv_params, input_dims, filter_dims, output_dims, &selection))
+    {
+        arm_conv_execute_specialized_f32(
+            &selection, conv_params, input_dims, input_data, filter_data, bias_data, output_dims, output_data);
+        return ARM_CMSIS_NN_SUCCESS;
+    }
+#endif
+
     if (arm_conv_nhwc_use_1x1_f32(conv_params, filter_dims))
     {
         return arm_convolve_1x1_nhwc_f32(ctx,
@@ -327,27 +333,8 @@ arm_cmsis_nn_status arm_convolve_nhwc_f32(const cmsis_nn_context *ctx,
                                            output_data);
     }
 
-#ifndef NN_DISABLE_SPECIALIZATION
-    /*
-     * Let direct specializations claim their shapes first. Packed-patch GEMM
-     * remains the generic fallback for shapes that are not handled by a tuned
-     * direct kernel.
-     */
-    ARM_CONV_DISPATCH(arm_conv_spec_nhwc_f32,
-                      ARM_CONV_ARRAY_SIZE(arm_conv_spec_nhwc_f32),
-                      ctx,
-                      conv_params,
-                      input_dims,
-                      input_data,
-                      filter_dims,
-                      filter_data,
-                      bias_dims,
-                      bias_data,
-                      output_dims,
-                      output_data);
-#endif
-
-    const bool use_patch_gemm = arm_conv_nhwc_use_patch_gemm_f32(ctx, patch_len, output_c, output_positions);
+    const bool use_patch_gemm =
+        arm_conv_nhwc_use_patch_gemm_f32(ctx, patch_len, output_c, output_positions, conv_params->weight_format);
 
     if (use_patch_gemm)
     {
@@ -357,6 +344,11 @@ arm_cmsis_nn_status arm_convolve_nhwc_f32(const cmsis_nn_context *ctx,
         {
             return st;
         }
+    }
+
+    if (conv_params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+    {
+        return ARM_CMSIS_NN_ARG_ERROR;
     }
 
     for (int32_t b = 0; b < batch; ++b)

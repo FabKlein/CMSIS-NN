@@ -26,11 +26,11 @@ on:
       toolchains:
         description: Comma-separated toolchains to run (no spaces)
         required: false
-        default: GCC@14.3.1,AC6@6.24.0
+        default: GCC@14.3.1,AC6@6.24.0,CLANG@22.1.0
   pull_request:
     branches: [main]
   push:
-    branches: [main, cmsis_nn_float]
+    branches: [main, float_specialized_conv_opt]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -53,10 +53,13 @@ jobs:
           - key: ac6
             toolchain: AC6
             toolchain_label: AC6@6.24.0
+          - key: clang
+            toolchain: CLANG
+            toolchain_label: CLANG@22.1.0
 
     env:
       INTEGER_TESTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tests || 'all' }}
-      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0' }}
+      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0,CLANG@22.1.0' }}
       CMSIS_PACK_ROOT: /home/runner/.cache/arm/packs
       INTEGER_BUILD_ROOT: ${{ github.workspace }}/.ci-tmp/cmsis-nn-integer-fvp
 
@@ -122,6 +125,9 @@ jobs:
           fi
           if [[ -n "${AC6_TOOLCHAIN_6_24_0:-}" ]]; then
             echo "AC6_TOOLCHAIN=${AC6_TOOLCHAIN_6_24_0}" >> "${GITHUB_ENV}"
+          fi
+          if [[ -n "${CLANG_TOOLCHAIN_22_1_0:-}" ]]; then
+            echo "CLANG_TOOLCHAIN=${CLANG_TOOLCHAIN_22_1_0}" >> "${GITHUB_ENV}"
           fi
 
       - name: Run integer CMSIS/FVP regression

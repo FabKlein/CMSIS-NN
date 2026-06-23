@@ -128,23 +128,6 @@ def resolve_size_tool(family: str, gcc_bin_dir: Path | None, ac6_bin_dir: Path |
     raise RuntimeError(f"Unsupported toolchain family: {family}")
 
 
-def clang_runtime_root(bin_dir: Path | None) -> Path | None:
-    if bin_dir is None:
-        return None
-
-    candidate = bin_dir.parent / "lib" / "clang-runtimes" / "arm-none-eabi"
-    if candidate.exists():
-        return candidate
-
-    lib_dir = bin_dir.parent / "lib"
-    if lib_dir.exists():
-        matches = sorted(lib_dir.glob("**/clang-runtimes/arm-none-eabi"))
-        if matches:
-            return matches[0]
-
-    return None
-
-
 def parse_version(value: str) -> tuple[int | str, ...]:
     parts: list[int | str] = []
     for part in re.split(r"[.-]", value):
@@ -238,10 +221,9 @@ def resolve_toolchain(requested: str, cpu: str, toolchain_bin: str | None) -> To
         ranlib = resolve_tool(bin_dir, "llvm-ranlib")
         if not cc or not cxx:
             raise RuntimeError("Unable to resolve clang/clang++ for CLANG toolchain.")
-        flags = f"--target=arm-arm-none-eabi -mcpu={cpu} -mthumb -mfloat-abi=hard"
-        runtime_root = clang_runtime_root(bin_dir)
-        if runtime_root:
-            flags = f"{flags} --sysroot {runtime_root}"
+        # Use the runtime's target triple and let Clang select its bundled multilib.
+        # A sysroot pointing inside clang-runtimes bypasses that selection in Clang 20.
+        flags = f"--target=arm-none-eabi -mcpu={cpu} -mthumb -mfloat-abi=hard"
         return Toolchain(requested, family, cc, cxx, flags, flags, ar=ar, ranlib=ranlib, size_mode=size_mode, size_tool=size_tool)
 
     raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6, CLANG.")
@@ -368,15 +350,21 @@ def build_variant(
     variant: Variant,
     cpu: str,
     optimization: str,
+    strict_warnings: bool,
     jobs: int,
+    build_type: str = "Release",
 ) -> VariantResult:
-    build_dir = build_root / toolchain.family.lower() / variant.key
+    build_dir = build_root / toolchain.family.lower() / build_type.lower() / variant.key
     shutil.rmtree(build_dir, ignore_errors=True)
     build_dir.mkdir(parents=True, exist_ok=True)
 
     configure_log = build_dir / "configure.log"
     build_log = build_dir / "build.log"
 
+    warning_flags = " -Wall -Wextra -Werror" if strict_warnings else ""
+    if toolchain.family == "CLANG" and optimization == "-Ofast":
+        # Clang deprecates -Ofast; preserve its optimization and fast-math behavior.
+        optimization = "-O3;-ffast-math"
     cmake_cmd = [
         "cmake",
         "-S",
@@ -384,15 +372,16 @@ def build_variant(
         "-B",
         str(build_dir),
         *cmake_generator_args(),
-        "-DCMAKE_BUILD_TYPE=Release",
+        f"-DCMAKE_BUILD_TYPE={build_type}",
+        f"-DARM_NN_ENABLE_ASSERTS={'ON' if build_type == 'Debug' else 'OFF'}",
         f"-DCMSIS_PATH={cmsis_path}",
         "-DCMAKE_SYSTEM_NAME=Generic",
         f"-DCMAKE_SYSTEM_PROCESSOR={cpu}",
         "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY",
         f"-DCMAKE_C_COMPILER={toolchain.cc}",
         f"-DCMAKE_CXX_COMPILER={toolchain.cxx}",
-        f"-DCMAKE_C_FLAGS={toolchain.c_flags}",
-        f"-DCMAKE_CXX_FLAGS={toolchain.cxx_flags}",
+        f"-DCMAKE_C_FLAGS={toolchain.c_flags}{warning_flags}",
+        f"-DCMAKE_CXX_FLAGS={toolchain.cxx_flags}{warning_flags}",
         f"-DCMSIS_OPTIMIZATION_LEVEL={optimization}",
         f"-DARM_NN_ENABLE_F32={'ON' if variant.enable_f32 else 'OFF'}",
         f"-DARM_NN_ENABLE_F16={'ON' if variant.enable_f16 else 'OFF'}",
@@ -525,6 +514,21 @@ def main() -> int:
         help="Value forwarded to CMSIS_OPTIMIZATION_LEVEL. Defaults to -Ofast.",
     )
     parser.add_argument(
+        "--build-type",
+        choices=("Release", "Debug"),
+        default="Release",
+        help=(
+            "CMake build type. This script sets ARM_NN_ENABLE_ASSERTS=OFF for Release "
+            "and ON for Debug. "
+            "Optimization is set separately."
+        ),
+    )
+    parser.add_argument(
+        "--strict-warnings",
+        action="store_true",
+        help="Build variants with -Wall -Wextra -Werror.",
+    )
+    parser.add_argument(
         "--jobs",
         type=int,
         default=max(1, os.cpu_count() or 1),
@@ -533,7 +537,10 @@ def main() -> int:
     parser.add_argument(
         "--build-root",
         default=str(DEFAULT_BUILD_ROOT),
-        help=f"Root directory for per-variant build trees. Defaults to {DEFAULT_BUILD_ROOT}.",
+        help=(
+            "Builds are stored under <root>/<toolchain>/<build-type>/<variant>. "
+            f"Defaults to {DEFAULT_BUILD_ROOT}."
+        ),
     )
     args = parser.parse_args()
 
@@ -546,8 +553,19 @@ def main() -> int:
     failed = False
 
     for variant in variants:
-        print(f"==> Building {variant.label} [{variant.key}] with {toolchain.requested}")
-        result = build_variant(REPO_ROOT, build_root, cmsis_path, toolchain, variant, args.cpu, args.optimization, args.jobs)
+        print(f"==> Building {variant.label} [{variant.key}] with {toolchain.requested} ({args.build_type})")
+        result = build_variant(
+            REPO_ROOT,
+            build_root,
+            cmsis_path,
+            toolchain,
+            variant,
+            args.cpu,
+            args.optimization,
+            args.strict_warnings,
+            args.jobs,
+            build_type=args.build_type,
+        )
         results.append(result)
         if result.status != "PASS":
             failed = True

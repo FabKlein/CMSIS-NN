@@ -128,7 +128,6 @@ SECTIONS
   .data : {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
-    *(.rodata .rodata.*)
 
     . = ALIGN(8);
     PROVIDE(__global_pointer$ = . + 0x800);
@@ -211,12 +210,16 @@ SECTIONS
   } >DTCM :ram
 #endif
 
+  /* Match the GCC test layout: FVP loads read-only test data directly into DDR,
+   * avoiding an ITCM load copy and a DTCM runtime copy of the large test arrays. */
   .ddr : {
+    . = ALIGN(16);
+    *(.rodata .rodata.*)
     *(ifm)
     *(nn_model)
     *(labels)
     *(.bss.NoInit.activation_buf_dram)
-  } > DDR : ddr
+  } > DDR AT>DDR : ddr
 
   .stab          0 : { *(.stab) }
   .stabstr       0 : { *(.stabstr) }
