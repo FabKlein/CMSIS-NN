@@ -96,6 +96,11 @@ does not introduce a separate integer test set; it automates the existing
 integer unit-test targets so they can be driven more easily from CI or from a
 reproducible local command line.
 
+Supported toolchains are `GCC`, `AC6`, and Arm Toolchain for Embedded LLVM/Clang
+(`CLANG`). To select Clang, use `--toolchains CLANG` and set `CLANG_TOOLCHAIN`
+to its `bin` directory. Versioned selections such as `CLANG@20.1.0` can use
+`CLANG_TOOLCHAIN_20_1_0` instead.
+
 Example:
 ```
 python3 run_integer_unit_tests.py \

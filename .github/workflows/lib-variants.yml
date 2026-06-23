@@ -22,7 +22,7 @@ on:
       toolchains:
         description: Comma-separated toolchains to run (no spaces)
         required: false
-        default: GCC@14.3.1,AC6@6.24.0
+        default: GCC@14.3.1,AC6@6.24.0,CLANG@22.1.0
       variants:
         description: Comma-separated variant keys to build
         required: false
@@ -38,7 +38,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, cmsis_nn_float]
+    branches: [main, float_specialized_conv_opt]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -49,21 +49,26 @@ permissions:
 
 jobs:
   variants:
-    name: ${{ matrix.toolchain_label }}
+    name: ${{ matrix.toolchain_label }} / ${{ matrix.build_type }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
+        toolchain: [GCC, AC6, CLANG]
+        build_type: [Release, Debug]
         include:
-          - key: gcc
-            toolchain: GCC
+          - toolchain: GCC
+            key: gcc
             toolchain_label: GCC@14.3.1
-          - key: ac6
-            toolchain: AC6
+          - toolchain: AC6
+            key: ac6
             toolchain_label: AC6@6.24.0
+          - toolchain: CLANG
+            key: clang
+            toolchain_label: CLANG@22.1.0
 
     env:
-      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0' }}
+      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'GCC@14.3.1,AC6@6.24.0,CLANG@22.1.0' }}
       LIB_VARIANTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.variants || 'all' }}
       LIB_CPU: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.cpu || 'cortex-m55' }}
       LIB_OPTIMIZATION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.optimization || '' }}
@@ -92,7 +97,7 @@ jobs:
         if: steps.select.outputs.enabled != 'true'
         run: |
           {
-            echo "## ${{ matrix.toolchain_label }}"
+            echo "## ${{ matrix.toolchain_label }} / ${{ matrix.build_type }}"
             echo ""
             echo "Skipped by workflow_dispatch filter."
           } >> "${GITHUB_STEP_SUMMARY}"
@@ -126,13 +131,13 @@ jobs:
           if [[ -n "${AC6_TOOLCHAIN_6_24_0:-}" ]]; then
             echo "AC6_TOOLCHAIN=${AC6_TOOLCHAIN_6_24_0}" >> "${GITHUB_ENV}"
           fi
+          if [[ -n "${CLANG_TOOLCHAIN_22_1_0:-}" ]]; then
+            echo "CLANG_TOOLCHAIN=${CLANG_TOOLCHAIN_22_1_0}" >> "${GITHUB_ENV}"
+          fi
 
       - name: Build library variants
         if: steps.select.outputs.enabled == 'true'
         run: |
-          # Keep this matrix on the toolchains that are already stable with the
-          # direct CMake library build path. Embedded CLANG is validated in the
-          # CMSIS/FVP workflow instead.
           set +e
           set -o pipefail
 
@@ -146,6 +151,8 @@ jobs:
             --variants "${LIB_VARIANTS}" \
             --cpu "${LIB_CPU}" \
             --cmsis-pack-root "${CMSIS_PACK_ROOT}" \
+            --strict-warnings \
+            --build-type "${{ matrix.build_type }}" \
             "${optimization_args[@]}" \
             --jobs 4 \
             --build-root "${LIB_BUILD_ROOT}" | tee build_lib_variants.log
@@ -153,7 +160,7 @@ jobs:
           status=${PIPESTATUS[0]}
 
           {
-            echo "## ${{ matrix.toolchain_label }}"
+            echo "## ${{ matrix.toolchain_label }} / ${{ matrix.build_type }}"
             echo ""
             echo "- CPU: \`${LIB_CPU}\`"
             echo "- Variants: \`${LIB_VARIANTS}\`"
@@ -170,7 +177,7 @@ jobs:
         if: always() && steps.select.outputs.enabled == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: lib-variants-${{ matrix.key }}
+          name: lib-variants-${{ matrix.key }}-${{ matrix.build_type }}
           path: |
             build_lib_variants.log
             ${{ env.LIB_BUILD_ROOT }}/${{ matrix.key }}/**/*.log

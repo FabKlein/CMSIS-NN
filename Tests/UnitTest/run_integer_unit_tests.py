@@ -157,6 +157,8 @@ def resolve_toolchain(requested: str) -> Toolchain:
         search_dirs.extend(toolchain_dirs_from_env("GCC"))
     elif family == "AC6":
         search_dirs.extend(toolchain_dirs_from_env("AC6"))
+    elif family == "CLANG":
+        search_dirs.extend(toolchain_dirs_from_env("CLANG"))
     search_dirs.append(None)
 
     if family == "GCC":
@@ -189,7 +191,23 @@ def resolve_toolchain(requested: str) -> Toolchain:
         flags = "--target=arm-arm-none-eabi -mcpu=Cortex-M55"
         return Toolchain(requested=requested, family=family, cc=cc, cxx=cc, c_flags=flags, cxx_flags=flags)
 
-    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6.")
+    if family == "CLANG":
+        cc = None
+        cxx = None
+        for search_dir in search_dirs:
+            cc = resolve_tool(search_dir, "clang")
+            cxx = resolve_tool(search_dir, "clang++")
+            if cc and cxx:
+                break
+        if not cc or not cxx:
+            raise RuntimeError(
+                "Unable to resolve clang/clang++. Export CLANG_TOOLCHAIN "
+                "(or a versioned CLANG_TOOLCHAIN_<version>) or add the compiler to PATH."
+            )
+        flags = "--target=armv8.1m.main-none-eabihf -mcpu=cortex-m55 -mthumb -mfloat-abi=hard"
+        return Toolchain(requested=requested, family=family, cc=cc, cxx=cxx, c_flags=flags, cxx_flags=flags)
+
+    raise RuntimeError(f"Unsupported toolchain family '{family}'. Supported families: GCC, AC6, CLANG.")
 
 
 def resolve_pack_dir(pack_root: Path, vendor: str, name: str, preferred_version: str) -> Path:
@@ -372,7 +390,7 @@ def print_summary(results: list[StepResult]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build and run legacy CMSIS-NN integer unit tests on Corstone-300 FVP.")
     parser.add_argument("--tests", default="all", help="Comma-separated integer test targets to run, or all.")
-    parser.add_argument("--toolchains", default="GCC,AC6", help="Comma-separated toolchains to use. Supported: GCC, AC6.")
+    parser.add_argument("--toolchains", default="GCC,AC6", help="Comma-separated toolchains to use. Supported: GCC, AC6, CLANG.")
     parser.add_argument("--list", action="store_true", help="List supported integer test targets and exit.")
     parser.add_argument("--build-fvp", action="store_true", help="Configure and build integer FVP tests.")
     parser.add_argument("--run-fvp", action="store_true", help="Run built integer FVP tests.")

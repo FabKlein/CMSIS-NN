@@ -22,6 +22,7 @@ set(CMSIS_OPTIMIZATION_LEVEL
     CACHE STRING "Compiler optimization level.")
 option(ARM_NN_ENABLE_F32 "Enable CMSIS-NN float32 extensions." OFF)
 option(ARM_NN_ENABLE_F16 "Enable CMSIS-NN float16 extensions." OFF)
+option(ARM_NN_ENABLE_ASSERTS "Enable CMSIS-NN internal assertions." OFF)
 
 project(CMSISNN C CXX)
 
@@ -42,7 +43,8 @@ endif()
 target_compile_options(cmsis-nn PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
 target_compile_definitions(
   cmsis-nn PUBLIC ARM_NN_ENABLE_F32=${ARM_NN_ENABLE_F32_VALUE}
-                  ARM_NN_ENABLE_F16=${ARM_NN_ENABLE_F16_VALUE})
+                  ARM_NN_ENABLE_F16=${ARM_NN_ENABLE_F16_VALUE}
+                  ARM_NN_ENABLE_ASSERTS=$<BOOL:${ARM_NN_ENABLE_ASSERTS}>)
 
 target_include_directories(cmsis-nn PUBLIC "Include")
 
@@ -59,6 +61,8 @@ if(CMSISNN_BUILD_PYBIND)
   target_include_directories(
     cmsis-nn-shared PRIVATE $<TARGET_PROPERTY:cmsis-nn,INCLUDE_DIRECTORIES>)
   target_compile_options(cmsis-nn-shared PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
+  target_compile_definitions(
+    cmsis-nn-shared PRIVATE ARM_NN_ENABLE_ASSERTS=$<BOOL:${ARM_NN_ENABLE_ASSERTS}>)
 
   if(NOT TARGET pybind11::module)
     # pybind11 was not provided as a target, try to find installed package.

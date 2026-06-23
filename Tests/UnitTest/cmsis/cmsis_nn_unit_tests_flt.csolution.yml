@@ -7,6 +7,9 @@ solution:
 
   cdefault:
 
+  define:
+    - ARM_NN_ENABLE_ASSERTS: 1
+
   packs:
     - pack: ARM::CMSIS-NN@0.0.0
     - pack: ARM::CMSIS@6.3.0

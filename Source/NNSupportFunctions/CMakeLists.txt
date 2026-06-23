@@ -27,11 +27,22 @@ endif()
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_batch_norm_f32.c
                       arm_get_buffer_size_f32.c
+                      arm_nn_conv_select_f32.c
+                      arm_nn_depthwise_conv_select_f32.c
+                      arm_nn_conv_resolve_f32.c
+                      arm_nn_conv1d_k2_packed_f32.c
                       arm_nn_conv1d_k3_f32.c
                       arm_nn_conv1d_k3_packed_f32.c
                       arm_nn_conv1d_k5_f32.c
                       arm_nn_conv1d_k5_packed_f32.c
+                      arm_nn_conv1d_k7_packed_f32.c
+                      arm_nn_conv1d_k9_packed_f32.c
+                      arm_nn_conv2d_2x2_packed_f32.c
+                      arm_nn_conv2d_2x3_packed_f32.c
+                      arm_nn_conv2d_2x5_packed_f32.c
                       arm_nn_depthwise_conv1d_k3_f32.c
+                      arm_nn_depthwise_conv1d_k9_f32.c
+                      arm_nn_depthwise_conv2x5_f32.c
                       arm_nn_depthwise_conv3x3_f32.c
                       arm_nn_depthwise_conv_nt_t_f32.c
                       arm_nn_maxpool1d_f32.c
@@ -41,11 +52,21 @@ endif()
 if (ARM_NN_ENABLE_F16)
   list(APPEND SRC_FLT arm_batch_norm_f16.c
                       arm_get_buffer_size_f16.c
+                      arm_nn_conv_select_f16.c
+                      arm_nn_depthwise_conv_select_f16.c
+                      arm_nn_conv_resolve_f16.c
+                      arm_nn_conv1d_k2_packed_f16.c
                       arm_nn_conv1d_k3_f16.c
                       arm_nn_conv1d_k3_packed_f16.c
                       arm_nn_conv1d_k5_f16.c
                       arm_nn_conv1d_k5_packed_f16.c
+                      arm_nn_conv1d_k7_packed_f16.c
+                      arm_nn_conv1d_k9_packed_f16.c
+                      arm_nn_conv2d_2x2_packed_f16.c
+                      arm_nn_conv2d_2x3_packed_f16.c
+                      arm_nn_conv2d_2x5_packed_f16.c
                       arm_nn_depthwise_conv1d_k3_f16.c
+                      arm_nn_depthwise_conv1d_k9_f16.c
                       arm_nn_depthwise_conv2x5_f16.c
                       arm_nn_depthwise_conv3x3_f16.c
                       arm_nn_depthwise_conv_nt_t_f16.c

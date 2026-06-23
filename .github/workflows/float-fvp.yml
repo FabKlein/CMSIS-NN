@@ -31,7 +31,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, cmsis_nn_float]
+    branches: [main, float_specialized_conv_opt]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -53,7 +53,7 @@ jobs:
             toolchain_label: AC6@6.24.0
           - key: clang
             toolchain: CLANG
-            toolchain_label: CLANG@20.1.0
+            toolchain_label: CLANG@22.1.0
 
     env:
       FLOAT_TESTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tests || 'all' }}
@@ -106,8 +106,8 @@ jobs:
           if [[ -n "${AC6_TOOLCHAIN_6_24_0:-}" ]]; then
             echo "AC6_TOOLCHAIN=${AC6_TOOLCHAIN_6_24_0}" >> "${GITHUB_ENV}"
           fi
-          if [[ -n "${CLANG_TOOLCHAIN_20_1_0:-}" ]]; then
-            echo "CLANG_TOOLCHAIN=${CLANG_TOOLCHAIN_20_1_0}" >> "${GITHUB_ENV}"
+          if [[ -n "${CLANG_TOOLCHAIN_22_1_0:-}" ]]; then
+            echo "CLANG_TOOLCHAIN=${CLANG_TOOLCHAIN_22_1_0}" >> "${GITHUB_ENV}"
           fi
 
       - name: Run float CMSIS/FVP regression

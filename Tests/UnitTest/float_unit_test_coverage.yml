@@ -2,8 +2,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Generated from Tests/UnitTest/run_float_unit_tests.py and
-# Tests/UnitTest/cmsis/cmsis_nn_unit_tests_flt.csolution.yml
+# Coverage inventory based on Tests/UnitTest/run_float_unit_tests.py,
+# Tests/UnitTest/cmsis/cmsis_nn_unit_tests_flt.csolution.yml, and
+# generated and handwritten tests under Tests/UnitTest/TestCases/.
+# Describes tests present in source, not execution results.
+# Image tensor shapes use NHWC (batch, height, width, channels); spatial pairs use height x width.
+# Matrix and transpose shapes retain their stated axis order. Fully connected inputs use
+# height x width x channels, with batches listed separately.
 schema_version: 1
 scope: float_unit_tests
 source_of_truth:
@@ -99,8 +104,8 @@ families:
     cmsis_project: test_arm_batch_norm_flt
     coverage_summary: Float batch-normalization coverage in NHWC layout.
     coverage_cases:
-      - NHWC case for shape 1x6x8x8.
-      - NHWC case for shape 1x7x5x6.
+      - NHWC case for shape 1x8x8x6.
+      - NHWC case for shape 1x5x6x7.
     dtypes:
       f32:
         host_target: test_arm_batch_norm_f32
@@ -119,7 +124,7 @@ families:
     cmsis_project: test_arm_concatenation_flt
     coverage_summary: Channel concatenation coverage in NHWC layout.
     coverage_cases:
-      - lhs 1x5x8x8 with rhs channel count 3 exported as NHWC.
+      - lhs 1x8x8x5 with rhs 1x8x8x3, concatenated along channels.
     dtypes:
       f32:
         host_target: test_arm_concatenation_f32
@@ -136,57 +141,157 @@ families:
   - name: convolve
     generator_script: conv_settings_flt.py
     cmsis_project: test_arm_convolve_flt
-    coverage_summary: Regular convolution coverage spanning generic 2D shapes and float-specific optimized 1D cases.
+    coverage_summary: Regular convolution coverage spanning generic and packed 2D shapes, optimized 1D cases, and numerical regressions.
     coverage_cases:
-      - Generic 3x3: input 1x6x9x11, out_ch=10, stride 1, no padding.
+      - Generic 3x3: input 1x9x11x6, out_ch=10, stride 1, no padding.
       - Generic 3x3 wrapper case with the same logical dimensions.
       - 1x1 NHWC stride case: input 1x3x17x11, out_ch=13, stride 1x2, activation clamp [-0.75, 0.75].
-      - Optimized 1x3 case: input 1x8x1x21, out_ch=12.
-      - Optimized 1x5 case: input 1x8x1x21, out_ch=12.
+      - Optimized 1x3 case: input 1x1x21x8, out_ch=12.
+      - Optimized 1x5 case: input 1x1x21x8, out_ch=12.
       - Tuned NHWC 1x3 case: input 1x1x21x16, out_ch=16.
       - Tuned NHWC 1x5 case: input 1x1x21x16, out_ch=16.
-      - Common 2x2 case: input 1x4x6x7, out_ch=5.
-      - Common 3x3 pad1 case: input 1x2x3x6, out_ch=4.
+      - Common 2x2 case: input 1x6x7x4, out_ch=5.
+      - Common 3x3 pad1 case: input 1x3x6x2, out_ch=4.
+      - >-
+          Packed 1x2, 1x7, and 1x9 cases, including a 1x9 case with exactly six output positions.
+      - >-
+          Packed 2x2, 2x3, and 2x5 cases compared with generated reference outputs.
+      - >-
+          Packed 2x2/2x3/2x5 tile regressions check output widths 1 through 7, 10, 11, 12, and 17, two output rows, three input channels,
+          full/partial output-channel vectors, bias/null bias, and output sentinels against an exact binary-fraction scalar reference.
+      - >-
+          Packed 1x5 case with two batches, two rows, channel tails, and null bias.
+      - >-
+          Handwritten 1x5 width-boundary regression with output widths 1 through 7, two batches, and two rows;
+          standard and packed weights are compared with a scalar reference.
+      - >-
+          Handwritten 1x7/1x9 cancellation regressions call the packed support kernels directly, with two
+          input channels, null bias, and output widths 1 through 7 to exercise the 6/4/2/1 spatial tiles.
+      - >-
+          F16 cancellation cases use output-channel counts 1, 8, and 9 and weights [1, -1, 0.125] followed
+          by zeros; each output is expected to equal 0.125.
+      - >-
+          F32 cancellation cases use output-channel counts 1, 4, and 5 and weights [1, -1, 0.125]
+          followed by zeros; each output is expected to equal 0.125.
+          These moderate values are exact in either reduction order; large-value cancellation equivalence is not required.
+      - >-
+          Registry-driven integration tests check every registered shape and available weight format for
+          zero scratch, execution without a context buffer, batches/rows/channel tails, and reference outputs.
+          Inputs and references follow each entry's declared stride, padding, and dilation. Selector checks
+          reject undeclared values on both axes with otherwise valid output geometry, invalid formats, and
+          incorrect output dimensions; an unregistered shape retains fallback scratch.
+          These specialized-registry tests are skipped when NN_DISABLE_SPECIALIZATION is defined.
+      - >-
+          Shared geometry tests cover stride 2, padding, dilation, floor division, invalid parameters, and
+          int32_t extent limits on both axes. These also run with specializations disabled.
+      - >-
+          A test-only fixed-stride-2 row kernel verifies matching non-unit requirements and execution through
+          the 1D adapter with vertical stride/padding, fully padded rows, and present/absent bias. This adapter
+          test is skipped when NN_DISABLE_SPECIALIZATION is defined; no stride-2 production kernel is added.
+      - >-
+          Generated conv_match_* cases cover rectangular kernels, multiple batches, asymmetric stride/padding,
+          and activation clamping. The large conv_match_conv_5_f32 case is host-only and is explicitly ignored
+          on FVP because of image size.
+      - >-
+          Generated dilation cases cover 2x2 and 3x3 kernels, dilation 2x2 and 2x3, padded and unpadded
+          inputs, and a two-batch golden-reference case with input 2x4x6x1.
+      - >-
+          Generated 1x1 cases cover channel tails, multiple batches, width-only stride, and stride on both
+          spatial axes.
+      - >-
+          Generated 1xN cases cover kernel widths 3, 8, 32, and 48, width strides 1 through 4, padding,
+          multiple batches, and kernels wider than the input.
     dtypes:
       f32:
         host_target: test_arm_convolve_f32
         cmsis_context: test_arm_convolve_flt.F32+Corstone-300-FVP
         selectors:
           - conv_f32_family
-        notes: generated offline by conv_settings_flt.py
+        notes: generated offline by conv_settings_flt.py, with handwritten regressions in the family test source
       f16:
         host_target: test_arm_convolve_f16
         cmsis_context: test_arm_convolve_flt.F16+Corstone-300-FVP
         selectors:
           - conv_f16_family
-        notes: generated offline by conv_settings_flt.py
+        notes: generated offline by conv_settings_flt.py, with handwritten regressions in the family test source
   - name: depthwise_conv
     generator_script: depthwise_conv_settings_flt.py
     cmsis_project: test_arm_depthwise_conv_flt
-    coverage_summary: Depthwise coverage for generic kernels plus the specialized 1D and 2x5 float paths.
+    coverage_summary: Depthwise coverage for generic and specialized float paths, channel multipliers, and geometry validation regressions.
     coverage_cases:
-      - Generic 3x3 case: input 1x8x9x11, ch_mult=1.
+      - >-
+          Scratch-size regressions cover all four specialized families, k9 with 64 channels,
+          MVE conversion precedence, and nearby stride/padding/height fallbacks. Queries are
+          checked with specialization enabled and disabled, and output is verified with a NULL
+          context. Malformed query geometry must not reach unchecked specialization arithmetic.
+      - >-
+          Small-multiplier vector cases cover 1x9 and 2x5 kernels, input channels 1/2/3/5/9,
+          channel multipliers 1/2/3/4/5/8/9, output widths 1/3/4/5/7, two batches, bias/no-bias,
+          activation clamping, and output sentinels. Each precision runs 700 combinations with
+          an exact binary-fraction reference, including cases that retain the original kernel path.
+      - >-
+          Handwritten specialization-selection cases cover all four depthwise families with multipliers
+          1/3, rows and batches, fixed-height limits, stride/padding/dilation fallback, KC/CK selection,
+          wrong output geometry, and an unregistered shape. Public outputs are checked against an exact
+          integer reference, including when specializations are disabled.
+      - >-
+          Public selection/output cases independently exercise stride 2 without padding, padding with unit
+          stride, asymmetric strides/padding, and dilation rejection on either axis. Synthetic requirements
+          cover exact and unrestricted stride/padding combinations, exact dilation on each axis, wrong output
+          extents, and the separate input-height restriction. Synthetic matcher tests also run with
+          specializations disabled; no new production kernels are introduced.
+      - Generic 3x3 case: input 1x9x11x8, ch_mult=1.
       - Generic NHWC small-channel 3x3 case: input 1x9x11x6, ch_mult=1.
-      - Optimized 1x3 batch2 case: input 2x8x1x21.
+      - Optimized 1x3 batch2 case: input 2x1x21x8.
       - Optimized NHWC 1x3 case: input 1x1x21x8.
-      - Optimized 2x5 batch2 case: input 2x8x2x21.
+      - Optimized 2x5 batch2 case: input 2x2x21x8.
       - Optimized NHWC 2x5 case with ch_mult=16: input 1x2x21x1.
-      - Common 2x2 case: input 1x4x6x5.
-      - Common 3x3 case: input 1x5x5x4, stride 2x2, pad_h=1 pad_w=0.
+      - Common 2x2 case: input 1x6x5x4.
+      - Common 3x3 case: input 1x5x4x5, stride 2x2, pad_h=1 pad_w=0.
       - 3x3 null-bias variant with the same shape as the previous case.
+      - >-
+          Additional NHWC 1x2, 1x5, 1x7, and 1x9 cases for both precisions.
+      - >-
+          1x9 channel-multiplier cases with ch_mult=3, two batches, and null bias, plus a ch_mult=9 case.
+      - >-
+          Handwritten invalid-geometry cases cover padding, stride, dilation, channel multipliers, tensor
+          dimensions, batch/channel mismatches, and arithmetic limits; all three public routes must return
+          ARM_CMSIS_NN_ARG_ERROR and preserve the output sentinel.
+      - >-
+          Handwritten geometry-limit cases check valid large dilation/padding and an INT32_MAX stride with a
+          single output position.
+      - >-
+          Handwritten dilated-clipping boundary cases use 1x1 input, filter, and output tensors; both height
+          and width axes and padding 0/1 are exercised for F16 and F32.
+      - >-
+          Clipping cases accept dilation INT32_MAX - 1 - padding and reject the next value; accepted cases
+          check output values, while rejected cases check ARM_CMSIS_NN_ARG_ERROR and an unchanged output
+          sentinel.
+      - >-
+          Invalid-geometry and clipping-boundary cases exercise arm_depthwise_conv_*,
+          arm_depthwise_nhwc_conv_*, and arm_depthwise_conv_wrapper_*.
+      - >-
+          Generated 2x3 case: input 1x6x7x4, ch_mult=1. Single-input-channel conversion case: input 1x9x11x1,
+          kernel 4x4, ch_mult=16.
+      - >-
+          Generated depthwise_match_* cases cover 4x2 and 2x2 kernels, a 3x3 stride-2/pad-1 case, and
+          activation clamping with a 4x3 kernel.
+      - >-
+          Generated dilation case: input 1x7x7x1, kernel 3x3, dilation 2x2, padding 2x2, stride 1, and
+          ch_mult=1.
     dtypes:
       f32:
         host_target: test_arm_depthwise_conv_f32
         cmsis_context: test_arm_depthwise_conv_flt.F32+Corstone-300-FVP
         selectors:
           - depthwise_conv_f32_family
-        notes: generated offline by depthwise_conv_settings_flt.py
+        notes: generated offline by depthwise_conv_settings_flt.py, with handwritten regressions in the family test source
       f16:
         host_target: test_arm_depthwise_conv_f16
         cmsis_context: test_arm_depthwise_conv_flt.F16+Corstone-300-FVP
         selectors:
           - depthwise_conv_f16_family
-        notes: generated offline by depthwise_conv_settings_flt.py
+        notes: generated offline by depthwise_conv_settings_flt.py, with handwritten regressions in the family test source
   - name: ds_cnn_s_body
     generator_script: ds_cnn_s_body_settings_flt.py
     cmsis_project: test_arm_ds_cnn_s_body_flt
@@ -446,7 +551,7 @@ families:
     cmsis_project: test_arm_transpose_conv_flt
     coverage_summary: Transpose-convolution coverage in NHWC direct and wrapper paths.
     coverage_cases:
-      - Input 1x4x5x6, output_ch=6, kernel 3x3, stride 2x2, padding 1x1, output_padding 1x1.
+      - Input 1x5x6x4, output_ch=6, kernel 3x3, stride 2x2, padding 1x1, output_padding 1x1.
       - Matching wrapper case with the same logical dimensions.
     dtypes:
       f32:
