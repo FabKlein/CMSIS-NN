@@ -68,7 +68,7 @@ typedef struct
     arm_dw_call_f16 call;
 } arm_dw_spec_f16;
 
-static bool arm_dw_spec_k3_1d_nhwc_f16_match(const cmsis_nn_context *ctx,
+static bool arm_dw_spec_k9_1d_nhwc_f16_match(const cmsis_nn_context *ctx,
                                              const cmsis_nn_dw_conv_params_f16 *params,
                                              const cmsis_nn_dims *input_dims,
                                              const float16_t *input,
@@ -87,20 +87,18 @@ static bool arm_dw_spec_k3_1d_nhwc_f16_match(const cmsis_nn_context *ctx,
     (void)bias;
     (void)output;
 
-    const int32_t ch_mult = params->ch_mult;
-    const int32_t kernel_x = filter_dims->w;
-    const int32_t kernel_y = filter_dims->h;
     const int32_t batch = input_dims->n;
     const int32_t output_batch = output_dims->n;
-    const int32_t input_y = input_dims->h;
-    const int32_t output_y = output_dims->h;
 
-    return (kernel_layout == ARM_NN_DW_KERNEL_KC && batch == 1 && output_batch == 1 && ch_mult == 1 && kernel_x == 3 &&
-            kernel_y == 1 && input_y == 1 && output_y == 1 && params->dilation.h == 1 && params->dilation.w == 1 &&
-            params->stride.h == 1 && params->stride.w == 1 && params->padding.h == 0 && params->padding.w == 0);
+    return (kernel_layout == ARM_NN_DW_KERNEL_KC && batch > 0 && batch == output_batch && params->ch_mult >= 1 &&
+            output_dims->c == input_dims->c * params->ch_mult && filter_dims->w == 9 && filter_dims->h == 1 &&
+            input_dims->h >= 1 && output_dims->h == input_dims->h && input_dims->w >= filter_dims->w &&
+            output_dims->w == input_dims->w - filter_dims->w + 1 && params->dilation.h == 1 &&
+            params->dilation.w == 1 && params->stride.h == 1 && params->stride.w == 1 && params->padding.h == 0 &&
+            params->padding.w == 0);
 }
 
-static arm_cmsis_nn_status arm_dw_spec_k3_1d_nhwc_f16_call(const cmsis_nn_context *ctx,
+static arm_cmsis_nn_status arm_dw_spec_k9_1d_nhwc_f16_call(const cmsis_nn_context *ctx,
                                                            const cmsis_nn_dw_conv_params_f16 *params,
                                                            const cmsis_nn_dims *input_dims,
                                                            const float16_t *input,
@@ -121,7 +119,109 @@ static arm_cmsis_nn_status arm_dw_spec_k3_1d_nhwc_f16_call(const cmsis_nn_contex
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-    arm_nn_depthwise_conv1d_k3_nhwc_f16(input, input_dims->c, input_dims->w, kernel, bias, output, output_dims->w);
+    const int32_t batch = input_dims->n;
+    const int32_t input_h = input_dims->h;
+    const int32_t input_c = input_dims->c;
+    const int32_t input_w = input_dims->w;
+    const int32_t output_h = output_dims->h;
+    const int32_t output_w = output_dims->w;
+    const int32_t output_c = output_dims->c;
+    const size_t input_batch_stride = (size_t)input_h * (size_t)input_w * (size_t)input_c;
+    const size_t output_batch_stride = (size_t)output_h * (size_t)output_w * (size_t)output_c;
+
+    /* A 1x9 depthwise convolution over NHWC data is independent for each H row. */
+    for (int32_t b = 0; b < batch; ++b)
+    {
+        const float16_t *input_b = input + (size_t)b * input_batch_stride;
+        float16_t *output_b = output + (size_t)b * output_batch_stride;
+
+        for (int32_t y = 0; y < output_h; ++y)
+        {
+            const float16_t *input_row = input_b + (size_t)y * input_w * input_c;
+            float16_t *output_row = output_b + (size_t)y * output_w * output_c;
+            arm_nn_depthwise_conv1d_k9_nhwc_f16(
+                input_row, input_c, input_w, params->ch_mult, kernel, bias, output_row, output_w);
+        }
+    }
+
+    const int32_t out_count = output_dims->n * output_dims->c * output_dims->h * output_dims->w;
+    arm_nn_vector_clamp_f16(output, out_count, params->activation.min, params->activation.max);
+
+    return ARM_CMSIS_NN_SUCCESS;
+}
+
+static bool arm_dw_spec_k3_1d_nhwc_f16_match(const cmsis_nn_context *ctx,
+                                             const cmsis_nn_dw_conv_params_f16 *params,
+                                             const cmsis_nn_dims *input_dims,
+                                             const float16_t *input,
+                                             const cmsis_nn_dims *filter_dims,
+                                             const float16_t *kernel,
+                                             const cmsis_nn_dims *bias_dims,
+                                             const float16_t *bias,
+                                             const cmsis_nn_dims *output_dims,
+                                             float16_t *output,
+                                             arm_nn_dw_kernel_layout_f16 kernel_layout)
+{
+    (void)ctx;
+    (void)input;
+    (void)kernel;
+    (void)bias_dims;
+    (void)bias;
+    (void)output;
+
+    const int32_t batch = input_dims->n;
+    const int32_t output_batch = output_dims->n;
+
+    return (kernel_layout == ARM_NN_DW_KERNEL_KC && batch > 0 && batch == output_batch && params->ch_mult == 1 &&
+            output_dims->c == input_dims->c && filter_dims->w == 3 && filter_dims->h == 1 && input_dims->h >= 1 &&
+            output_dims->h == input_dims->h && params->dilation.h == 1 && params->dilation.w == 1 &&
+            params->stride.h == 1 && params->stride.w == 1 && params->padding.h == 0 && params->padding.w == 0);
+}
+
+static arm_cmsis_nn_status arm_dw_spec_k3_1d_nhwc_f16_call(const cmsis_nn_context *ctx,
+                                                           const cmsis_nn_dw_conv_params_f16 *params,
+                                                           const cmsis_nn_dims *input_dims,
+                                                           const float16_t *input,
+                                                           const cmsis_nn_dims *filter_dims,
+                                                           const float16_t *kernel,
+                                                           const cmsis_nn_dims *bias_dims,
+                                                           const float16_t *bias,
+                                                           const cmsis_nn_dims *output_dims,
+                                                           float16_t *output,
+                                                           arm_nn_dw_kernel_layout_f16 kernel_layout)
+{
+    (void)ctx;
+    (void)filter_dims;
+    (void)bias_dims;
+
+    if (kernel_layout != ARM_NN_DW_KERNEL_KC || params->ch_mult != 1)
+    {
+        return ARM_CMSIS_NN_ARG_ERROR;
+    }
+
+    const int32_t batch = input_dims->n;
+    const int32_t input_h = input_dims->h;
+    const int32_t input_c = input_dims->c;
+    const int32_t input_w = input_dims->w;
+    const int32_t output_h = output_dims->h;
+    const int32_t output_w = output_dims->w;
+    const int32_t output_c = output_dims->c;
+    const size_t input_batch_stride = (size_t)input_h * (size_t)input_w * (size_t)input_c;
+    const size_t output_batch_stride = (size_t)output_h * (size_t)output_w * (size_t)output_c;
+
+    /* A 1x3 depthwise convolution over NHWC data is independent for each H row. */
+    for (int32_t b = 0; b < batch; ++b)
+    {
+        const float16_t *input_b = input + (size_t)b * input_batch_stride;
+        float16_t *output_b = output + (size_t)b * output_batch_stride;
+
+        for (int32_t y = 0; y < output_h; ++y)
+        {
+            const float16_t *input_row = input_b + (size_t)y * input_w * input_c;
+            float16_t *output_row = output_b + (size_t)y * output_w * output_c;
+            arm_nn_depthwise_conv1d_k3_nhwc_f16(input_row, input_c, input_w, kernel, bias, output_row, output_w);
+        }
+    }
 
     const int32_t out_count = output_dims->n * output_dims->c * output_dims->h * output_dims->w;
     arm_nn_vector_clamp_f16(output, out_count, params->activation.min, params->activation.max);
@@ -260,6 +360,7 @@ static arm_cmsis_nn_status arm_dw_spec_3x3_nhwc_f16_call(const cmsis_nn_context 
 }
 
 static const arm_dw_spec_f16 arm_dw_spec_nhwc_f16[] = {
+    ARM_DW_SPEC_ENTRY(arm_dw_spec_k9_1d_nhwc_f16_match, arm_dw_spec_k9_1d_nhwc_f16_call),
     ARM_DW_SPEC_ENTRY(arm_dw_spec_k3_1d_nhwc_f16_match, arm_dw_spec_k3_1d_nhwc_f16_call),
     ARM_DW_SPEC_ENTRY(arm_dw_spec_2x5_nhwc_f16_match, arm_dw_spec_2x5_nhwc_f16_call),
     ARM_DW_SPEC_ENTRY(arm_dw_spec_3x3_nhwc_f16_match, arm_dw_spec_3x3_nhwc_f16_call),

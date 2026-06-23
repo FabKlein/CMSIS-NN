@@ -12,12 +12,17 @@
 
 #include "../Common/float_packed_test_utils.h"
 #include "../TestData/conv_1x1_stride2_nhwc_f16/test_data.h"
+#include "../TestData/conv_2x3_packed_valid_f16/test_data.h"
+#include "../TestData/conv_2x5_packed_valid_f16/test_data.h"
 #include "../TestData/conv_basic_f16/test_data.h"
 #include "../TestData/conv_basic_nhwc_f16/test_data.h"
+#include "../TestData/conv_k2_packed_valid_f16/test_data.h"
 #include "../TestData/conv_k3_opt_f16/test_data.h"
 #include "../TestData/conv_k3_opt_nhwc_tuned_f16/test_data.h"
 #include "../TestData/conv_k5_opt_f16/test_data.h"
 #include "../TestData/conv_k5_opt_nhwc_tuned_f16/test_data.h"
+#include "../TestData/conv_k7_opt_f16/test_data.h"
+#include "../TestData/conv_k9_opt_f16/test_data.h"
 #include "../TestData/conv_kernel_2x2_f16/test_data.h"
 #include "../TestData/conv_kernel_3x3_pad1_f16/test_data.h"
 #include "../TestData/conv_match_1x1_basic_f16/test_data.h"
@@ -144,9 +149,14 @@ RUN_CONV_F16_CASE(CONV_BASIC_F16, conv_basic_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_BASIC_NHWC_F16, conv_basic_nhwc_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_1X1_STRIDE2_NHWC_F16, conv_1x1_stride2_nhwc_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_KERNEL_2X2_F16, conv_kernel_2x2_f16, 2.0e-2f)
+RUN_CONV_F16_CASE(CONV_K2_PACKED_VALID_F16, conv_k2_packed_valid_f16, 2.0e-2f)
+RUN_CONV_F16_CASE(CONV_2X3_PACKED_VALID_F16, conv_2x3_packed_valid_f16, 2.0e-2f)
+RUN_CONV_F16_CASE(CONV_2X5_PACKED_VALID_F16, conv_2x5_packed_valid_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_KERNEL_3X3_PAD1_F16, conv_kernel_3x3_pad1_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_K3_OPT_F16, conv_k3_opt_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_K5_OPT_F16, conv_k5_opt_f16, 2.0e-2f)
+RUN_CONV_F16_CASE(CONV_K7_OPT_F16, conv_k7_opt_f16, 2.0e-2f)
+RUN_CONV_F16_CASE(CONV_K9_OPT_F16, conv_k9_opt_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_K3_OPT_NHWC_TUNED_F16, conv_k3_opt_nhwc_tuned_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_K5_OPT_NHWC_TUNED_F16, conv_k5_opt_nhwc_tuned_f16, 2.0e-2f)
 RUN_CONV_F16_CASE(CONV_MATCH_BASIC_F16, conv_match_basic_f16, 2.0e-2f)
@@ -210,25 +220,26 @@ void conv_match_1x1_basic_f16_arm_convolve_f16_packed(void)
         CONV_MATCH_1X1_BASIC_F16_OUT_CH,
         CONV_MATCH_1X1_BASIC_F16_FILTER_H * CONV_MATCH_1X1_BASIC_F16_FILTER_W * CONV_MATCH_1X1_BASIC_F16_IN_CH);
 
-    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS,
-                      arm_convolve_f16(&ctx,
-                                       &conv_params,
-                                       &input_dims,
-                                       conv_match_1x1_basic_f16_input_data,
-                                       &filter_dims,
-                                       packed_weights,
-                                       &bias_dims,
-                                       conv_match_1x1_basic_f16_biases_data,
-                                       &output_dims,
-                                       output,
-                                       CONV_MATCH_1X1_BASIC_F16_LAYOUT));
+    const arm_cmsis_nn_status status = arm_convolve_f16(&ctx,
+                                                        &conv_params,
+                                                        &input_dims,
+                                                        conv_match_1x1_basic_f16_input_data,
+                                                        &filter_dims,
+                                                        packed_weights,
+                                                        &bias_dims,
+                                                        conv_match_1x1_basic_f16_biases_data,
+                                                        &output_dims,
+                                                        output,
+                                                        CONV_MATCH_1X1_BASIC_F16_LAYOUT);
+
+    free(packed_weights);
+
+    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS, status);
 
     for (int i = 0; i < CONV_MATCH_1X1_BASIC_F16_DST_SIZE; ++i)
     {
         TEST_ASSERT_FLOAT_WITHIN(2.0e-2f, (float)conv_match_1x1_basic_f16_output_ref_data[i], (float)output[i]);
     }
-
-    free(packed_weights);
 }
 
 void conv_basic_f16_arm_convolve_f16_packed(void)
@@ -268,23 +279,17 @@ void conv_basic_f16_arm_convolve_f16_packed(void)
         TEST_ASSERT_NOT_NULL(ctx.buf);
     }
 
-    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS,
-                      arm_convolve_f16(&ctx,
-                                       &conv_params,
-                                       &input_dims,
-                                       conv_basic_f16_input_data,
-                                       &filter_dims,
-                                       packed_weights,
-                                       &bias_dims,
-                                       conv_basic_f16_biases_data,
-                                       &output_dims,
-                                       output,
-                                       CONV_BASIC_F16_LAYOUT));
-
-    for (int i = 0; i < CONV_BASIC_F16_DST_SIZE; ++i)
-    {
-        TEST_ASSERT_FLOAT_WITHIN(2.0e-2f, (float)conv_basic_f16_output_ref_data[i], (float)output[i]);
-    }
+    const arm_cmsis_nn_status status = arm_convolve_f16(&ctx,
+                                                        &conv_params,
+                                                        &input_dims,
+                                                        conv_basic_f16_input_data,
+                                                        &filter_dims,
+                                                        packed_weights,
+                                                        &bias_dims,
+                                                        conv_basic_f16_biases_data,
+                                                        &output_dims,
+                                                        output,
+                                                        CONV_BASIC_F16_LAYOUT);
 
     if (ctx.buf != NULL)
     {
@@ -292,6 +297,13 @@ void conv_basic_f16_arm_convolve_f16_packed(void)
         free(ctx.buf);
     }
     free(packed_weights);
+
+    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS, status);
+
+    for (int i = 0; i < CONV_BASIC_F16_DST_SIZE; ++i)
+    {
+        TEST_ASSERT_FLOAT_WITHIN(2.0e-2f, (float)conv_basic_f16_output_ref_data[i], (float)output[i]);
+    }
 }
 
 void conv_k3_opt_f16_arm_convolve_f16_packed(void)
@@ -322,25 +334,26 @@ void conv_k3_opt_f16_arm_convolve_f16_packed(void)
                                     CONV_K3_OPT_F16_OUT_CH,
                                     CONV_K3_OPT_F16_FILTER_H * CONV_K3_OPT_F16_FILTER_W * CONV_K3_OPT_F16_IN_CH);
 
-    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS,
-                      arm_convolve_f16(&ctx,
-                                       &conv_params,
-                                       &input_dims,
-                                       conv_k3_opt_f16_input_data,
-                                       &filter_dims,
-                                       packed_weights,
-                                       &bias_dims,
-                                       conv_k3_opt_f16_biases_data,
-                                       &output_dims,
-                                       output,
-                                       CONV_K3_OPT_F16_LAYOUT));
+    const arm_cmsis_nn_status status = arm_convolve_f16(&ctx,
+                                                        &conv_params,
+                                                        &input_dims,
+                                                        conv_k3_opt_f16_input_data,
+                                                        &filter_dims,
+                                                        packed_weights,
+                                                        &bias_dims,
+                                                        conv_k3_opt_f16_biases_data,
+                                                        &output_dims,
+                                                        output,
+                                                        CONV_K3_OPT_F16_LAYOUT);
+
+    free(packed_weights);
+
+    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS, status);
 
     for (int i = 0; i < CONV_K3_OPT_F16_DST_SIZE; ++i)
     {
         TEST_ASSERT_FLOAT_WITHIN(2.0e-2f, (float)conv_k3_opt_f16_output_ref_data[i], (float)output[i]);
     }
-
-    free(packed_weights);
 }
 
 void conv_k5_opt_f16_arm_convolve_f16_packed(void)
@@ -371,23 +384,82 @@ void conv_k5_opt_f16_arm_convolve_f16_packed(void)
                                     CONV_K5_OPT_F16_OUT_CH,
                                     CONV_K5_OPT_F16_FILTER_H * CONV_K5_OPT_F16_FILTER_W * CONV_K5_OPT_F16_IN_CH);
 
-    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS,
-                      arm_convolve_f16(&ctx,
-                                       &conv_params,
-                                       &input_dims,
-                                       conv_k5_opt_f16_input_data,
-                                       &filter_dims,
-                                       packed_weights,
-                                       &bias_dims,
-                                       conv_k5_opt_f16_biases_data,
-                                       &output_dims,
-                                       output,
-                                       CONV_K5_OPT_F16_LAYOUT));
+    const arm_cmsis_nn_status status = arm_convolve_f16(&ctx,
+                                                        &conv_params,
+                                                        &input_dims,
+                                                        conv_k5_opt_f16_input_data,
+                                                        &filter_dims,
+                                                        packed_weights,
+                                                        &bias_dims,
+                                                        conv_k5_opt_f16_biases_data,
+                                                        &output_dims,
+                                                        output,
+                                                        CONV_K5_OPT_F16_LAYOUT);
+
+    free(packed_weights);
+
+    TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS, status);
 
     for (int i = 0; i < CONV_K5_OPT_F16_DST_SIZE; ++i)
     {
         TEST_ASSERT_FLOAT_WITHIN(2.0e-2f, (float)conv_k5_opt_f16_output_ref_data[i], (float)output[i]);
     }
-
-    free(packed_weights);
 }
+
+#define RUN_CONV_F16_PACKED_CASE(CASE_PREFIX, case_name, tolerance)                                                    \
+    void case_name##_arm_convolve_f16_packed(void)                                                                     \
+    {                                                                                                                  \
+        float16_t output[CASE_PREFIX##_DST_SIZE] = {0};                                                                \
+        cmsis_nn_context ctx = {0};                                                                                    \
+        const cmsis_nn_conv_params_f16 conv_params = {                                                                 \
+            .padding = {.w = CASE_PREFIX##_PADDING_W, .h = CASE_PREFIX##_PADDING_H},                                   \
+            .stride = {.w = CASE_PREFIX##_STRIDE_W, .h = CASE_PREFIX##_STRIDE_H},                                      \
+            .dilation = {.w = CASE_PREFIX##_DILATION_W, .h = CASE_PREFIX##_DILATION_H},                                \
+            .activation = {.min = CASE_PREFIX##_OUT_ACTIVATION_MIN, .max = CASE_PREFIX##_OUT_ACTIVATION_MAX},          \
+            .weight_format = ARM_NN_WEIGHT_FORMAT_NT_N_PACKED};                                                        \
+        const cmsis_nn_dims input_dims = {.n = CASE_PREFIX##_INPUT_BATCHES,                                            \
+                                          .w = CASE_PREFIX##_INPUT_W,                                                  \
+                                          .h = CASE_PREFIX##_INPUT_H,                                                  \
+                                          .c = CASE_PREFIX##_IN_CH};                                                   \
+        const cmsis_nn_dims filter_dims = {.n = CASE_PREFIX##_OUT_CH,                                                  \
+                                           .w = CASE_PREFIX##_FILTER_W,                                                \
+                                           .h = CASE_PREFIX##_FILTER_H,                                                \
+                                           .c = CASE_PREFIX##_IN_CH};                                                  \
+        const cmsis_nn_dims bias_dims = {.n = 1, .w = 1, .h = 1, .c = CASE_PREFIX##_OUT_CH};                           \
+        const cmsis_nn_dims output_dims = {.n = CASE_PREFIX##_INPUT_BATCHES,                                           \
+                                           .w = CASE_PREFIX##_OUTPUT_W,                                                \
+                                           .h = CASE_PREFIX##_OUTPUT_H,                                                \
+                                           .c = CASE_PREFIX##_OUTPUT_C};                                               \
+        float16_t *packed_weights =                                                                                    \
+            pack_rhs_nt_n_from_nt_t_f16(case_name##_weights_data,                                                      \
+                                        CASE_PREFIX##_OUT_CH,                                                          \
+                                        CASE_PREFIX##_FILTER_H * CASE_PREFIX##_FILTER_W * CASE_PREFIX##_IN_CH);        \
+                                                                                                                       \
+        const arm_cmsis_nn_status status = arm_convolve_f16(&ctx,                                                      \
+                                                            &conv_params,                                              \
+                                                            &input_dims,                                               \
+                                                            case_name##_input_data,                                    \
+                                                            &filter_dims,                                              \
+                                                            packed_weights,                                            \
+                                                            &bias_dims,                                                \
+                                                            case_name##_biases_data,                                   \
+                                                            &output_dims,                                              \
+                                                            output,                                                    \
+                                                            CASE_PREFIX##_LAYOUT);                                     \
+                                                                                                                       \
+        free(packed_weights);                                                                                          \
+                                                                                                                       \
+        TEST_ASSERT_EQUAL(ARM_CMSIS_NN_SUCCESS, status);                                                               \
+                                                                                                                       \
+        for (int i = 0; i < CASE_PREFIX##_DST_SIZE; ++i)                                                               \
+        {                                                                                                              \
+            TEST_ASSERT_FLOAT_WITHIN((tolerance), (float)case_name##_output_ref_data[i], (float)output[i]);            \
+        }                                                                                                              \
+    }
+
+RUN_CONV_F16_PACKED_CASE(CONV_K7_OPT_F16, conv_k7_opt_f16, 2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_K9_OPT_F16, conv_k9_opt_f16, 2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_K2_PACKED_VALID_F16, conv_k2_packed_valid_f16, 2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_KERNEL_2X2_F16, conv_kernel_2x2_f16, 2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_2X3_PACKED_VALID_F16, conv_2x3_packed_valid_f16, 2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_2X5_PACKED_VALID_F16, conv_2x5_packed_valid_f16, 2.0e-2f)

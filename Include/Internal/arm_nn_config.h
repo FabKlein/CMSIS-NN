@@ -62,6 +62,31 @@
 #define ARM_NN_FLOAT_API_ENABLED (ARM_NN_ENABLE_F32 || ARM_NN_ENABLE_F16)
 
 /*
+ * ARM_NN_ASSERT is a lightweight debug-only assertion for internal invariant
+ * checks. It compiles to nothing when NDEBUG is defined (the default for
+ * optimized/release builds). Library code must never depend on side effects
+ * inside the assertion expression.
+ */
+#ifdef NDEBUG
+    #define ARM_NN_ASSERT(cond) ((void)0)
+#else
+    #ifndef ARM_NN_ASSERT_FAIL
+        #define ARM_NN_ASSERT_FAIL()                                                                                   \
+            do                                                                                                         \
+            {                                                                                                          \
+            } while (1)
+    #endif
+    #define ARM_NN_ASSERT(cond)                                                                                        \
+        do                                                                                                             \
+        {                                                                                                              \
+            if (!(cond))                                                                                               \
+            {                                                                                                          \
+                ARM_NN_ASSERT_FAIL();                                                                                  \
+            }                                                                                                          \
+        } while (0)
+#endif
+
+/*
  * NN_DISABLE_SPECIALIZATION disables optional shape/layout-specific fast paths
  * and forces the corresponding generic implementations. This is useful for
  * debugging or validating specialized kernels against the generic path.

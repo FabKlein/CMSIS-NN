@@ -96,7 +96,7 @@ static bool arm_conv1d_spec_k5_nhwc_f32_match(const cmsis_nn_context *ctx,
     const int32_t dil_h = params->dilation.h;
     const int32_t dil_w = params->dilation.w;
 
-    return (batch == 1 && input_h == 1 && output_h == 1 && kernel_h == 1 && kernel_w == 5 && stride_h == 1 &&
+    return (batch >= 1 && input_h >= 1 && output_h == input_h && kernel_h == 1 && kernel_w == 5 && stride_h == 1 &&
             stride_w == 1 && pad_h == 0 && pad_w == 0 && dil_h == 1 && dil_w == 1);
 }
 
@@ -115,23 +115,43 @@ static arm_cmsis_nn_status arm_conv1d_spec_k5_nhwc_f32_call(const cmsis_nn_conte
     (void)filter_dims;
     (void)bias_dims;
 
+    const int32_t batch = input_dims->n;
+    const int32_t input_h = input_dims->h;
     const int32_t input_c = input_dims->c;
     const int32_t input_w = input_dims->w;
+    const int32_t output_h = output_dims->h;
     const int32_t output_c = output_dims->c;
     const int32_t output_w = output_dims->w;
 
-    if (params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+    /*
+     * A 1x5 convolution over NHWC data is a 1D convolution along W for each
+     * independent H row. Reuse the tuned 1D kernel row-by-row instead of
+     * falling back to im2row + matmul when H > 1.
+     */
+    for (int32_t b = 0; b < batch; ++b)
     {
-        arm_nn_conv1d_k5_packed_f32(
-            input_data, input_c, input_w, filter_data, bias_data, output_data, output_c, output_w);
-    }
-    else
-    {
-        arm_nn_conv1d_k5_nhwc_f32(
-            input_data, input_c, input_w, filter_data, bias_data, output_data, output_c, output_w);
+        const float32_t *input_b = input_data + (size_t)b * input_h * input_w * input_c;
+        float32_t *output_b = output_data + (size_t)b * output_h * output_w * output_c;
+
+        for (int32_t y = 0; y < output_h; ++y)
+        {
+            const float32_t *input_row = input_b + (size_t)y * input_w * input_c;
+            float32_t *output_row = output_b + (size_t)y * output_w * output_c;
+
+            if (params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+            {
+                arm_nn_conv1d_k5_packed_f32(
+                    input_row, input_c, input_w, filter_data, bias_data, output_row, output_c, output_w);
+            }
+            else
+            {
+                arm_nn_conv1d_k5_nhwc_f32(
+                    input_row, input_c, input_w, filter_data, bias_data, output_row, output_c, output_w);
+            }
+        }
     }
 
-    const int32_t out_count = output_c * output_w * output_dims->h;
+    const int32_t out_count = batch * output_h * output_w * output_c;
     arm_nn_vector_clamp_f32(output_data, out_count, params->activation.min, params->activation.max);
 
     return ARM_CMSIS_NN_SUCCESS;
@@ -167,7 +187,7 @@ static bool arm_conv1d_spec_k3_nhwc_f32_match(const cmsis_nn_context *ctx,
     const int32_t dil_h = params->dilation.h;
     const int32_t dil_w = params->dilation.w;
 
-    return (batch == 1 && input_h == 1 && output_h == 1 && kernel_h == 1 && kernel_w == 3 && stride_h == 1 &&
+    return (batch >= 1 && input_h >= 1 && output_h == input_h && kernel_h == 1 && kernel_w == 3 && stride_h == 1 &&
             stride_w == 1 && pad_h == 0 && pad_w == 0 && dil_h == 1 && dil_w == 1);
 }
 
@@ -186,23 +206,39 @@ static arm_cmsis_nn_status arm_conv1d_spec_k3_nhwc_f32_call(const cmsis_nn_conte
     (void)filter_dims;
     (void)bias_dims;
 
+    const int32_t batch = input_dims->n;
+    const int32_t input_h = input_dims->h;
     const int32_t input_c = input_dims->c;
     const int32_t input_w = input_dims->w;
+    const int32_t output_h = output_dims->h;
     const int32_t output_c = output_dims->c;
     const int32_t output_w = output_dims->w;
 
-    if (params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+    /* See the 1x5 helper above: H rows are independent 1D convolutions. */
+    for (int32_t b = 0; b < batch; ++b)
     {
-        arm_nn_conv1d_k3_packed_f32(
-            input_data, input_c, input_w, filter_data, bias_data, output_data, output_c, output_w);
-    }
-    else
-    {
-        arm_nn_conv1d_k3_nhwc_f32(
-            input_data, input_c, input_w, filter_data, bias_data, output_data, output_c, output_w);
+        const float32_t *input_b = input_data + (size_t)b * input_h * input_w * input_c;
+        float32_t *output_b = output_data + (size_t)b * output_h * output_w * output_c;
+
+        for (int32_t y = 0; y < output_h; ++y)
+        {
+            const float32_t *input_row = input_b + (size_t)y * input_w * input_c;
+            float32_t *output_row = output_b + (size_t)y * output_w * output_c;
+
+            if (params->weight_format == ARM_NN_WEIGHT_FORMAT_NT_N_PACKED)
+            {
+                arm_nn_conv1d_k3_packed_f32(
+                    input_row, input_c, input_w, filter_data, bias_data, output_row, output_c, output_w);
+            }
+            else
+            {
+                arm_nn_conv1d_k3_nhwc_f32(
+                    input_row, input_c, input_w, filter_data, bias_data, output_row, output_c, output_w);
+            }
+        }
     }
 
-    const int32_t out_count = output_c * output_w * output_dims->h;
+    const int32_t out_count = batch * output_h * output_w * output_c;
     arm_nn_vector_clamp_f32(output_data, out_count, params->activation.min, params->activation.max);
 
     return ARM_CMSIS_NN_SUCCESS;

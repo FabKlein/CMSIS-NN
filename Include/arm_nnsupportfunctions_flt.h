@@ -726,6 +726,18 @@ void arm_nn_depthwise_conv1d_k3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                          int32_t out_w);
 
 /**
+ * @brief Specialized NHWC depthwise 1D kernel for `k=9`, `ch_mult=1` (float16).
+ */
+void arm_nn_depthwise_conv1d_k9_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
+                                         int32_t in_c,
+                                         int32_t in_w,
+                                         int32_t ch_mult,
+                                         const float16_t *__RESTRICT kernel,
+                                         const float16_t *__RESTRICT b,
+                                         float16_t *__RESTRICT out,
+                                         int32_t out_w);
+
+/**
  * @copydoc arm_nn_depthwise_conv3x3_nhwc_f32
  */
 void arm_nn_depthwise_conv3x3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
@@ -770,6 +782,95 @@ void arm_nn_conv1d_k5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                float16_t *__RESTRICT out,
                                int32_t out_c,
                                int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=2` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`, i.e. `[(2 * in_c)][out_c_block_of_8]`.
+ */
+void arm_nn_conv1d_k2_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_h,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_h,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x2` (float16, packed weights).
+ */
+void arm_nn_conv2d_2x2_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x3` (float16, packed weights).
+ */
+void arm_nn_conv2d_2x3_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC direct convolution kernel for `2x5` (float16, packed weights).
+ */
+void arm_nn_conv2d_2x5_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                  int32_t in_c,
+                                  int32_t in_h,
+                                  int32_t in_w,
+                                  const float16_t *__RESTRICT kernel_packed,
+                                  const float16_t *__RESTRICT b,
+                                  float16_t *__RESTRICT out,
+                                  int32_t out_c,
+                                  int32_t out_h,
+                                  int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=9` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`, i.e. `[(9 * in_c)][out_c_block_of_8]`.
+ */
+void arm_nn_conv1d_k9_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
+
+/**
+ * @brief Specialized NHWC 1D convolution kernel for `k=7` (float16, packed weights).
+ *
+ * The packed kernel uses the same `NTxN` RHS layout as
+ * `arm_nn_mat_mult_nt_n_packed_f16`, i.e. `[(7 * in_c)][out_c_block_of_8]`.
+ */
+void arm_nn_conv1d_k7_packed_f16(const float16_t *__RESTRICT x_nhwc,
+                                 int32_t in_c,
+                                 int32_t in_w,
+                                 const float16_t *__RESTRICT kernel_packed,
+                                 const float16_t *__RESTRICT b,
+                                 float16_t *__RESTRICT out,
+                                 int32_t out_c,
+                                 int32_t out_w);
 
 /**
  * @brief Specialized NHWC 1D convolution kernel for `k=5` (float16, packed weights).

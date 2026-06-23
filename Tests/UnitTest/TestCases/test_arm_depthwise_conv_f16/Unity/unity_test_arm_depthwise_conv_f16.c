@@ -42,6 +42,22 @@ void test_depthwise_k3_1d_opt_nhwc_f16_arm_depthwise_conv_f16(void)
 {
     depthwise_k3_1d_opt_nhwc_f16_arm_depthwise_conv_f16();
 }
+void test_depthwise_k2_1d_opt_nhwc_f16_arm_depthwise_conv_f16(void)
+{
+    depthwise_k2_1d_opt_nhwc_f16_arm_depthwise_conv_f16();
+}
+void test_depthwise_k5_1d_opt_nhwc_f16_arm_depthwise_conv_f16(void)
+{
+    depthwise_k5_1d_opt_nhwc_f16_arm_depthwise_conv_f16();
+}
+void test_depthwise_k7_1d_opt_nhwc_f16_arm_depthwise_conv_f16(void)
+{
+    depthwise_k7_1d_opt_nhwc_f16_arm_depthwise_conv_f16();
+}
+void test_depthwise_k9_1d_opt_nhwc_f16_arm_depthwise_conv_f16(void)
+{
+    depthwise_k9_1d_opt_nhwc_f16_arm_depthwise_conv_f16();
+}
 void test_depthwise_2x5_opt_batch2_f16_arm_depthwise_conv_f16(void)
 {
     depthwise_2x5_opt_batch2_f16_arm_depthwise_conv_f16();
@@ -49,6 +65,10 @@ void test_depthwise_2x5_opt_batch2_f16_arm_depthwise_conv_f16(void)
 void test_depthwise_2x5_opt_nhwc_chmult16_f16_arm_depthwise_conv_f16(void)
 {
     depthwise_2x5_opt_nhwc_chmult16_f16_arm_depthwise_conv_f16();
+}
+void test_depthwise_2x3_opt_nhwc_f16_arm_depthwise_conv_f16(void)
+{
+    depthwise_2x3_opt_nhwc_f16_arm_depthwise_conv_f16();
 }
 void test_depthwise_kernel_2x2_f16_arm_depthwise_conv_f16(void) { depthwise_kernel_2x2_f16_arm_depthwise_conv_f16(); }
 void test_depthwise_kernel_3x3_f16_arm_depthwise_conv_f16(void) { depthwise_kernel_3x3_f16_arm_depthwise_conv_f16(); }

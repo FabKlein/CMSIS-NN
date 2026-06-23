@@ -71,16 +71,16 @@ void arm_nn_depthwise_conv2x5_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                     const int32_t oc = c * ch_mult + m;
                     float16x8_t vacc = b ? vld1q_z(b + oc, p) : vdupq_n_f16((float16_t)0.0f);
 
-                    vacc = vfmaq(vacc, vdupq_n_f16(x00), vld1q_z(kernel + (size_t)0 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x01), vld1q_z(kernel + (size_t)1 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x02), vld1q_z(kernel + (size_t)2 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x03), vld1q_z(kernel + (size_t)3 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x04), vld1q_z(kernel + (size_t)4 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x10), vld1q_z(kernel + (size_t)5 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x11), vld1q_z(kernel + (size_t)6 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x12), vld1q_z(kernel + (size_t)7 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x13), vld1q_z(kernel + (size_t)8 * (size_t)out_c + (size_t)oc, p));
-                    vacc = vfmaq(vacc, vdupq_n_f16(x14), vld1q_z(kernel + (size_t)9 * (size_t)out_c + (size_t)oc, p));
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)0 * (size_t)out_c + (size_t)oc, p), x00);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)1 * (size_t)out_c + (size_t)oc, p), x01);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)2 * (size_t)out_c + (size_t)oc, p), x02);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)3 * (size_t)out_c + (size_t)oc, p), x03);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)4 * (size_t)out_c + (size_t)oc, p), x04);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)5 * (size_t)out_c + (size_t)oc, p), x10);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)6 * (size_t)out_c + (size_t)oc, p), x11);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)7 * (size_t)out_c + (size_t)oc, p), x12);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)8 * (size_t)out_c + (size_t)oc, p), x13);
+                    vacc = vfmaq_n_f16(vacc, vld1q_z(kernel + (size_t)9 * (size_t)out_c + (size_t)oc, p), x14);
 
                     vacc = vmaxnmq(vacc, v_act_min);
                     vacc = vminnmq(vacc, v_act_max);

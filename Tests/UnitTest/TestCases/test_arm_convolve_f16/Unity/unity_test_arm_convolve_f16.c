@@ -30,6 +30,11 @@ void test_conv_basic_nhwc_f16_arm_convolve_f16(void) { conv_basic_nhwc_f16_arm_c
 void test_conv_1x1_stride2_nhwc_f16_arm_convolve_f16(void) { conv_1x1_stride2_nhwc_f16_arm_convolve_f16(); }
 void test_conv_k3_opt_f16_arm_convolve_f16(void) { conv_k3_opt_f16_arm_convolve_f16(); }
 void test_conv_k5_opt_f16_arm_convolve_f16(void) { conv_k5_opt_f16_arm_convolve_f16(); }
+void test_conv_k7_opt_f16_arm_convolve_f16(void) { conv_k7_opt_f16_arm_convolve_f16(); }
+void test_conv_k9_opt_f16_arm_convolve_f16(void) { conv_k9_opt_f16_arm_convolve_f16(); }
+void test_conv_k2_packed_valid_f16_arm_convolve_f16(void) { conv_k2_packed_valid_f16_arm_convolve_f16(); }
+void test_conv_2x3_packed_valid_f16_arm_convolve_f16(void) { conv_2x3_packed_valid_f16_arm_convolve_f16(); }
+void test_conv_2x5_packed_valid_f16_arm_convolve_f16(void) { conv_2x5_packed_valid_f16_arm_convolve_f16(); }
 void test_conv_k3_opt_nhwc_tuned_f16_arm_convolve_f16(void) { conv_k3_opt_nhwc_tuned_f16_arm_convolve_f16(); }
 void test_conv_k5_opt_nhwc_tuned_f16_arm_convolve_f16(void) { conv_k5_opt_nhwc_tuned_f16_arm_convolve_f16(); }
 void test_conv_kernel_2x2_f16_arm_convolve_f16(void) { conv_kernel_2x2_f16_arm_convolve_f16(); }
@@ -70,3 +75,15 @@ void test_conv_match_1x1_basic_f16_arm_convolve_f16_packed(void) { conv_match_1x
 void test_conv_basic_f16_arm_convolve_f16_packed(void) { conv_basic_f16_arm_convolve_f16_packed(); }
 void test_conv_k3_opt_f16_arm_convolve_f16_packed(void) { conv_k3_opt_f16_arm_convolve_f16_packed(); }
 void test_conv_k5_opt_f16_arm_convolve_f16_packed(void) { conv_k5_opt_f16_arm_convolve_f16_packed(); }
+void test_conv_k7_opt_f16_arm_convolve_f16_packed(void) { conv_k7_opt_f16_arm_convolve_f16_packed(); }
+void test_conv_k9_opt_f16_arm_convolve_f16_packed(void) { conv_k9_opt_f16_arm_convolve_f16_packed(); }
+void test_conv_k2_packed_valid_f16_arm_convolve_f16_packed(void) { conv_k2_packed_valid_f16_arm_convolve_f16_packed(); }
+void test_conv_kernel_2x2_f16_arm_convolve_f16_packed(void) { conv_kernel_2x2_f16_arm_convolve_f16_packed(); }
+void test_conv_2x3_packed_valid_f16_arm_convolve_f16_packed(void)
+{
+    conv_2x3_packed_valid_f16_arm_convolve_f16_packed();
+}
+void test_conv_2x5_packed_valid_f16_arm_convolve_f16_packed(void)
+{
+    conv_2x5_packed_valid_f16_arm_convolve_f16_packed();
+}

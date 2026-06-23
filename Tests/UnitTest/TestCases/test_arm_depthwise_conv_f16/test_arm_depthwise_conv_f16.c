@@ -10,13 +10,18 @@
 #include <arm_nnfunctions.h>
 #include <unity.h>
 
+#include "../TestData/depthwise_2x3_opt_nhwc_f16/test_data.h"
 #include "../TestData/depthwise_2x5_opt_batch2_f16/test_data.h"
 #include "../TestData/depthwise_2x5_opt_nhwc_chmult16_f16/test_data.h"
 #include "../TestData/depthwise_basic_f16/test_data.h"
 #include "../TestData/depthwise_basic_smallc_nhwc_f16/test_data.h"
 #include "../TestData/depthwise_ic1_to_conv_nhwc_f16/test_data.h"
+#include "../TestData/depthwise_k2_1d_opt_nhwc_f16/test_data.h"
 #include "../TestData/depthwise_k3_1d_opt_batch2_f16/test_data.h"
 #include "../TestData/depthwise_k3_1d_opt_nhwc_f16/test_data.h"
+#include "../TestData/depthwise_k5_1d_opt_nhwc_f16/test_data.h"
+#include "../TestData/depthwise_k7_1d_opt_nhwc_f16/test_data.h"
+#include "../TestData/depthwise_k9_1d_opt_nhwc_f16/test_data.h"
 #include "../TestData/depthwise_kernel_2x2_f16/test_data.h"
 #include "../TestData/depthwise_kernel_3x3_f16/test_data.h"
 #include "../TestData/depthwise_kernel_3x3_null_bias_f16/test_data.h"
@@ -128,8 +133,13 @@ RUN_DEPTHWISE_F16_CASE(DEPTHWISE_KERNEL_2X2_F16, depthwise_kernel_2x2_f16, 2.0e-
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_KERNEL_3X3_F16, depthwise_kernel_3x3_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_KERNEL_3X3_NULL_BIAS_F16, depthwise_kernel_3x3_null_bias_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K3_1D_OPT_BATCH2_F16, depthwise_k3_1d_opt_batch2_f16, 2.0e-2f)
+RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K2_1D_OPT_NHWC_F16, depthwise_k2_1d_opt_nhwc_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K3_1D_OPT_NHWC_F16, depthwise_k3_1d_opt_nhwc_f16, 2.0e-2f)
+RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K5_1D_OPT_NHWC_F16, depthwise_k5_1d_opt_nhwc_f16, 2.0e-2f)
+RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K7_1D_OPT_NHWC_F16, depthwise_k7_1d_opt_nhwc_f16, 2.0e-2f)
+RUN_DEPTHWISE_F16_CASE(DEPTHWISE_K9_1D_OPT_NHWC_F16, depthwise_k9_1d_opt_nhwc_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_2X5_OPT_BATCH2_F16, depthwise_2x5_opt_batch2_f16, 2.0e-2f)
+RUN_DEPTHWISE_F16_CASE(DEPTHWISE_2X3_OPT_NHWC_F16, depthwise_2x3_opt_nhwc_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_2X5_OPT_NHWC_CHMULT16_F16, depthwise_2x5_opt_nhwc_chmult16_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_MATCH_BASIC_F16, depthwise_match_basic_f16, 2.0e-2f)
 RUN_DEPTHWISE_F16_CASE(DEPTHWISE_MATCH_SUB_BLOCK_F16, depthwise_match_sub_block_f16, 2.0e-2f)
