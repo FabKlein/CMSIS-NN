@@ -18,8 +18,8 @@
 
 define memory mem with size = 4G;
 
-define region ROM0_region = mem : [from __ROM0_BASE to(__ROM0_BASE + __ROM0_SIZE - 1)];
-define region RAM0_region = mem : [from __RAM0_BASE to(__RAM0_BASE + __RAM0_SIZE - 1)];
+define region ROM0_region = mem : [from __ROM0_BASE size __ROM0_SIZE];
+define region RAM0_region = mem : [from __RAM0_BASE size __RAM0_SIZE];
 
 define block CSTACK with alignment = 8, size = __STACK_SIZE{};
 define block HEAP with alignment = 8, size = __HEAP_SIZE{};
