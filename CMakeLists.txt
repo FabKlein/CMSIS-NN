@@ -17,7 +17,11 @@
 #
 
 cmake_minimum_required(VERSION 3.15.6)
+if(CMAKE_C_COMPILER_ID STREQUAL "IAR" OR CMAKE_CXX_COMPILER_ID STREQUAL "IAR")
+set(CMSIS_OPTIMIZATION_LEVEL "-Ohs" CACHE STRING "Compiler optimization level.")
+else()
 set(CMSIS_OPTIMIZATION_LEVEL "-Ofast" CACHE STRING "Compiler optimization level.")
+endif()
 option(ARM_NN_ENABLE_F32 "Enable CMSIS-NN float32 extensions." OFF)
 option(ARM_NN_ENABLE_F16 "Enable CMSIS-NN float16 extensions." OFF)
 
