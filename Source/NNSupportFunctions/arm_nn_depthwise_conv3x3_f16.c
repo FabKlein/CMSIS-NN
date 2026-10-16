@@ -274,6 +274,79 @@ static void depthwise_conv3x3_nhwc_generic_f16(const float16_t *x_nhwc,
     }
 }
 
+#if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE)
+/* Keep accumulators in registers and reuse KC weights across four interior
+ * pixels. Border pixels skip padded taps in the original accumulation order.
+ * Narrow maps use the original channel-streaming implementation.
+ */
+static void depthwise_conv3x3_nhwc_mve_f16(const float16_t *input,
+                                         int32_t batches, int32_t channels, int32_t height, int32_t width,
+                                         const float16_t *weights, const float16_t *bias, float16_t *output,
+                                         int32_t sx, int32_t sy, int32_t px, int32_t py,
+                                         int32_t oh, int32_t ow, float16_t act_min, float16_t act_max)
+{
+    const size_t row_stride = (size_t)width * channels;
+    for (int32_t n = 0; n < batches; ++n)
+    {
+        const float16_t *image = input + (size_t)n * height * row_stride;
+        for (int32_t y = 0; y < oh; ++y)
+        {
+            const int32_t iy = y * sy - py;
+            for (int32_t x = 0; x < ow;)
+            {
+                const int32_t ix = x * sx - px;
+                float16_t *dst = output + ((size_t)n * oh * ow + (size_t)y * ow + x) * channels;
+                const bool four = iy >= 0 && iy + 2 < height && ix >= 0 &&
+                                  x + 3 < ow && ix + 3 * sx + 2 < width;
+                for (int32_t c = 0; c < channels; c += 8)
+                {
+                    const mve_pred16_t p = vctp16q((uint32_t)(channels - c));
+                    float16x8_t a0 = bias ? vld1q_z(bias + c, p) : vdupq_n_f16((float16_t)0);
+                    if (four)
+                    {
+                        float16x8_t a1 = a0, a2 = a0, a3 = a0;
+                        for (int32_t ky = 0; ky < 3; ++ky)
+                        {
+                            const float16_t *row = image + (size_t)(iy + ky) * row_stride + (size_t)ix * channels + c;
+                            for (int32_t kx = 0; kx < 3; ++kx)
+                            {
+                                const float16x8_t w = vld1q_z(weights + (size_t)(ky * 3 + kx) * channels + c, p);
+                                const float16_t *in = row + (size_t)kx * channels;
+                                a0 = vfmaq(a0, vld1q_z(in, p), w);
+                                a1 = vfmaq(a1, vld1q_z(in + (size_t)sx * channels, p), w);
+                                a2 = vfmaq(a2, vld1q_z(in + (size_t)2 * sx * channels, p), w);
+                                a3 = vfmaq(a3, vld1q_z(in + (size_t)3 * sx * channels, p), w);
+                            }
+                        }
+                        const float16x8_t lo = vdupq_n_f16(act_min), hi = vdupq_n_f16(act_max);
+                        vst1q_p(dst + c, arm_nn_clamp_mve_f16(a0, lo, hi), p);
+                        vst1q_p(dst + channels + c, arm_nn_clamp_mve_f16(a1, lo, hi), p);
+                        vst1q_p(dst + 2 * channels + c, arm_nn_clamp_mve_f16(a2, lo, hi), p);
+                        vst1q_p(dst + 3 * channels + c, arm_nn_clamp_mve_f16(a3, lo, hi), p);
+                    }
+                    else
+                    {
+                        for (int32_t ky = 0; ky < 3; ++ky)
+                        {
+                            if ((uint32_t)(iy + ky) >= (uint32_t)height) continue;
+                            for (int32_t kx = 0; kx < 3; ++kx)
+                            {
+                                if ((uint32_t)(ix + kx) >= (uint32_t)width) continue;
+                                const float16_t *in = image + (size_t)(iy + ky) * row_stride + (size_t)(ix + kx) * channels + c;
+                                a0 = vfmaq(a0, vld1q_z(in, p),
+                                           vld1q_z(weights + (size_t)(ky * 3 + kx) * channels + c, p));
+                            }
+                        }
+                        vst1q_p(dst + c, arm_nn_clamp_mve_f16(a0, vdupq_n_f16(act_min), vdupq_n_f16(act_max)), p);
+                    }
+                }
+                x += four ? 4 : 1;
+            }
+        }
+    }
+}
+#endif
+
 void arm_nn_depthwise_conv3x3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                        int32_t batches,
                                        int32_t in_c,
@@ -291,6 +364,14 @@ void arm_nn_depthwise_conv3x3_nhwc_f16(const float16_t *__RESTRICT x_nhwc,
                                        float16_t act_min,
                                        float16_t act_max)
 {
+#if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE)
+    if (in_w >= 8)
+    {
+        depthwise_conv3x3_nhwc_mve_f16(x_nhwc, batches, in_c, in_h, in_w, kernel, b, out,
+                                     stride_x, stride_y, pad_x, pad_y, out_h, out_w, act_min, act_max);
+        return;
+    }
+#endif
     if (stride_x == 1 && stride_y == 1 && pad_x == 0 && pad_y == 0)
     {
         depthwise_conv3x3_nhwc_valid_f16(
