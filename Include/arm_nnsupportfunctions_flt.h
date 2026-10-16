@@ -977,6 +977,27 @@ void arm_nn_conv1d_k2_packed_f16(const float16_t *__RESTRICT x_nhwc,
                                  int32_t out_w);
 
 /**
+ * @brief Direct NHWC 3x3 F16 convolution with NT_N packed weights and no scratch.
+ * @par Preconditions
+ * Each name fixes equal H/W stride (s1 or s2) and padding (p0 or p1).
+ * Dilation must be one. Weights: [ceil(out_c/8)][9*in_c][8], including padded
+ * channel lanes. Output geometry must match those parameters. Processes one
+ * batch; the convolution wrapper handles batches and activation clamping.
+ */
+void arm_nn_conv2d_3x3_s1_p0_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
+    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
+    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
+void arm_nn_conv2d_3x3_s1_p1_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
+    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
+    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p0_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
+    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
+    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p1_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
+    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
+    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
+
+/**
  * @brief Specialized NHWC direct convolution kernel for `2x2` (float16, packed weights).
  *
  * @par Preconditions

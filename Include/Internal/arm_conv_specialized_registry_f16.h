@@ -96,3 +96,21 @@ ARM_CONV_2D_SPEC(2,
                  .stride = {.h = 1, .w = 1},
                  .padding = {.h = 0, .w = 0},
                  .dilation = {.h = 1, .w = 1})
+
+/* Direct regular 3x3, including the padded ResNet stride-1/2 cases. */
+ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s1_p0_packed_f16,
+                 .stride = {.h = 1, .w = 1},
+                 .padding = {.h = 0, .w = 0},
+                 .dilation = {.h = 1, .w = 1})
+ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s1_p1_packed_f16,
+                 .stride = {.h = 1, .w = 1},
+                 .padding = {.h = 1, .w = 1},
+                 .dilation = {.h = 1, .w = 1})
+ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s2_p0_packed_f16,
+                 .stride = {.h = 2, .w = 2},
+                 .padding = {.h = 0, .w = 0},
+                 .dilation = {.h = 1, .w = 1})
+ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s2_p1_packed_f16,
+                 .stride = {.h = 2, .w = 2},
+                 .padding = {.h = 1, .w = 1},
+                 .dilation = {.h = 1, .w = 1})
