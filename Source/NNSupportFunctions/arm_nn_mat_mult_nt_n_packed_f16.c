@@ -139,8 +139,40 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_n_packed_f16(const float16_t *__RESTRICT 
     {
         const float16_t *lhs_row = lhs + (size_t)r * rhs_cols;
         float16_t *dst_row = dst + (size_t)r * row_address_offset;
+        int32_t b = 0;
 
-        for (int32_t b = 0; b < rhs_blocks; ++b)
+    #if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE)
+        /* Batch-one FC and leftover GEMM rows: reuse each input scalar across
+         * four independent output vectors. Keep each output's K-order intact.
+         * The existing predicated path handles incomplete blocks below.
+         */
+        for (; b + 4 <= rhs_rows / block_cols; b += 4)
+        {
+            const int32_t c = b * block_cols;
+            const float16_t *w0 = rhs_packed + (size_t)b * rhs_cols * block_cols;
+            const float16_t *w1 = w0 + (size_t)rhs_cols * block_cols;
+            const float16_t *w2 = w1 + (size_t)rhs_cols * block_cols;
+            const float16_t *w3 = w2 + (size_t)rhs_cols * block_cols;
+            float16x8_t a0 = bias ? vld1q(bias + c) : vdupq_n_f16((float16_t)0);
+            float16x8_t a1 = bias ? vld1q(bias + c + 8) : vdupq_n_f16((float16_t)0);
+            float16x8_t a2 = bias ? vld1q(bias + c + 16) : vdupq_n_f16((float16_t)0);
+            float16x8_t a3 = bias ? vld1q(bias + c + 24) : vdupq_n_f16((float16_t)0);
+            for (int32_t k = 0; k < rhs_cols; ++k)
+            {
+                const float16_t x = lhs_row[k];
+                a0 = vfmaq(a0, vld1q(w0), x); w0 += block_cols;
+                a1 = vfmaq(a1, vld1q(w1), x); w1 += block_cols;
+                a2 = vfmaq(a2, vld1q(w2), x); w2 += block_cols;
+                a3 = vfmaq(a3, vld1q(w3), x); w3 += block_cols;
+            }
+            vst1q(dst_row + c, arm_nn_clamp_mve_f16(a0, vmin, vmax));
+            vst1q(dst_row + c + 8, arm_nn_clamp_mve_f16(a1, vmin, vmax));
+            vst1q(dst_row + c + 16, arm_nn_clamp_mve_f16(a2, vmin, vmax));
+            vst1q(dst_row + c + 24, arm_nn_clamp_mve_f16(a3, vmin, vmax));
+        }
+    #endif
+
+        for (; b < rhs_blocks; ++b)
         {
             const int32_t c = b * block_cols;
             const int32_t remaining = rhs_rows - c;
