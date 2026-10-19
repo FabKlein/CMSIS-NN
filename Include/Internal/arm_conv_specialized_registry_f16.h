@@ -21,8 +21,8 @@
  * Title:        arm_conv_specialized_registry_f16.h
  * Description:  F16 specialized convolution registry
  *
- * $Date:        9 September 2026
- * $Revision:    V.1.0.0
+ * $Date:        19 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -98,19 +98,27 @@ ARM_CONV_2D_SPEC(2,
                  .dilation = {.h = 1, .w = 1})
 
 /* Direct regular 3x3, including the padded ResNet stride-1/2 cases. */
-ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s1_p0_packed_f16,
+ARM_CONV_2D_SPEC(3,
+                 3,
+                 arm_nn_conv2d_3x3_s1_p0_packed_f16,
                  .stride = {.h = 1, .w = 1},
                  .padding = {.h = 0, .w = 0},
                  .dilation = {.h = 1, .w = 1})
-ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s1_p1_packed_f16,
+ARM_CONV_2D_SPEC(3,
+                 3,
+                 arm_nn_conv2d_3x3_s1_p1_packed_f16,
                  .stride = {.h = 1, .w = 1},
                  .padding = {.h = 1, .w = 1},
                  .dilation = {.h = 1, .w = 1})
-ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s2_p0_packed_f16,
+ARM_CONV_2D_SPEC(3,
+                 3,
+                 arm_nn_conv2d_3x3_s2_p0_packed_f16,
                  .stride = {.h = 2, .w = 2},
                  .padding = {.h = 0, .w = 0},
                  .dilation = {.h = 1, .w = 1})
-ARM_CONV_2D_SPEC(3, 3, arm_nn_conv2d_3x3_s2_p1_packed_f16,
+ARM_CONV_2D_SPEC(3,
+                 3,
+                 arm_nn_conv2d_3x3_s2_p1_packed_f16,
                  .stride = {.h = 2, .w = 2},
                  .padding = {.h = 1, .w = 1},
                  .dilation = {.h = 1, .w = 1})

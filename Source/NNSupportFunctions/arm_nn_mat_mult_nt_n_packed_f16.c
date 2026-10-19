@@ -21,8 +21,8 @@
  * Title:        arm_nn_mat_mult_nt_n_packed_f16.c
  * Description:  Support: matrix multiply (lhs non-transposed, rhs packed non-transposed)
  *
- * $Date:        16 April 2026
- * $Revision:    V.1.0.0
+ * $Date:        19 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -160,10 +160,14 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_n_packed_f16(const float16_t *__RESTRICT 
             for (int32_t k = 0; k < rhs_cols; ++k)
             {
                 const float16_t x = lhs_row[k];
-                a0 = vfmaq(a0, vld1q(w0), x); w0 += block_cols;
-                a1 = vfmaq(a1, vld1q(w1), x); w1 += block_cols;
-                a2 = vfmaq(a2, vld1q(w2), x); w2 += block_cols;
-                a3 = vfmaq(a3, vld1q(w3), x); w3 += block_cols;
+                a0 = vfmaq(a0, vld1q(w0), x);
+                w0 += block_cols;
+                a1 = vfmaq(a1, vld1q(w1), x);
+                w1 += block_cols;
+                a2 = vfmaq(a2, vld1q(w2), x);
+                w2 += block_cols;
+                a3 = vfmaq(a3, vld1q(w3), x);
+                w3 += block_cols;
             }
             vst1q(dst_row + c, arm_nn_clamp_mve_f16(a0, vmin, vmax));
             vst1q(dst_row + c + 8, arm_nn_clamp_mve_f16(a1, vmin, vmax));

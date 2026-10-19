@@ -21,8 +21,8 @@
  * Title:        arm_nn_depthwise_conv3x3_f32.c
  * Description:  Support: depthwise conv 3x3 kernels for f32
  *
- * $Date:        30 Mar 2026
- * $Revision:    V.1.0.0
+ * $Date:        19 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -274,6 +274,100 @@ static void depthwise_conv3x3_nhwc_generic_f32(const float32_t *x_nhwc,
     }
 }
 
+#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
+/* Reuse each KC weight vector across four adjacent interior pixels. Border pixels skip padded taps. */
+static void depthwise_conv3x3_nhwc_mve_f32(const float32_t *input,
+                                           int32_t batches,
+                                           int32_t channels,
+                                           int32_t height,
+                                           int32_t width,
+                                           const float32_t *weights,
+                                           const float32_t *bias,
+                                           float32_t *output,
+                                           int32_t stride_x,
+                                           int32_t stride_y,
+                                           int32_t pad_x,
+                                           int32_t pad_y,
+                                           int32_t out_h,
+                                           int32_t out_w,
+                                           float32_t act_min,
+                                           float32_t act_max)
+{
+    const size_t row_stride = (size_t)width * channels;
+    const float32x4_t min_vec = vdupq_n_f32(act_min);
+    const float32x4_t max_vec = vdupq_n_f32(act_max);
+
+    for (int32_t batch = 0; batch < batches; ++batch)
+    {
+        const float32_t *image = input + (size_t)batch * height * row_stride;
+        for (int32_t y = 0; y < out_h; ++y)
+        {
+            const int32_t input_y = y * stride_y - pad_y;
+            for (int32_t x = 0; x < out_w;)
+            {
+                const int32_t input_x = x * stride_x - pad_x;
+                float32_t *dst = output + ((size_t)batch * out_h * out_w + (size_t)y * out_w + x) * channels;
+                const bool process_four = input_y >= 0 && input_y + 2 < height && input_x >= 0 && x + 3 < out_w &&
+                    input_x + 3 * stride_x + 2 < width;
+
+                for (int32_t c = 0; c < channels; c += 4)
+                {
+                    const mve_pred16_t p = vctp32q((uint32_t)(channels - c));
+                    float32x4_t acc0 = bias ? vld1q_z(bias + c, p) : vdupq_n_f32(0.0f);
+                    if (process_four)
+                    {
+                        float32x4_t acc1 = acc0;
+                        float32x4_t acc2 = acc0;
+                        float32x4_t acc3 = acc0;
+                        for (int32_t ky = 0; ky < 3; ++ky)
+                        {
+                            const float32_t *row =
+                                image + (size_t)(input_y + ky) * row_stride + (size_t)input_x * channels + c;
+                            for (int32_t kx = 0; kx < 3; ++kx)
+                            {
+                                const float32x4_t weight = vld1q_z(weights + (size_t)(ky * 3 + kx) * channels + c, p);
+                                const float32_t *in = row + (size_t)kx * channels;
+                                acc0 = vfmaq(acc0, vld1q_z(in, p), weight);
+                                acc1 = vfmaq(acc1, vld1q_z(in + (size_t)stride_x * channels, p), weight);
+                                acc2 = vfmaq(acc2, vld1q_z(in + (size_t)2 * stride_x * channels, p), weight);
+                                acc3 = vfmaq(acc3, vld1q_z(in + (size_t)3 * stride_x * channels, p), weight);
+                            }
+                        }
+                        vst1q_p(dst + c, arm_nn_clamp_mve_f32(acc0, min_vec, max_vec), p);
+                        vst1q_p(dst + channels + c, arm_nn_clamp_mve_f32(acc1, min_vec, max_vec), p);
+                        vst1q_p(dst + 2 * channels + c, arm_nn_clamp_mve_f32(acc2, min_vec, max_vec), p);
+                        vst1q_p(dst + 3 * channels + c, arm_nn_clamp_mve_f32(acc3, min_vec, max_vec), p);
+                    }
+                    else
+                    {
+                        for (int32_t ky = 0; ky < 3; ++ky)
+                        {
+                            if ((uint32_t)(input_y + ky) >= (uint32_t)height)
+                            {
+                                continue;
+                            }
+                            for (int32_t kx = 0; kx < 3; ++kx)
+                            {
+                                if ((uint32_t)(input_x + kx) >= (uint32_t)width)
+                                {
+                                    continue;
+                                }
+                                const float32_t *in =
+                                    image + (size_t)(input_y + ky) * row_stride + (size_t)(input_x + kx) * channels + c;
+                                acc0 = vfmaq(
+                                    acc0, vld1q_z(in, p), vld1q_z(weights + (size_t)(ky * 3 + kx) * channels + c, p));
+                            }
+                        }
+                        vst1q_p(dst + c, arm_nn_clamp_mve_f32(acc0, min_vec, max_vec), p);
+                    }
+                }
+                x += process_four ? 4 : 1;
+            }
+        }
+    }
+}
+#endif
+
 void arm_nn_depthwise_conv3x3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
                                        int32_t batches,
                                        int32_t in_c,
@@ -291,6 +385,28 @@ void arm_nn_depthwise_conv3x3_nhwc_f32(const float32_t *__RESTRICT x_nhwc,
                                        float32_t act_min,
                                        float32_t act_max)
 {
+#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
+    if (in_w >= 8)
+    {
+        depthwise_conv3x3_nhwc_mve_f32(x_nhwc,
+                                       batches,
+                                       in_c,
+                                       in_h,
+                                       in_w,
+                                       kernel,
+                                       b,
+                                       out,
+                                       stride_x,
+                                       stride_y,
+                                       pad_x,
+                                       pad_y,
+                                       out_h,
+                                       out_w,
+                                       act_min,
+                                       act_max);
+        return;
+    }
+#endif
     if (stride_x == 1 && stride_y == 1 && pad_x == 0 && pad_y == 0)
     {
         depthwise_conv3x3_nhwc_valid_f32(

@@ -21,8 +21,8 @@
  * Title:        arm_nn_mat_mult_nt_n_packed_f32.c
  * Description:  Support: matrix multiply (lhs non-transposed, rhs packed non-transposed)
  *
- * $Date:        16 April 2026
- * $Revision:    V.1.0.0
+ * $Date:        19 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -139,13 +139,49 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_n_packed_f32(const float32_t *__RESTRICT 
     {
         const float32_t *lhs_row = lhs + (size_t)r * rhs_cols;
         float32_t *dst_row = dst + (size_t)r * row_address_offset;
+        int32_t block = 0;
 
-        for (int32_t b = 0; b < rhs_blocks; ++b)
+    #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
+        /* Reuse each input scalar across four complete output-channel vectors. */
+        for (; block + 4 <= rhs_rows / block_cols; block += 4)
         {
-            const int32_t c = b * block_cols;
+            const int32_t c = block * block_cols;
+            const size_t block_stride = (size_t)rhs_cols * block_cols;
+            const float32_t *w0 = rhs_packed + (size_t)block * block_stride;
+            const float32_t *w1 = w0 + block_stride;
+            const float32_t *w2 = w1 + block_stride;
+            const float32_t *w3 = w2 + block_stride;
+            float32x4_t acc0 = bias ? vld1q(bias + c) : vdupq_n_f32(0.0f);
+            float32x4_t acc1 = bias ? vld1q(bias + c + 4) : vdupq_n_f32(0.0f);
+            float32x4_t acc2 = bias ? vld1q(bias + c + 8) : vdupq_n_f32(0.0f);
+            float32x4_t acc3 = bias ? vld1q(bias + c + 12) : vdupq_n_f32(0.0f);
+
+            for (int32_t k = 0; k < rhs_cols; ++k)
+            {
+                const float32_t lhs_value = lhs_row[k];
+                acc0 = vfmaq_n_f32(acc0, vld1q(w0), lhs_value);
+                acc1 = vfmaq_n_f32(acc1, vld1q(w1), lhs_value);
+                acc2 = vfmaq_n_f32(acc2, vld1q(w2), lhs_value);
+                acc3 = vfmaq_n_f32(acc3, vld1q(w3), lhs_value);
+                w0 += block_cols;
+                w1 += block_cols;
+                w2 += block_cols;
+                w3 += block_cols;
+            }
+
+            vst1q(dst_row + c, arm_nn_clamp_mve_f32(acc0, vmin, vmax));
+            vst1q(dst_row + c + 4, arm_nn_clamp_mve_f32(acc1, vmin, vmax));
+            vst1q(dst_row + c + 8, arm_nn_clamp_mve_f32(acc2, vmin, vmax));
+            vst1q(dst_row + c + 12, arm_nn_clamp_mve_f32(acc3, vmin, vmax));
+        }
+    #endif
+
+        for (; block < rhs_blocks; ++block)
+        {
+            const int32_t c = block * block_cols;
             const int32_t remaining = rhs_rows - c;
             const int32_t valid_cols = remaining < block_cols ? remaining : block_cols;
-            const float32_t *rhs_block = rhs_packed + (size_t)b * rhs_cols * block_cols;
+            const float32_t *rhs_block = rhs_packed + (size_t)block * rhs_cols * block_cols;
 
     #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
             const mve_pred16_t p = vctp32q((uint32_t)valid_cols);

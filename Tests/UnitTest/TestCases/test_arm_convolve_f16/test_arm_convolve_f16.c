@@ -12,8 +12,6 @@
 #include <arm_nnsupportfunctions.h>
 #include <unity.h>
 
-#include "Internal/arm_conv_specialized_common.h"
-#include "Internal/arm_conv_specialized_f16.h"
 #include "../Common/float_packed_test_utils.h"
 #include "../TestData/conv_1x1_stride2_nhwc_f16/test_data.h"
 #include "../TestData/conv_2x3_packed_valid_f16/test_data.h"
@@ -31,6 +29,7 @@
 #include "../TestData/conv_k9_opt_f16/test_data.h"
 #include "../TestData/conv_kernel_2x2_f16/test_data.h"
 #include "../TestData/conv_kernel_3x3_pad1_f16/test_data.h"
+#include "../TestData/conv_kernel_3x3_stride2_valid_f16/test_data.h"
 #include "../TestData/conv_match_1x1_basic_f16/test_data.h"
 #include "../TestData/conv_match_1x1_stride_x_f16/test_data.h"
 #include "../TestData/conv_match_1x1_stride_x_y_1_f16/test_data.h"
@@ -57,6 +56,8 @@
 #include "../TestData/conv_match_dilation_golden_f16/test_data.h"
 #include "../TestData/conv_match_out_activation_f16/test_data.h"
 #include "../TestData/conv_match_stride2pad1_f16/test_data.h"
+#include "Internal/arm_conv_specialized_common.h"
+#include "Internal/arm_conv_specialized_f16.h"
 
 #define RUN_CONV_F16_CASE(CASE_PREFIX, case_name, tolerance)                                                           \
     void case_name##_arm_convolve_f16(void)                                                                            \
@@ -640,6 +641,18 @@ RUN_CONV_F16_PACKED_CASE(CONV_2X3_PACKED_VALID_F16,
 RUN_CONV_F16_PACKED_CASE(CONV_2X5_PACKED_VALID_F16,
                          conv_2x5_packed_valid_f16,
                          conv_2x5_packed_valid_f16_biases_data,
+                         2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_KERNEL_3X3_PAD1_F16,
+                         conv_kernel_3x3_pad1_f16,
+                         conv_kernel_3x3_pad1_f16_biases_data,
+                         2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_KERNEL_3X3_STRIDE2_VALID_F16,
+                         conv_kernel_3x3_stride2_valid_f16,
+                         conv_kernel_3x3_stride2_valid_f16_biases_data,
+                         2.0e-2f)
+RUN_CONV_F16_PACKED_CASE(CONV_MATCH_STRIDE2PAD1_F16,
+                         conv_match_stride2pad1_f16,
+                         conv_match_stride2pad1_f16_biases_data,
                          2.0e-2f)
 
 /* Binary fractions keep the reference exact in both native F16 and F32.
