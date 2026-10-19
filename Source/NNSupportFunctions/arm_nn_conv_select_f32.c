@@ -31,8 +31,8 @@
 
 #if ARM_NN_ENABLE_F32 && !defined(NN_DISABLE_SPECIALIZATION)
 
-    #include "Internal/arm_conv_specialized_common.h"
     #include "Internal/arm_conv_select_f32.h"
+    #include "Internal/arm_conv_specialized_common.h"
 
 /* Function presence is folded to bool constants here; these tables contain
  * no function addresses. The execution tables use the same registry order.

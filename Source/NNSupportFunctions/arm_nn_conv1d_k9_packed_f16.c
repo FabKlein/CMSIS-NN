@@ -20,10 +20,10 @@
 
 #if ARM_NN_ENABLE_F16
 
-#define ARM_NN_CONV1D_PACKED_NAME arm_nn_conv1d_k9_packed_f16
-#define ARM_NN_CONV1D_PACKED_KERNEL_W 9
-#include "Internal/arm_nn_conv1d_packed_f16_template.h"
-#undef ARM_NN_CONV1D_PACKED_KERNEL_W
-#undef ARM_NN_CONV1D_PACKED_NAME
+    #define ARM_NN_CONV1D_PACKED_NAME arm_nn_conv1d_k9_packed_f16
+    #define ARM_NN_CONV1D_PACKED_KERNEL_W 9
+    #include "Internal/arm_nn_conv1d_packed_f16_template.h"
+    #undef ARM_NN_CONV1D_PACKED_KERNEL_W
+    #undef ARM_NN_CONV1D_PACKED_NAME
 
 #endif /* ARM_NN_ENABLE_F16 */

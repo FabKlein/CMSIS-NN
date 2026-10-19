@@ -93,6 +93,15 @@ void test_conv_2x5_packed_valid_f16_arm_convolve_f16_packed(void)
 {
     conv_2x5_packed_valid_f16_arm_convolve_f16_packed();
 }
+void test_conv_kernel_3x3_pad1_f16_arm_convolve_f16_packed(void) { conv_kernel_3x3_pad1_f16_arm_convolve_f16_packed(); }
+void test_conv_kernel_3x3_stride2_valid_f16_arm_convolve_f16_packed(void)
+{
+    conv_kernel_3x3_stride2_valid_f16_arm_convolve_f16_packed();
+}
+void test_conv_match_stride2pad1_f16_arm_convolve_f16_packed(void)
+{
+    conv_match_stride2pad1_f16_arm_convolve_f16_packed();
+}
 
 void test_conv_2x2_packed_tiles_f16(void) { conv_2x2_packed_tiles_f16(); }
 void test_conv_2x3_packed_tiles_f16(void) { conv_2x3_packed_tiles_f16(); }

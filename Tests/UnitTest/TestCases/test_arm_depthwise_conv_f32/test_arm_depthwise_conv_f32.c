@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <arm_nnfunctions.h>
 #include "Internal/arm_depthwise_conv_specialized_f32.h"
+#include <arm_nnfunctions.h>
 #include <unity.h>
 
 #include "../TestData/depthwise_2x5_opt_batch2_f32/test_data.h"
@@ -389,11 +389,8 @@ void depthwise_dilated_clipping_boundaries_f32(void)
         for (int32_t axis = 0; axis < 2; ++axis)
         {
             const char *axis_name = axis == 0 ? "height" : "width";
-            cmsis_nn_dw_conv_params_f32 params = {.ch_mult = 1,
-                                                  .stride = {1, 1},
-                                                  .padding = {0, 0},
-                                                  .dilation = {1, 1},
-                                                  .activation = {-100, 100}};
+            cmsis_nn_dw_conv_params_f32 params = {
+                .ch_mult = 1, .stride = {1, 1}, .padding = {0, 0}, .dilation = {1, 1}, .activation = {-100, 100}};
             if (axis == 0)
             {
                 params.padding.h = cases[i].padding;
@@ -413,17 +410,8 @@ void depthwise_dilated_clipping_boundaries_f32(void)
                 arm_cmsis_nn_status status;
                 if (route == 0)
                 {
-                    status = arm_depthwise_conv_f32(NULL,
-                                                    &params,
-                                                    &dims,
-                                                    input,
-                                                    &dims,
-                                                    kernel,
-                                                    NULL,
-                                                    NULL,
-                                                    &dims,
-                                                    output,
-                                                    ARM_NN_LAYOUT_NHWC);
+                    status = arm_depthwise_conv_f32(
+                        NULL, &params, &dims, input, &dims, kernel, NULL, NULL, &dims, output, ARM_NN_LAYOUT_NHWC);
                 }
                 else if (route == 1)
                 {

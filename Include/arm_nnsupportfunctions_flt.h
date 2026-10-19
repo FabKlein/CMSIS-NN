@@ -21,8 +21,8 @@
  * Title:        arm_nnsupportfunctions_flt.h
  * Description:  Floating-point support API extensions for CMSIS-NN
  *
- * $Date:        7 September 2026
- * $Revision:    V.1.0.1
+ * $Date:        19 October 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -446,6 +446,55 @@ void arm_nn_conv2d_2x5_packed_f32(const float32_t *__RESTRICT x_nhwc,
                                   int32_t out_c,
                                   int32_t out_h,
                                   int32_t out_w);
+
+/**
+ * @brief Direct NHWC 3x3 float32 convolution with packed weights and no scratch buffer.
+ *
+ * Each function name fixes equal height/width stride (`s1` or `s2`) and padding (`p0` or `p1`). Dilation must be
+ * one. Weights use `[ceil(out_c / 4)][9 * in_c][4]`, including padded channel lanes. The output geometry must match
+ * the selected stride and padding. Each call processes one batch; the convolution wrapper handles batches and
+ * activation clamping.
+ */
+void arm_nn_conv2d_3x3_s1_p0_packed_f32(const float32_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float32_t *__RESTRICT weights,
+                                        const float32_t *__RESTRICT bias,
+                                        float32_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s1_p1_packed_f32(const float32_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float32_t *__RESTRICT weights,
+                                        const float32_t *__RESTRICT bias,
+                                        float32_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p0_packed_f32(const float32_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float32_t *__RESTRICT weights,
+                                        const float32_t *__RESTRICT bias,
+                                        float32_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p1_packed_f32(const float32_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float32_t *__RESTRICT weights,
+                                        const float32_t *__RESTRICT bias,
+                                        float32_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
 
 /**
  * @brief Specialized NHWC 1D convolution kernel for `k=9` (float32, packed weights).
@@ -984,18 +1033,46 @@ void arm_nn_conv1d_k2_packed_f16(const float16_t *__RESTRICT x_nhwc,
  * channel lanes. Output geometry must match those parameters. Processes one
  * batch; the convolution wrapper handles batches and activation clamping.
  */
-void arm_nn_conv2d_3x3_s1_p0_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
-    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
-    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
-void arm_nn_conv2d_3x3_s1_p1_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
-    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
-    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
-void arm_nn_conv2d_3x3_s2_p0_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
-    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
-    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
-void arm_nn_conv2d_3x3_s2_p1_packed_f16(const float16_t *__RESTRICT input, int32_t in_c, int32_t in_h, int32_t in_w,
-    const float16_t *__RESTRICT weights, const float16_t *__RESTRICT bias,
-    float16_t *__RESTRICT output, int32_t out_c, int32_t out_h, int32_t out_w);
+void arm_nn_conv2d_3x3_s1_p0_packed_f16(const float16_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float16_t *__RESTRICT weights,
+                                        const float16_t *__RESTRICT bias,
+                                        float16_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s1_p1_packed_f16(const float16_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float16_t *__RESTRICT weights,
+                                        const float16_t *__RESTRICT bias,
+                                        float16_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p0_packed_f16(const float16_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float16_t *__RESTRICT weights,
+                                        const float16_t *__RESTRICT bias,
+                                        float16_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
+void arm_nn_conv2d_3x3_s2_p1_packed_f16(const float16_t *__RESTRICT input,
+                                        int32_t in_c,
+                                        int32_t in_h,
+                                        int32_t in_w,
+                                        const float16_t *__RESTRICT weights,
+                                        const float16_t *__RESTRICT bias,
+                                        float16_t *__RESTRICT output,
+                                        int32_t out_c,
+                                        int32_t out_h,
+                                        int32_t out_w);
 
 /**
  * @brief Specialized NHWC direct convolution kernel for `2x2` (float16, packed weights).

@@ -103,15 +103,9 @@ void test_depthwise_invalid_geometry_f32(void) { depthwise_invalid_geometry_f32(
 
 void test_depthwise_geometry_limits_f32(void) { depthwise_geometry_limits_f32(); }
 
-void test_depthwise_dilated_clipping_boundaries_f32(void)
-{
-    depthwise_dilated_clipping_boundaries_f32();
-}
+void test_depthwise_dilated_clipping_boundaries_f32(void) { depthwise_dilated_clipping_boundaries_f32(); }
 
-void test_depthwise_specialization_selection_f32(void)
-{
-    depthwise_specialization_selection_f32();
-}
+void test_depthwise_specialization_selection_f32(void) { depthwise_specialization_selection_f32(); }
 
 void test_depthwise_specialization_requirements_f32(void) { depthwise_specialization_requirements_f32(); }
 

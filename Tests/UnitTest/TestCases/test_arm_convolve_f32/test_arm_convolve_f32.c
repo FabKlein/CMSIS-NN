@@ -12,8 +12,6 @@
 #include <arm_nnsupportfunctions.h>
 #include <unity.h>
 
-#include "Internal/arm_conv_specialized_common.h"
-#include "Internal/arm_conv_specialized_f32.h"
 #include "../Common/float_packed_test_utils.h"
 #include "../TestData/conv_1x1_stride2_nhwc_f32/test_data.h"
 #include "../TestData/conv_2x3_packed_valid_f32/test_data.h"
@@ -31,6 +29,7 @@
 #include "../TestData/conv_k9_opt_f32/test_data.h"
 #include "../TestData/conv_kernel_2x2_f32/test_data.h"
 #include "../TestData/conv_kernel_3x3_pad1_f32/test_data.h"
+#include "../TestData/conv_kernel_3x3_stride2_valid_f32/test_data.h"
 #include "../TestData/conv_match_1x1_basic_f32/test_data.h"
 #include "../TestData/conv_match_1x1_stride_x_f32/test_data.h"
 #include "../TestData/conv_match_1x1_stride_x_y_1_f32/test_data.h"
@@ -53,6 +52,8 @@
 #include "../TestData/conv_match_conv_2_f32/test_data.h"
 #include "../TestData/conv_match_conv_3_f32/test_data.h"
 #include "../TestData/conv_match_conv_4_f32/test_data.h"
+#include "Internal/arm_conv_specialized_common.h"
+#include "Internal/arm_conv_specialized_f32.h"
 #if !defined(USING_FVP_CORSTONE_300)
     #include "../TestData/conv_match_conv_5_f32/test_data.h"
 #endif
@@ -649,6 +650,18 @@ RUN_CONV_F32_PACKED_CASE(CONV_2X3_PACKED_VALID_F32,
 RUN_CONV_F32_PACKED_CASE(CONV_2X5_PACKED_VALID_F32,
                          conv_2x5_packed_valid_f32,
                          conv_2x5_packed_valid_f32_biases_data,
+                         5.0e-4f)
+RUN_CONV_F32_PACKED_CASE(CONV_KERNEL_3X3_PAD1_F32,
+                         conv_kernel_3x3_pad1_f32,
+                         conv_kernel_3x3_pad1_f32_biases_data,
+                         5.0e-4f)
+RUN_CONV_F32_PACKED_CASE(CONV_KERNEL_3X3_STRIDE2_VALID_F32,
+                         conv_kernel_3x3_stride2_valid_f32,
+                         conv_kernel_3x3_stride2_valid_f32_biases_data,
+                         5.0e-4f)
+RUN_CONV_F32_PACKED_CASE(CONV_MATCH_STRIDE2PAD1_F32,
+                         conv_match_stride2pad1_f32,
+                         conv_match_stride2pad1_f32_biases_data,
                          5.0e-4f)
 
 /* Binary fractions keep the reference exact in both native F16 and F32.
