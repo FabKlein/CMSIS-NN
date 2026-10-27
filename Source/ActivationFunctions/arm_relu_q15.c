@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_relu_q15.c
  * Description:  Q15 version of ReLU
  *
- * $Date:        31 January 2023
- * $Revision:    V.1.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

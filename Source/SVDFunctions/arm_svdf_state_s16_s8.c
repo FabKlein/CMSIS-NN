@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_svdf_state_s16_s8.c
  * Description:  S8 basic SVDF layer function with s16 state tensor
  *
- * $Date:        24 Sep 2024
- * $Revision:    V.3.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

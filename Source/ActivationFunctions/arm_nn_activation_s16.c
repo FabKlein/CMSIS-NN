@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2010-2020, 2022, 2024 Arm Limited and/or its affiliates
+ * SPDX-FileCopyrightText: <text>Copyright 2010-2020, 2022, 2024, 2026 Arm Limited and/or its affiliates
  * <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -22,8 +22,8 @@
  * Title:        arm_nn_activation_s16.c
  * Description:  Q15 neural network activation function using direct table look-up
  *
- * $Date:        19 January 2024
- * $Revision:    V.2.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.1
  *
  * Target Processor:  Cortex-M cores
  *

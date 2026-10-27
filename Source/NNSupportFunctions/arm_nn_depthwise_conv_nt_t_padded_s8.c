@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2020, 2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2020, 2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_depthwise_conv_nt_t_padded_s8.c
  * Description:  Depthwise convolution with padded matrices.
  *
- * $Date:        26 October 2022
- * $Revision:    V.2.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.2
  *
  * Target Processor:  Cortex-M processors with MVE extension
  * -------------------------------------------------------------------- */

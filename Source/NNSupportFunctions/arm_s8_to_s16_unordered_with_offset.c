@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_s8_to_s16_unordered_with_offset.c
  * Description:  Converts the elements of the S8 vector to S16 vector with an added offset
  *
- * $Date:        23 Mars 2023
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,8 +22,8 @@
  * Description:  Optimized s8 depthwise separable convolution function for
  *               channel multiplier of 1.
  *
- * $Date:        22 March 2023
- * $Revision:    V.3.5.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.5.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

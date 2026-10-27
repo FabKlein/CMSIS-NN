@@ -21,8 +21,8 @@
  * Title:        arm_convolve_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for the various s8 convolution layer functions.
  *
- * $Date:        6 Mar 2026
- * $Revision:    V.2.3.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.3.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

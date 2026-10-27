@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_convolve_1_x_n_s8.c
  * Description:  s8 version of 1xN convolution using symmetric quantization.
  *
- * $Date:        04 November 2024
- * $Revision:    V.3.6.1
+ * $Date:        27 October 2026
+ * $Revision:    V.3.6.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

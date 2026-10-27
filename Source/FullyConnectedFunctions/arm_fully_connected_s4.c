@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_fully_connected_s4
  * Description:  Fully connected function compatible with TF Lite.
  *
- * $Date:        22 April 2024
- * $Revision:    V.1.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

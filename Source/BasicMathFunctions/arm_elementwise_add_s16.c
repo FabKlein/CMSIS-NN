@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_elementwise_add_s16
  * Description:  Elementwise add
  *
- * $Date:        24 Oct 2022
- * $Revision:    V.2.2.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.2.1
  *
  * Target Processor:  Cortex-M CPUs
  *

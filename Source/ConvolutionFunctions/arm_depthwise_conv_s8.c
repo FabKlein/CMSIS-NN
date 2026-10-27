@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_depthwise_conv_s8.c
  * Description:  s8 version of depthwise convolution.
  *
- * $Date:        22 September 2026
- * $Revision:    V.3.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.1
  *
  * Target Processor:  Cortex-M CPUs
  *

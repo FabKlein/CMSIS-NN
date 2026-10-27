@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022, 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2022, 2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_elementwise_mul_acc_s16
  * Description:  Accumulative element wise multiplication
  *
- * $Date:        19 January 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -22,8 +22,8 @@
  * Description:  s8 convolution layer wrapper function with the main purpose to call the optimal kernel available in
  * cmsis-nn to perform the convolution.
  *
- * $Date:        27 Feb 2026
- * $Revision:    V.2.5.2
+ * $Date:        27 October 2026
+ * $Revision:    V.2.5.3
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -21,8 +21,8 @@
  * Title:        arm_convolve_get_buffer_sizes_s4.c
  * Description:  Collection of get buffer size functions for the various s4 convolution layer functions.
  *
- * $Date:        27 Feb 2026
- * $Revision:    V.1.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

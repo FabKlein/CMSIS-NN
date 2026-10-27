@@ -22,8 +22,8 @@
  * Description:  s4 convolution layer wrapper function with the main purpose to call the optimal kernel available in
  *               cmsis-nn to perform the convolution. See header files for details.
  *
- * $Date:        27 Feb 2026
- * $Revision:    V.1.2.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.2.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

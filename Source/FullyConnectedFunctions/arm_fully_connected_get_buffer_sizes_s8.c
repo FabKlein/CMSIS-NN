@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_fully_connected_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for fully connected s8 layer function.
  *
- * $Date:        15 August 2023
- * $Revision:    V.1.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

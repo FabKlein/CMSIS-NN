@@ -21,8 +21,8 @@
  * Title:        arm_nn_config.h
  * Description:  Internal optional feature configuration for CMSIS-NN
  *
- * $Date:        24 April 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */

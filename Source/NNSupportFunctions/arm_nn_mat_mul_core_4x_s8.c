@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_mat_mul_core_4x_s8.c
  * Description:  General matrix multiplication function for MVE extension
  *
- * $Date:        13 December 2022
- * $Revision:    V.3.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.2
  *
  * Target Processor:  Cortex-M processors
  * -------------------------------------------------------------------- */

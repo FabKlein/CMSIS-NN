@@ -21,8 +21,8 @@
  * Title:        arm_nn_depthwise_conv_s8_core.c
  * Description:  Depthwise convolution on im2col buffers.
  *
- * $Date:        31 August 2026
- * $Revision:    V.1.0.6
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.7
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */

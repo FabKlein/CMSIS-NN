@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_depthwise_conv_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for the various s8 convolution layer functions.
  *
- * $Date:        1 November 2024
- * $Revision:    V.1.3.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.3.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

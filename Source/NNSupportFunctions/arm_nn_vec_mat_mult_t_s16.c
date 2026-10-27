@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2020-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2020-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_vec_mat_mult_t_s16
  * Description:  s16 vector by s8 matrix (transposed) multiplication
  *
- * $Date:        19 June 2024
- * $Revision:    V.2.4.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.4.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

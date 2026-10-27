@@ -21,8 +21,8 @@
  * Title:        arm_nn_vec_mat_mult_t_s8
  * Description:  s8 vector by matrix (transposed) multiplication
  *
- * $Date:        22 September 2026
- * $Revision:    V.6.3.0
+ * $Date:        27 October 2026
+ * $Revision:    V.6.3.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_elementwise_add_s8
  * Description:  Elementwise add
  *
- * $Date:        5 January 2023
- * $Revision:    V.3.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

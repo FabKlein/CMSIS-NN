@@ -22,8 +22,8 @@
  * Description:  Optimized s4 depthwise separable convolution function for
  *               channel multiplier of 1.
  *
- * $Date:        31 August 2026
- * $Revision:    V.1.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

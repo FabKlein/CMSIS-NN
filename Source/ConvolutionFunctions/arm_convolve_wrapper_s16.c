@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2021-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2021-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,8 +22,8 @@
  * Description:  s16 convolution layer wrapper function with the main purpose to call the optimal kernel available in
  * cmsis-nn to perform the convolution.
  *
- * $Date:        23 April 2024
- * $Revision:    V.3.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2024, Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2024,, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_lstm_unidirectional_s8.c
  * Description:  S8 LSTM function with S16 gate output
  *
- * $Date:        21 May 2026
- * $Revision:    V.1.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.2
  *
  * Target Processor:  Cortex-M processors
  *

@@ -22,8 +22,8 @@
  * Description:  s8 vector by matrix (transposed) multiplication with
  *               s16 output. Targetted at SVDF operator.
  *
- * $Date:        31 August 2026
- * $Revision:    V.3.2.1
+ * $Date:        27 October 2026
+ * $Revision:    V.3.2.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

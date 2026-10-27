@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_mat_mul_core_1x_s8.c
  * Description:  General Matrix-multiplication function
  *
- * $Date:        20 January 2023
- * $Revision:    V.3.1.3
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.4
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_reshape_s8.c
  * Description:  Reshape a s8 vector
  *
- * $Date:        26 October 2022
- * $Revision:    V.1.0.2
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.3
  *
  * Target Processor:  Cortex-M cores
  *

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2020, 2022, 2024 Arm Limited and/or its affiliates
+ * SPDX-FileCopyrightText: Copyright 2010-2020, 2022, 2024, 2026 Arm Limited and/or its affiliates
  * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -22,8 +22,8 @@
  * Title:        arm_nn_depthwise_conv_nt_t_s4.c
  * Description:  Depthwise convolution on matrices with no padding and packed int4 weights.
  *
- * $Date:        05 April 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target Processor:  Cortex-M processors with MVE extension.
  * -------------------------------------------------------------------- */

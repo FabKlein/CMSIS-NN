@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022-2024 Arm Limited and/or its affiliates <open-source-office.com>
+ * SPDX-FileCopyrightText: Copyright 2022-2024, 2026 Arm Limited and/or its affiliates <open-source-office.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_vec_mat_mul_result_acc_s8_s16.c
  * Description:  Multiplies a matrix by a vector and accumulate with output.
  *
- * $Date:        09 October 2026
- * $Revision:    V.2.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_max_pool_s8.c
  * Description:  Pooling function implementations
  *
- * $Date:        27 November 2023
- * $Revision:    V.3.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.1.1
  *
  * Target Processor:  Cortex-M CPUs
  *

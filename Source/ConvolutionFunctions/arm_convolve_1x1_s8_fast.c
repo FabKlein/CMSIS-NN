@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_convolve_1x1_s8_fast.c
  * Description:  Fast s8 version of 1x1 convolution (non-square shape)
  *
- * $Date:        05 November 2024
- * $Revision:    V.3.6.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.6.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *

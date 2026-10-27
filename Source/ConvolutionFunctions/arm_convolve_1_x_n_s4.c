@@ -21,8 +21,8 @@
  * Title:        arm_convolve_1_x_n_s4.c
  * Description:  s4 version of 1xN convolution using symmetric quantization.
  *
- * $Date:        9 April 2026
- * $Revision:    V.1.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *

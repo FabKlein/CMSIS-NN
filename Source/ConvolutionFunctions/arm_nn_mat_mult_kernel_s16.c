@@ -22,8 +22,8 @@
  * Title:        arm_nn_mat_mult_kernel_s16.c
  * Description:  Matrix-multiplication function for 16 bits convolution
  *
- * $Date:        31 August 2026
- * $Revision:    V.3.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.3.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
