@@ -21,8 +21,8 @@
  * Title:        arm_py_fully_connected_buffer_size.cpp
  * Description:  Fully connected buffer size pybinds (optional Python module)
  *
- * $Date:        5 Mar 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -43,11 +43,16 @@ void fully_connected_buffer_size(py::module_ &m)
     m.def(
         "fully_connected_buffer_size",
         [](Backend backend, DataType data_type, const std::array<int32_t, 4> &filter_nhwc) -> int32_t {
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
             const cmsis_nn_dims filter_dims = make_dims(filter_nhwc);
+#else
+            (void)filter_nhwc;
+#endif
 
             switch (data_type)
             {
             case DataType::A8W8:
+#if ARM_NN_ENABLE_INT8
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -58,7 +63,11 @@ void fully_connected_buffer_size(py::module_ &m)
                     return arm_fully_connected_s8_get_buffer_size(&filter_dims);
                 }
                 break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
             case DataType::A16W8:
+#if ARM_NN_ENABLE_INT16
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -68,6 +77,11 @@ void fully_connected_buffer_size(py::module_ &m)
                 case Backend::SCALAR:
                     return arm_fully_connected_s16_get_buffer_size(&filter_dims);
                 }
+                break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
+            default:
                 break;
             }
             std::ostringstream msg;

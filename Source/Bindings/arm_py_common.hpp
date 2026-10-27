@@ -21,8 +21,8 @@
  * Title:        arm_py_common.hpp
  * Description:  Common helpers and types for optional Python module
  *
- * $Date:        23 Feb 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -31,7 +31,6 @@
 #define ARM_PY_BINDINGS_COMMON_HPP
 
 #include <array>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -68,6 +67,21 @@ enum class CortexM
     M55,
     M85,
 };
+
+[[noreturn]] static inline void throw_data_type_not_compiled(DataType data_type)
+{
+    switch (data_type)
+    {
+    case DataType::A8W4:
+        throw py::value_error("A8W4 support was not compiled; enable ARM_NN_ENABLE_INT4");
+    case DataType::A8W8:
+        throw py::value_error("A8W8 support was not compiled; enable ARM_NN_ENABLE_INT8");
+    case DataType::A16W8:
+        throw py::value_error("A16W8 support was not compiled; enable ARM_NN_ENABLE_INT16");
+    }
+
+    throw py::value_error("unknown data type");
+}
 
 static inline cmsis_nn_dims make_dims(const std::array<int32_t, 4> &nhwc)
 {

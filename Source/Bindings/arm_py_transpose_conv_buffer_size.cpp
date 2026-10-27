@@ -21,8 +21,8 @@
  * Title:        arm_py_transpose_conv_buffer_size.cpp
  * Description:  Transpose convolution buffer size pybinds (optional Python module)
  *
- * $Date:        29 Apr 2026
- * $Revision:    V.1.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -78,7 +78,7 @@ make_transpose_conv_params(const std::array<int32_t, 2> &padding_hw,
     return p;
 }
 
-static inline void throw_invalid_combo(Backend backend, DataType data_type)
+[[noreturn]] static inline void throw_invalid_combo(Backend backend, DataType data_type)
 {
     std::ostringstream msg;
     msg << "invalid Backend/DataType combination: backend=" << static_cast<int>(backend)
@@ -175,9 +175,16 @@ static int32_t transpose_conv_buffer_size_impl(Backend backend,
                                                const std::array<int32_t, 4> &output_nhwc,
                                                const cmsis_nn_transpose_conv_params &params)
 {
+#if !ARM_NN_ENABLE_INT8
+    (void)input_nhwc;
+    (void)filter_nhwc;
+    (void)output_nhwc;
+    (void)params;
+#endif
     switch (data_type)
     {
     case DataType::A8W8: {
+#if ARM_NN_ENABLE_INT8
         const cmsis_nn_dims input_dims = make_dims(input_nhwc);
         const cmsis_nn_dims filter_dims = make_dims(filter_nhwc);
         const cmsis_nn_dims output_dims = make_dims(output_nhwc);
@@ -192,7 +199,12 @@ static int32_t transpose_conv_buffer_size_impl(Backend backend,
             return arm_transpose_conv_s8_get_buffer_size(&params, &input_dims, &filter_dims, &output_dims);
         }
         break;
+#else
+        throw_data_type_not_compiled(data_type);
+#endif
     }
+    default:
+        break;
     }
 
     throw_invalid_combo(backend, data_type);
@@ -204,9 +216,15 @@ static int32_t transpose_conv_reverse_conv_buffer_size_impl(Backend backend,
                                                             const std::array<int32_t, 4> &filter_nhwc,
                                                             const cmsis_nn_transpose_conv_params &params)
 {
+#if !ARM_NN_ENABLE_INT8
+    (void)input_nhwc;
+    (void)filter_nhwc;
+    (void)params;
+#endif
     switch (data_type)
     {
     case DataType::A8W8: {
+#if ARM_NN_ENABLE_INT8
         const cmsis_nn_dims input_dims = make_dims(input_nhwc);
         const cmsis_nn_dims filter_dims = make_dims(filter_nhwc);
 
@@ -218,7 +236,12 @@ static int32_t transpose_conv_reverse_conv_buffer_size_impl(Backend backend,
             return arm_transpose_conv_s8_get_reverse_conv_buffer_size(&params, &input_dims, &filter_dims);
         }
         break;
+#else
+        throw_data_type_not_compiled(data_type);
+#endif
     }
+    default:
+        break;
     }
 
     throw_invalid_combo(backend, data_type);

@@ -127,6 +127,11 @@ The Python helpers are built as a `cmsis_nn` extension module using pybind11.
 
 The purpose is to expose the CMSIS-NN host buffer size getter functions so they can be accessed and used from Python.
 
+The Python API remains stable when integer data-type selectors are disabled.
+Requesting a data type that was not compiled raises a `ValueError` identifying
+the `ARM_NN_ENABLE_INT4`, `ARM_NN_ENABLE_INT8`, or `ARM_NN_ENABLE_INT16`
+option needed to enable it.
+
 Build the extension with CMake:
 ```
 cmake -S . -B build -DCMSISNN_BUILD_PYBIND=ON

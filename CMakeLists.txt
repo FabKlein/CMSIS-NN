@@ -86,6 +86,9 @@ if(CMSISNN_BUILD_PYBIND)
   set_target_properties(cmsis-nn-shared PROPERTIES OUTPUT_NAME cmsis-nn)
   target_include_directories(
     cmsis-nn-shared PRIVATE $<TARGET_PROPERTY:cmsis-nn,INCLUDE_DIRECTORIES>)
+  target_compile_definitions(
+    cmsis-nn-shared PRIVATE
+    $<TARGET_PROPERTY:cmsis-nn,INTERFACE_COMPILE_DEFINITIONS>)
   target_compile_options(cmsis-nn-shared PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
 
   if(NOT TARGET pybind11::module)
