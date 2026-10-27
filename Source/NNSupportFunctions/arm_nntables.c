@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_nntables.c
  * Description:  Converts the elements of the Q7 vector to Q15 vector without left-shift
  *
- * $Date:        28 October 2022
- * $Revision:    V.2.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.1.1
  *
  * Target Processor:  Cortex-M cores
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
 
 /**
  * @brief tables for various activation functions
@@ -60,3 +62,5 @@ const uint16_t sigmoid_table_uint16[256] = {
     65525, 65525, 65526, 65526, 65526, 65527, 65527, 65528, 65528, 65528, 65529, 65529, 65529, 65529, 65530, 65530,
     65530, 65530, 65531, 65531, 65531, 65531, 65531, 65532, 65532, 65532, 65532, 65532, 65532, 65533, 65533, 65533,
     65533, 65533, 65533, 65533, 65533, 65534, 65534, 65534, 65534, 65534, 65534, 65534, 65534, 65534, 65534, 65535};
+
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */

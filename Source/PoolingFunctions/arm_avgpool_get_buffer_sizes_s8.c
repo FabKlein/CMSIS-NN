@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_avgpool_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for avgpool s8 layer function.
  *
- * $Date:        25 January 2023
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Pooling
@@ -41,15 +43,15 @@
 
 int32_t arm_avgpool_s8_get_buffer_size(const int output_x, const int ch_src)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_avgpool_s8_get_buffer_size_mve(output_x, ch_src);
-#elif defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
+    #elif defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI)
     return arm_avgpool_s8_get_buffer_size_dsp(output_x, ch_src);
-#else
+    #else
     (void)output_x;
     (void)ch_src;
     return 0;
-#endif
+    #endif
 }
 
 int32_t arm_avgpool_s8_get_buffer_size_dsp(const int output_x, const int ch_src)
@@ -69,3 +71,5 @@ int32_t arm_avgpool_s8_get_buffer_size_mve(const int output_x, const int ch_src)
 /**
  * @} end of GetBufferSizePooling group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

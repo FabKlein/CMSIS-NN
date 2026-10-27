@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,13 +21,15 @@
  * Title:        arm_nn_mat_mult_s8.c
  * Description:  General Matrix-multiplication function
  *
- * $Date:        26 October 2022
- * $Revision:    V.2.0.8
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.9
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /*
  * s8 General matrix multiplication function with per-channel requantization for upto 4 column batches.
@@ -51,7 +53,7 @@ int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
                            const int32_t *const bias,
                            int8_t *out)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     (void)row_offset;
     if (col_batches == 4)
     {
@@ -160,7 +162,7 @@ int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
     }
     return out;
 
-#else
+    #else
     (void)input_row;
     (void)input_col;
     (void)output_ch;
@@ -176,5 +178,7 @@ int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
     (void)bias;
     (void)out;
     return NULL;
-#endif
+    #endif
 }
+
+#endif /* ARM_NN_ENABLE_INT8 */

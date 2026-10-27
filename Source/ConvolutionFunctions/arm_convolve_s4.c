@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_convolve_s4.c
  * Description:  s8 version of convolution using symmetric quantization with 4 bit weights.
  *
- * $Date:        17 May 2024
- * $Revision:    V.1.2.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.2.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 
 /**
  *  @ingroup Public
@@ -95,7 +97,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
     int i_batch;
     for (i_batch = 0; i_batch < input_batches; i_batch++)
     {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
         /* Generate up to four columns from the input tensor a GEMM computation */
         int8_t *im2col_buf = (int8_t *)buffer_a;
         const int32_t rhs_rows = output_dims->c;
@@ -176,7 +178,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
             lhs_rows = 0;
             im2col_buf = (int8_t *)buffer_a;
         }
-#else // #if defined(ARM_MATH_MVEI)
+    #else // #if defined(ARM_MATH_MVEI)
         int16_t *two_column_buf = buffer_a;
         int8_t *out = output_data;
         int32_t lhs_rows = 0;
@@ -261,7 +263,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
                     sum += spilled_ker_a * ip_b0;
                 }
 
-    #if defined(ARM_MATH_DSP)
+        #if defined(ARM_MATH_DSP)
                 /* 4 multiply and accumulates are done in one loop. */
                 uint16_t col_count = rhs_cols / 4;
                 while (col_count)
@@ -279,9 +281,9 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
                     col_count--;
                 }
                 col_count = (rhs_cols & 0x3) >> 1;
-    #else
+        #else
                 uint16_t col_count = rhs_cols >> 1;
-    #endif
+        #endif
 
                 while (col_count)
                 {
@@ -315,7 +317,7 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
                 *out++ = (int8_t)sum;
             }
         }
-#endif
+    #endif
         /* Advance to the next batch */
         input_data += (input_x * input_y * input_ch);
         output_data += (output_x * output_y * output_ch);
@@ -328,3 +330,5 @@ arm_cmsis_nn_status arm_convolve_s4(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

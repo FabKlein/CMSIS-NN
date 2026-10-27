@@ -16,13 +16,35 @@
 # limitations under the License.
 #
 
-file(GLOB SRC_S4 "./*_s4*.c")
-file(GLOB SRC_S8 "./*_s8*.c")
-if(NOT ARM_NN_ENABLE_AOT)
-  list(FILTER SRC_S8 EXCLUDE REGEX "/arm_nn_mat_mult_nt_t_s8_packed\.c$")
+set(SRC_S4 "")
+set(SRC_S8 "")
+set(SRC_S16 "")
+set(SRC_S32 "")
+set(SRC_INT_COMMON "")
+if (ARM_NN_ENABLE_INT4)
+  file(GLOB SRC_S4 "./*_s4*.c")
 endif()
-file(GLOB SRC_S16 "./*_s16*.c")
-file(GLOB SRC_S32 "./*_s32*.c")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8*.c" "./*_s8_s16.c" "./*_s16_s8.c" "./*_s8_s32.c" "./*_s8_s64.c")
+  if(NOT ARM_NN_ENABLE_AOT)
+    list(FILTER SRC_S8 EXCLUDE REGEX "/arm_nn_mat_mult_nt_t_s8_packed\.c$")
+  endif()
+  file(GLOB SRC_S32 "./*_s32*.c")
+  list(APPEND SRC_INT_COMMON arm_q7_to_q15_with_offset.c
+                             arm_s8_to_s16_unordered_with_offset.c)
+endif()
+if (ARM_NN_ENABLE_INT16)
+  list(APPEND SRC_S16 arm_nn_depthwise_conv_nt_t_s16.c
+                      arm_nn_lstm_calculate_gate_s16.c
+                      arm_nn_lstm_step_s16.c
+                      arm_nn_mat_mult_nt_t_s16.c
+                      arm_nn_vec_mat_mul_result_acc_s16.c
+                      arm_nn_vec_mat_mult_t_s16.c
+                      arm_nn_vec_mat_mult_t_s16_s16.c)
+endif()
+if (ARM_NN_ENABLE_INT8 OR ARM_NN_ENABLE_INT16)
+  list(APPEND SRC_INT_COMMON arm_nntables.c)
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32 OR ARM_NN_ENABLE_F16)
   list(APPEND SRC_FLT arm_nntables_flt.c)
@@ -65,6 +87,4 @@ if (ARM_NN_ENABLE_F16)
                       arm_nn_mat_mult_nt_n_packed_f16.c)
 endif()
 
-target_sources(cmsis-nn PRIVATE ${SRC_S4} ${SRC_S8} ${SRC_S16} ${SRC_S32} ${SRC_FLT} arm_nntables.c
-  arm_q7_to_q15_with_offset.c
-  arm_s8_to_s16_unordered_with_offset.c)
+target_sources(cmsis-nn PRIVATE ${SRC_S4} ${SRC_S8} ${SRC_S16} ${SRC_S32} ${SRC_FLT} ${SRC_INT_COMMON})

@@ -16,7 +16,17 @@
 # limitations under the License.
 #
 
-file(GLOB SRC "./*_s8*.c" "./*_s16*.c")
+set(SRC "")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8*.c" "./*_s16_s8.c")
+  list(APPEND SRC ${SRC_S8})
+endif()
+if (ARM_NN_ENABLE_INT8 OR ARM_NN_ENABLE_INT16)
+  list(APPEND SRC arm_elementwise_mul_s16.c arm_elementwise_mul_acc_s16.c)
+endif()
+if (ARM_NN_ENABLE_INT16)
+  list(APPEND SRC arm_elementwise_add_s16.c arm_elementwise_mul_s16_batch_offset.c)
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_elementwise_add_f32.c

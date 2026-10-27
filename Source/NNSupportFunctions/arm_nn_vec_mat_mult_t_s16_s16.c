@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2020-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2020-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_nn_vec_mat_mult_t_s16_s16
  * Description:  s16 vector by s16 matrix (transposed) multiplication
  *
- * $Date:        19 June 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 /**
  * @ingroup groupSupport
  */
@@ -55,9 +57,9 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
                                                   const int32_t activation_min,
                                                   const int32_t activation_max)
 {
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
 
-    #if defined(ARM_MATH_MVEI)
+        #if defined(ARM_MATH_MVEI)
     int32_t row_loop_cnt = rhs_rows / 4;
     int32_t col_loop_cnt = (rhs_cols + 7) / 8;
 
@@ -175,7 +177,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
         rhs += rhs_cols;
     }
 
-    #else // ARM_MATH_MVEI
+        #else // ARM_MATH_MVEI
 
     const int32_t row_loop_cnt = rhs_rows / 2;
 
@@ -280,8 +282,8 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
         *dst++ = (int16_t)tmp;
     }
 
-    #endif // ARM_MATH_MVEI
-#else      // ARM_MATH_DSP
+        #endif // ARM_MATH_MVEI
+    #else      // ARM_MATH_DSP
     for (int i_row_loop_cnt = 0; i_row_loop_cnt < rhs_rows; i_row_loop_cnt++)
     {
         const int16_t *lhs_ptr = lhs;
@@ -314,7 +316,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
         *dst++ = (int16_t)result;
         rhs += rhs_cols;
     }
-#endif     // ARM_MATH_DSP
+    #endif     // ARM_MATH_DSP
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -322,3 +324,5 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

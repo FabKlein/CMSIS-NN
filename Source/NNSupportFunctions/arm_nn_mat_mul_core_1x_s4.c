@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,13 +21,15 @@
  * Title:        arm_nn_mat_mul_core_1x_s4.c
  * Description:  General Matrix-multiplication function
  *
- * $Date:        10 April 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 
 /**
  * @ingroup groupSupport
@@ -54,7 +56,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
                                               const int32_t *bias,
                                               int8_t *output)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     const int8_t *col_base = col_base_ref;
     int32_t *output_mult = quant_params->multiplier;
     int32_t *output_shift = quant_params->shift;
@@ -130,7 +132,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
     }
     return ARM_CMSIS_NN_SUCCESS;
 
-#else
+    #else
     (void)row_elements;
     (void)skipped_row_elements;
     (void)row_base_ref;
@@ -141,9 +143,11 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
     (void)bias;
     (void)output;
     return ARM_CMSIS_NN_NO_IMPL_ERROR;
-#endif
+    #endif
 }
 
 /**
  * @} end of supportConvolution group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

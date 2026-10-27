@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2024 Arm Limited and/or its affiliates <open-source-office.com>
+ * SPDX-FileCopyrightText: Copyright 2024, 2026 Arm Limited and/or its affiliates <open-source-office.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_nn_lstm_step_s16.c
  * Description:  Update LSTM function for a single iteration step.
  *
- * $Date:        16 July 2025
- * $Revision:    V.1.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 
 /**
  * @ingroup groupSupport
@@ -110,3 +112,5 @@ arm_cmsis_nn_status arm_nn_lstm_step_s16(const int16_t *data_in,
 /**
  * @} end of supportLSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_fully_connected_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for fully connected s8 layer function.
  *
- * $Date:        15 August 2023
- * $Revision:    V.1.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup FC
@@ -52,13 +54,15 @@ int32_t arm_fully_connected_s8_get_buffer_size_mve(const cmsis_nn_dims *filter_d
 
 int32_t arm_fully_connected_s8_get_buffer_size(const cmsis_nn_dims *filter_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_fully_connected_s8_get_buffer_size_mve(filter_dims);
-#else
+    #else
     return arm_fully_connected_s8_get_buffer_size_dsp(filter_dims);
-#endif
+    #endif
 }
 
 /**
  * @} end of GetBufferSizeFC group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

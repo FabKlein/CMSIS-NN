@@ -21,12 +21,40 @@ set(CMSIS_OPTIMIZATION_LEVEL
     "-Ofast"
     CACHE STRING "Compiler optimization level.")
 option(ARM_NN_ENABLE_AOT "Enable opt-in ahead-of-time for existing integer path." OFF)
+option(ARM_NN_ENABLE_INT8 "Enable CMSIS-NN int8/uint8 and int8-oriented mixed paths." ON)
+option(ARM_NN_ENABLE_INT16 "Enable CMSIS-NN int16 paths." ON)
+option(ARM_NN_ENABLE_INT4 "Enable CMSIS-NN int4 paths." ON)
 option(ARM_NN_ENABLE_F32 "Enable CMSIS-NN float32 extensions." OFF)
 option(ARM_NN_ENABLE_F16 "Enable CMSIS-NN float16 extensions." OFF)
+
+if((ARM_NN_ENABLE_INT4 OR ARM_NN_ENABLE_INT16) AND NOT ARM_NN_ENABLE_INT8)
+    message(FATAL_ERROR "ARM_NN_ENABLE_INT4 or ARM_NN_ENABLE_INT16 requires ARM_NN_ENABLE_INT8 to be enabled.")
+endif()
+if(ARM_NN_ENABLE_AOT AND NOT ARM_NN_ENABLE_INT8)
+    message(FATAL_ERROR "ARM_NN_ENABLE_AOT requires ARM_NN_ENABLE_INT8 to be enabled.")
+endif()
 
 project(CMSISNN C CXX)
 
 add_library(cmsis-nn STATIC)
+
+if(ARM_NN_ENABLE_INT8)
+    set(ARM_NN_ENABLE_INT8_VALUE 1)
+else()
+    set(ARM_NN_ENABLE_INT8_VALUE 0)
+endif()
+
+if(ARM_NN_ENABLE_INT16)
+    set(ARM_NN_ENABLE_INT16_VALUE 1)
+else()
+    set(ARM_NN_ENABLE_INT16_VALUE 0)
+endif()
+
+if(ARM_NN_ENABLE_INT4)
+    set(ARM_NN_ENABLE_INT4_VALUE 1)
+else()
+    set(ARM_NN_ENABLE_INT4_VALUE 0)
+endif()
 
 if(ARM_NN_ENABLE_F32)
   set(ARM_NN_ENABLE_F32_VALUE 1)
@@ -49,6 +77,9 @@ endif()
 target_compile_options(cmsis-nn PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
 target_compile_definitions(
   cmsis-nn PUBLIC ARM_NN_ENABLE_AOT=${ARM_NN_ENABLE_AOT_VALUE}
+                  ARM_NN_ENABLE_INT8=${ARM_NN_ENABLE_INT8_VALUE}
+                  ARM_NN_ENABLE_INT16=${ARM_NN_ENABLE_INT16_VALUE}
+                  ARM_NN_ENABLE_INT4=${ARM_NN_ENABLE_INT4_VALUE}
                   ARM_NN_ENABLE_F32=${ARM_NN_ENABLE_F32_VALUE}
                   ARM_NN_ENABLE_F16=${ARM_NN_ENABLE_F16_VALUE})
 
@@ -66,10 +97,10 @@ if(CMSISNN_BUILD_PYBIND)
   set_target_properties(cmsis-nn-shared PROPERTIES OUTPUT_NAME cmsis-nn)
   target_include_directories(
     cmsis-nn-shared PRIVATE $<TARGET_PROPERTY:cmsis-nn,INCLUDE_DIRECTORIES>)
-
   # Keep feature flags consistent for the shared library used by binding tests
-  target_compile_definitions(cmsis-nn-shared PRIVATE $<TARGET_PROPERTY:cmsis-nn,INTERFACE_COMPILE_DEFINITIONS>)
-
+  target_compile_definitions(
+    cmsis-nn-shared PRIVATE
+    $<TARGET_PROPERTY:cmsis-nn,INTERFACE_COMPILE_DEFINITIONS>)
   target_compile_options(cmsis-nn-shared PRIVATE ${CMSIS_OPTIMIZATION_LEVEL})
 
   if(NOT TARGET pybind11::module)

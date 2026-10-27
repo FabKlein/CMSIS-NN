@@ -21,8 +21,8 @@
  * Title:        arm_nn_config.h
  * Description:  Internal optional feature configuration for CMSIS-NN
  *
- * $Date:        15 October 2026
- * $Revision:    V.1.1.0
+ * $Date:        2 November 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -32,8 +32,8 @@
  * Applications are expected to include the public arm_nnfunctions*.h headers,
  * which pull the needed configuration through the public type/math headers.
  *
- * Options include opt-in integer AOT support and floating-point
- * extensions.
+ * Options include opt-in integer AOT support, quantized data type selectors,
+ * and floating-point extensions.
  */
 
 #ifndef ARM_NN_CONFIG_H
@@ -53,14 +53,35 @@
 
 /**
  *
- * @brief Optional feature gates for floating-point extensions
+ * @brief Optional feature gates for quantized and floating-point extensions
  *
- * These are disabled by default so integer-only builds keep their current
- * code size and API surface. The float16 feature gate still depends on
- * toolchain and target support such as ARM_FLOAT16_SUPPORTED where
+ * Integer features are enabled by default to preserve the legacy CMSIS-NN API
+ * surface. The INT8 umbrella includes int8/uint8 APIs and mixed helper paths
+ * primarily serving int8 model flows. INT4 and INT16 cover the more specific
+ * int4 and int16 public API families, but they depend on the INT8 base.
+ *
+ * Sources are also guarded by these macros even when build systems exclude
+ * disabled files. This keeps CMSIS pack and IDE projects safe when they do not
+ * use the CMake source selection layer.
+ *
+ * Floating-point extensions are disabled by default so integer-only builds
+ * keep their current code size and API surface. The float16 feature gate still
+ * depends on toolchain and target support such as ARM_FLOAT16_SUPPORTED where
  * applicable.
  *
  */
+
+#ifndef ARM_NN_ENABLE_INT8
+    #define ARM_NN_ENABLE_INT8 1
+#endif
+
+#ifndef ARM_NN_ENABLE_INT16
+    #define ARM_NN_ENABLE_INT16 1
+#endif
+
+#ifndef ARM_NN_ENABLE_INT4
+    #define ARM_NN_ENABLE_INT4 1
+#endif
 
 #ifndef ARM_NN_ENABLE_F32
     #define ARM_NN_ENABLE_F32 0
@@ -68,6 +89,14 @@
 
 #ifndef ARM_NN_ENABLE_F16
     #define ARM_NN_ENABLE_F16 0
+#endif
+
+#if (ARM_NN_ENABLE_INT4 || ARM_NN_ENABLE_INT16) && !ARM_NN_ENABLE_INT8
+    #error "ARM_NN_ENABLE_INT4 or ARM_NN_ENABLE_INT16 requires ARM_NN_ENABLE_INT8 to be enabled"
+#endif
+
+#if ARM_NN_ENABLE_AOT && !ARM_NN_ENABLE_INT8
+    #error "ARM_NN_ENABLE_AOT requires ARM_NN_ENABLE_INT8 to be enabled"
 #endif
 
 #define ARM_NN_FLOAT_API_ENABLED (ARM_NN_ENABLE_F32 || ARM_NN_ENABLE_F16)

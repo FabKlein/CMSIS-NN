@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022-2024 Arm Limited and/or its affiliates <open-source-office.com>
+ * SPDX-FileCopyrightText: Copyright 2022-2024, 2026 Arm Limited and/or its affiliates <open-source-office.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,13 +21,15 @@
  * Title:        arm_nn_vec_mat_mul_result_acc_s8_s16.c
  * Description:  Multiplies a matrix by a vector and accumulate with output.
  *
- * $Date:        09 October 2026
- * $Revision:    V.2.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  * @ingroup groupSupport
  */
@@ -58,7 +60,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
         const int8_t *rhs_ptr = &rhs[0];
         const int32_t *effective_bias_ptr = &effective_bias[0];
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
         for (size_t row_loop_cnt = rhs_rows / 4; row_loop_cnt != 0; --row_loop_cnt)
         {
@@ -154,7 +156,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
             *dst++ = (int16_t)acc_0;
         }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
 
         for (int32_t row_loop_cnt = rhs_rows / 2; row_loop_cnt != 0; --row_loop_cnt)
         {
@@ -260,7 +262,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
             *dst++ = (int16_t)acc_0;
         }
 
-#else
+    #else
 
         const int32_t row_loop_cnt = rhs_rows / 3;
 
@@ -349,7 +351,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
             *dst++ = (int16_t)res00;
             rhs_ptr += rhs_cols;
         }
-#endif
+    #endif
 
         lhs += rhs_cols * batch_offset;
     }
@@ -360,3 +362,5 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
 /**
  * @} end of supportLSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

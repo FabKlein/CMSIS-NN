@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_fully_connected_s8
  * Description:  Fully connected function compatible with TF Lite.
  *
- * $Date:        6 February 2024
- * $Revision:    V.5.3.0
+ * $Date:        27 October 2026
+ * $Revision:    V.5.3.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -63,12 +65,12 @@ arm_cmsis_nn_status arm_fully_connected_s8(const cmsis_nn_context *ctx,
 
     int32_t batch_cnt = input_dims->n;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     if (ctx->buf == NULL)
     {
         return (ARM_CMSIS_NN_ARG_ERROR);
     }
-#endif
+    #endif
 
     const int32_t *kernel_sum = (const int32_t *)ctx->buf;
 
@@ -101,3 +103,5 @@ arm_cmsis_nn_status arm_fully_connected_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of FC group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

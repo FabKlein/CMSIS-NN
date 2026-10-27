@@ -21,8 +21,8 @@
  * Title:        arm_py_conv_buffer_size.cpp
  * Description:  Convolve wrapper buffer size pybinds (optional Python module)
  *
- * $Date:        02 Nov 2026
- * $Revision:    V.1.0.1
+ * $Date:        2 November 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -100,25 +100,40 @@ void conv_buffer_size(py::module_ &m)
            int32_t activation_min,
            int32_t activation_max,
            FilterFormat filter_format) -> int32_t {
+#if ARM_NN_ENABLE_INT4 || ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
             cmsis_nn_conv_params conv_params = make_conv_params(
                 padding_hw, stride_hw, dilation_hw, input_offset, output_offset, activation_min, activation_max);
-#if ARM_NN_ENABLE_AOT
+    #if ARM_NN_ENABLE_AOT
             conv_params.filter_format = filter_format == FilterFormat::PACKED_4X16 ? ARM_NN_FILTER_FORMAT_PACKED_4X16
                                                                                    : ARM_NN_FILTER_FORMAT_ROW_MAJOR;
-#else
+    #else
             if (filter_format != FilterFormat::ROW_MAJOR)
             {
                 throw py::value_error("Packed filter queries require ARM_NN_ENABLE_AOT=ON");
             }
-#endif
+    #endif
 
             const cmsis_nn_dims input_dims = make_dims(input_nhwc);
             const cmsis_nn_dims filter_dims = make_dims(filter_nhwc);
             const cmsis_nn_dims output_dims = make_dims(output_nhwc);
+#else
+            (void)input_nhwc;
+            (void)filter_nhwc;
+            (void)output_nhwc;
+            (void)padding_hw;
+            (void)stride_hw;
+            (void)dilation_hw;
+            (void)input_offset;
+            (void)output_offset;
+            (void)activation_min;
+            (void)activation_max;
+            (void)filter_format;
+#endif
 
             switch (data_type)
             {
             case DataType::A8W4:
+#if ARM_NN_ENABLE_INT4
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -132,7 +147,11 @@ void conv_buffer_size(py::module_ &m)
                         &conv_params, &input_dims, &filter_dims, &output_dims);
                 }
                 break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
             case DataType::A8W8:
+#if ARM_NN_ENABLE_INT8
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -146,7 +165,11 @@ void conv_buffer_size(py::module_ &m)
                         &conv_params, &input_dims, &filter_dims, &output_dims);
                 }
                 break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
             case DataType::A16W8:
+#if ARM_NN_ENABLE_INT16
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -159,6 +182,11 @@ void conv_buffer_size(py::module_ &m)
                     return arm_convolve_wrapper_s16_get_buffer_size(
                         &conv_params, &input_dims, &filter_dims, &output_dims);
                 }
+                break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
+            default:
                 break;
             }
             std::ostringstream msg;

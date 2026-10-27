@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_fully_connected_get_buffer_sizes_s16.c
  * Description:  Collection of get buffer size functions for fully connected s16 layer function.
  *
- * $Date:        30 January 2023
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 
 /**
  *  @ingroup FC
@@ -58,3 +60,5 @@ int32_t arm_fully_connected_s16_get_buffer_size_mve(const cmsis_nn_dims *filter_
 /**
  * @} end of GetBufferSizeFC group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

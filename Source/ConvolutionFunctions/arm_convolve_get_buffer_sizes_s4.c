@@ -21,8 +21,8 @@
  * Title:        arm_convolve_get_buffer_sizes_s4.c
  * Description:  Collection of get buffer size functions for the various s4 convolution layer functions.
  *
- * $Date:        27 Feb 2026
- * $Revision:    V.1.1.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,6 +31,8 @@
 #include "Internal/arm_nn_compiler.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 
 /**
  *  @ingroup NNConv
@@ -88,14 +90,14 @@ int32_t arm_convolve_1_x_n_s4_get_buffer_size(const cmsis_nn_conv_params *conv_p
                                               const cmsis_nn_dims *filter_dims,
                                               const cmsis_nn_dims *output_dims)
 {
-#if !defined(ARM_MATH_MVEI)
+    #if !defined(ARM_MATH_MVEI)
     (void)conv_params;
     (void)output_dims;
 
     return arm_convolve_s4_get_buffer_size(input_dims, filter_dims);
-#else
+    #else
     return arm_convolve_1_x_n_s4_get_buffer_size_mve(conv_params, input_dims, filter_dims, output_dims);
-#endif
+    #endif
 }
 
 int32_t arm_convolve_1x1_s4_fast_get_buffer_size(const cmsis_nn_dims *input_dims)
@@ -116,9 +118,9 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size(const cmsis_nn_conv_params *conv
                                                 const cmsis_nn_dims *filter_dims,
                                                 const cmsis_nn_dims *output_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_convolve_wrapper_s4_get_buffer_size_mve(conv_params, input_dims, filter_dims, output_dims);
-#else
+    #else
     (void)output_dims;
     if (arm_nn_is_convolve_1x1(conv_params, input_dims, filter_dims))
     {
@@ -135,7 +137,7 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size(const cmsis_nn_conv_params *conv
     {
         return arm_convolve_s4_get_buffer_size(input_dims, filter_dims);
     }
-#endif
+    #endif
 }
 
 int32_t arm_convolve_wrapper_s4_get_buffer_size_mve(const cmsis_nn_conv_params *conv_params,
@@ -176,3 +178,5 @@ int32_t arm_convolve_wrapper_s4_get_buffer_size_dsp(const cmsis_nn_conv_params *
 /**
  * @} end of GetBufferSizeNNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

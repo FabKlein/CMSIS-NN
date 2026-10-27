@@ -21,8 +21,8 @@
  * Title:        arm_py_svdf_buffer_size.cpp
  * Description:  SVDF buffer size pybinds (optional Python module)
  *
- * $Date:        23 Feb 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -43,11 +43,16 @@ void svdf_buffer_size(py::module_ &m)
     m.def(
         "svdf_buffer_size",
         [](Backend backend, DataType data_type, const std::array<int32_t, 4> &filter_nhwc) -> int32_t {
+#if ARM_NN_ENABLE_INT8
             const cmsis_nn_dims filter_dims = make_dims(filter_nhwc);
+#else
+            (void)filter_nhwc;
+#endif
 
             switch (data_type)
             {
             case DataType::A8W8:
+#if ARM_NN_ENABLE_INT8
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -57,6 +62,11 @@ void svdf_buffer_size(py::module_ &m)
                 case Backend::SCALAR:
                     return arm_svdf_s8_get_buffer_size(&filter_dims);
                 }
+                break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
+            default:
                 break;
             }
             std::ostringstream msg;

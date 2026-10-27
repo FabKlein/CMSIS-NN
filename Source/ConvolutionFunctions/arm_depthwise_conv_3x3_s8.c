@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,8 +22,8 @@
  * Description:  Optimized s8 depthwise convolution function for channel
  *               multiplier of 1 and 3x3 kernel size.
  *
- * $Date:        5 January 2023
- * $Revision:    V.3.2.0
+ * $Date:        27 October 2026
+ * $Revision:    V.3.2.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,6 +31,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -116,7 +118,7 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
 
                 const int8_t *input_ptr = input + (in_h + ker_h_start) * (input_ch * input_x) + in_w * input_ch + in_ch;
                 const int8_t *kernel_ptr = kernel + ker_h_start * (input_ch * 3) + in_ch;
-#if defined(ARM_MATH_DSP)
+    #if defined(ARM_MATH_DSP)
                 const uint32_t lhs_offset_s16x2 = PKHBT(input_offset, input_offset, 16);
 
                 for (int32_t ker_h = ker_h_start; ker_h < MIN(3, input_y - in_h); ++ker_h)
@@ -173,7 +175,7 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
                     kernel_ptr += (input_ch * 3);
                 }
 
-#else
+    #else
 
                 for (int32_t ker_h = ker_h_start; ker_h < MIN(3, input_y - in_h); ++ker_h)
                 {
@@ -212,7 +214,7 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
                     input_ptr += (input_ch * input_x);
                     kernel_ptr += (input_ch * 3);
                 }
-#endif
+    #endif
 
                 out_buff0 = arm_nn_requantize(out_buff0, output_mult[in_ch + 0], output_shift[in_ch + 0]);
                 out_buff1 = arm_nn_requantize(out_buff1, output_mult[in_ch + 1], output_shift[in_ch + 1]);
@@ -280,3 +282,5 @@ arm_cmsis_nn_status arm_depthwise_conv_3x3_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

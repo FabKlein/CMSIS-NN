@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_nn_mat_mult_nt_t_s4
  * Description:  Matrix multiplication support function with the right-hand-side (rhs) matrix transposed, and 4 bit rhs.
  *
- * $Date:        27 May 2024
- * $Revision:    V.1.2.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.2.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT4
 
 /**
  * @ingroup groupSupport
@@ -60,7 +62,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
                                             const int32_t activation_max,
                                             const int32_t lhs_cols_offset)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int i_items = 0;
     const int rhs_cols_offset = rhs_cols % 16;
     const mve_pred16_t lower_nibble_mask = 21845; // 0101010101010101
@@ -497,7 +499,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
         }
     }
 
-#elif defined(ARM_MATH_DSP)
+    #elif defined(ARM_MATH_DSP)
     const int32_t lhs_cols_off1 = lhs_cols_offset - 4;
     const int16_t i16_lhs_offset = (int16_t)lhs_offset;
     const uint32_t ui32_lhs_offset_i16x2 = PKHBT(i16_lhs_offset, i16_lhs_offset, 16);
@@ -1560,7 +1562,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
 
         ++dst;
     }
-#else
+    #else
 
     const int32_t rhs_cols_int4 = rhs_cols >> 1;
 
@@ -2046,7 +2048,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
         ++dst;
     }
 
-#endif
+    #endif
 
     return ARM_CMSIS_NN_SUCCESS;
 }
@@ -2054,3 +2056,5 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT4 */

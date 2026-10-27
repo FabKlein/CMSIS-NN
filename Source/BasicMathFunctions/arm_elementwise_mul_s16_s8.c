@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2022-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_elementwise_mul_s16_s8.c
  * Description:  Elementwise multiplication of 16 bit input with 8 bit output
  *
- * $Date:        20 January 2023
- * $Revision:    V.2.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup groupSupport
@@ -59,7 +61,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
     for (int i = 0; i < batch_size; i++)
     {
         int32_t loop_count = block_size;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
         const int16_t *input_1_ptr = input_1_vect;
         const int16_t *input_2_ptr = input_2_vect;
@@ -92,8 +94,8 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
         input_2_vect += block_size;
         output += block_size;
 
-#else
-    #if defined(ARM_MATH_DSP)
+    #else
+        #if defined(ARM_MATH_DSP)
 
         while (loop_count > 1)
         {
@@ -113,7 +115,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
             arm_nn_write_s8x2_ia(&output, mul);
             loop_count -= 2;
         }
-    #endif
+        #endif
         for (int j = 0; j < loop_count; j++, input_1_vect++, input_2_vect++, output++)
         {
             /* C = A * B */
@@ -125,7 +127,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
             *output = (int8_t)mul_res;
         }
 
-#endif
+    #endif
 
         output += (batch_offset - 1) * block_size;
     }
@@ -134,3 +136,5 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
 /**
  * @} end of BasicMath group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

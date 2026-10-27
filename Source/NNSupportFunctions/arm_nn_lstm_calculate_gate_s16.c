@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022, 2024 Arm Limited and/or its affiliates <open-source-office.com>
+ * SPDX-FileCopyrightText: Copyright 2022, 2024, 2026 Arm Limited and/or its affiliates <open-source-office.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_nn_lstm_calculate_gate_s16.c
  * Description:  Update single gate for an incremental step of LSTM function.
  *
- * $Date:        26 March 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target Processor:  Cortex-M cores
  *
@@ -31,6 +31,8 @@
 #include "arm_nn_tables.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 /**
  * @ingroup groupSupport
  */
@@ -87,3 +89,5 @@ arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s16(const int16_t *data_in,
 /**
  * @} end of supportLSTM group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,14 +21,16 @@
  * Title:        arm_svdf_get_buffer_sizes_s8.c
  * Description:  Collection of get buffer size functions for svdf s8 layer function.
  *
- * $Date:        5 September 2023
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
  * -------------------------------------------------------------------- */
 
 #include "arm_nnfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup SVDF
@@ -52,13 +54,15 @@ int32_t arm_svdf_s8_get_buffer_size_mve(const cmsis_nn_dims *weights_feature_dim
 
 int32_t arm_svdf_s8_get_buffer_size(const cmsis_nn_dims *weights_feature_dims)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     return arm_svdf_s8_get_buffer_size_mve(weights_feature_dims);
-#else
+    #else
     return arm_svdf_s8_get_buffer_size_dsp(weights_feature_dims);
-#endif
+    #endif
 }
 
 /**
  * @} end of GetBufferSizeSVDF group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

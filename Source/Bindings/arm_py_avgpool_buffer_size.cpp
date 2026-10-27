@@ -21,8 +21,8 @@
  * Title:        arm_py_avgpool_buffer_size.cpp
  * Description:  Average pooling buffer size pybinds (optional Python module)
  *
- * $Date:        23 Feb 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Host/Python
  * -------------------------------------------------------------------- */
@@ -42,9 +42,14 @@ void avgpool_buffer_size(py::module_ &m)
     m.def(
         "avgpool_buffer_size",
         [](Backend backend, DataType data_type, int32_t dim_dst_width, int32_t ch_src) -> int32_t {
+#if !ARM_NN_ENABLE_INT8 && !ARM_NN_ENABLE_INT16
+            (void)dim_dst_width;
+            (void)ch_src;
+#endif
             switch (data_type)
             {
             case DataType::A8W8:
+#if ARM_NN_ENABLE_INT8
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -55,7 +60,11 @@ void avgpool_buffer_size(py::module_ &m)
                     return arm_avgpool_s8_get_buffer_size(dim_dst_width, ch_src);
                 }
                 break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
             case DataType::A16W8:
+#if ARM_NN_ENABLE_INT16
                 switch (backend)
                 {
                 case Backend::MVE:
@@ -65,6 +74,11 @@ void avgpool_buffer_size(py::module_ &m)
                 case Backend::SCALAR:
                     return arm_avgpool_s16_get_buffer_size(dim_dst_width, ch_src);
                 }
+                break;
+#else
+                throw_data_type_not_compiled(data_type);
+#endif
+            default:
                 break;
             }
             std::ostringstream msg;

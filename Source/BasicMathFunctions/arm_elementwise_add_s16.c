@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_elementwise_add_s16
  * Description:  Elementwise add
  *
- * $Date:        24 Oct 2022
- * $Revision:    V.2.2.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.2.1
  *
  * Target Processor:  Cortex-M CPUs
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 
 /**
  *  @ingroup Public
@@ -70,7 +72,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
     (void)input_2_offset;
     (void)out_offset;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
 
     int32_t count = block_size;
 
@@ -103,7 +105,7 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
         count -= 4;
     }
 
-#else  // #if defined(ARM_MATH_MVEI)
+    #else  // #if defined(ARM_MATH_MVEI)
     int32_t input_1;
     int32_t input_2;
     int32_t sum;
@@ -161,10 +163,12 @@ arm_cmsis_nn_status arm_elementwise_add_s16(const int16_t *input_1_vect,
         /* Decrement loop counter */
         loop_count--;
     }
-#endif // #if defined(ARM_MATH_MVEI)
+    #endif // #if defined(ARM_MATH_MVEI)
     return (ARM_CMSIS_NN_SUCCESS);
 }
 
 /**
  * @} end of Doxygen group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

@@ -16,10 +16,20 @@
 # limitations under the License.
 #
 
-file(GLOB SRC_S4 "./*_s4.c")
-file(GLOB SRC_S8 "./*_s8.c")
-file(GLOB SRC_S16 "./*_s16*.c")
-file(GLOB SRC_S64 "./*_s64.c")
+set(SRC_S4 "")
+set(SRC_S8 "")
+set(SRC_S16 "")
+set(SRC_S64 "")
+if (ARM_NN_ENABLE_INT4)
+  file(GLOB SRC_S4 "./*_s4.c")
+endif()
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8.c")
+  file(GLOB SRC_S64 "./*_s64.c")
+endif()
+if (ARM_NN_ENABLE_INT16)
+  file(GLOB SRC_S16 "./*_s16*.c")
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_batch_matmul_f32.c

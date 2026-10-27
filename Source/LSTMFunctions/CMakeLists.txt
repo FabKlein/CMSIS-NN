@@ -16,8 +16,14 @@
 # limitations under the License.
 #
 
-file(GLOB SRC_S8 "./*_s8.c")
-file(GLOB SRC_S16 "./*_s16.c")
+set(SRC_S8 "")
+set(SRC_S16 "")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8.c")
+endif()
+if (ARM_NN_ENABLE_INT16)
+  file(GLOB SRC_S16 "./*_s16.c")
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_lstm_unidirectional_f32.c)

@@ -22,8 +22,8 @@
  * Description:  s8 convolution layer wrapper function with the main purpose to call the optimal kernel available in
  * cmsis-nn to perform the convolution.
  *
- * $Date:        15 October 2026
- * $Revision:    V.2.6.0
+ * $Date:        2 November 2026
+ * $Revision:    V.2.6.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,6 +31,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -92,9 +94,9 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
         }
     }
     else if (arm_nn_is_convolve_1_x_n(conv_params, input_dims, filter_dims)
-#if ARM_NN_ENABLE_AOT
+    #if ARM_NN_ENABLE_AOT
              && conv_params->filter_format != ARM_NN_FILTER_FORMAT_PACKED_4X16
-#endif
+    #endif
     )
     {
         return arm_convolve_1_x_n_s8(ctx,
@@ -129,3 +131,5 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

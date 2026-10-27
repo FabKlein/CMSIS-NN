@@ -21,8 +21,8 @@
  * Title:        arm_nnsupportfunctions.h
  * Description:  Public header file of support functions for CMSIS NN Library
  *
- * $Date:        29 October 2026
- * $Revision:    V.22.13.1
+ * $Date:        2 November 2026
+ * $Revision:    V.22.13.2
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -221,32 +221,36 @@ union arm_nn_long_long
  * </pre>
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_q7_to_q15_with_offset(const int8_t *src, int16_t *dst, int32_t block_size, int16_t offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 #if defined(ARM_MATH_DSP)
-/**
- * @brief Converts the elements from a s8 vector to a s16 vector with an added offset
- * @param[in]    src        pointer to the s8 input vector
- * @param[out]   dst        pointer to the s16 output vector
- * @param[in]    block_size length of the input vector
- * @param[in]    offset     s16 offset to be added to each input vector element.
- *
- * \par Description:
- *
- * No additonal ordering is done with the result that output elements are not in order.
- * Instead of ABCD order will be ACBD.
- * Note this is for processors with DSP extension only.
- * The equation used for the conversion process is:
- *
- * <pre>
- *  dst[n - 0] = (int16_t) src[n - 0] + offset;   0 <= n < block_size.
- *  dst[n - 1] = (int16_t) src[n - 2] + offset;   0 <= n < block_size.
- *  dst[n - 2] = (int16_t) src[n - 1] + offset;   0 <= n < block_size.
- *  dst[n - 3] = (int16_t) src[n - 3] + offset;   0 <= n < block_size.
- * </pre>
- *
- */
+    /**
+     * @brief Converts the elements from a s8 vector to a s16 vector with an added offset
+     * @param[in]    src        pointer to the s8 input vector
+     * @param[out]   dst        pointer to the s16 output vector
+     * @param[in]    block_size length of the input vector
+     * @param[in]    offset     s16 offset to be added to each input vector element.
+     *
+     * \par Description:
+     *
+     * No additonal ordering is done with the result that output elements are not in order.
+     * Instead of ABCD order will be ACBD.
+     * Note this is for processors with DSP extension only.
+     * The equation used for the conversion process is:
+     *
+     * <pre>
+     *  dst[n - 0] = (int16_t) src[n - 0] + offset;   0 <= n < block_size.
+     *  dst[n - 1] = (int16_t) src[n - 2] + offset;   0 <= n < block_size.
+     *  dst[n - 2] = (int16_t) src[n - 1] + offset;   0 <= n < block_size.
+     *  dst[n - 3] = (int16_t) src[n - 3] + offset;   0 <= n < block_size.
+     * </pre>
+     *
+     */
+    #if ARM_NN_ENABLE_INT8
 void arm_s8_to_s16_unordered_with_offset(const int8_t *src, int16_t *dst, int32_t block_size, int16_t offset);
+    #endif /* ARM_NN_ENABLE_INT8 */
 
 #endif
 
@@ -260,7 +264,9 @@ void arm_s8_to_s16_unordered_with_offset(const int8_t *src, int16_t *dst, int32_
  *        so not recommended to call directly even on Host.
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_convolve_s8_get_buffer_size_mve(const cmsis_nn_dims *input_dims, const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for optimized s8 depthwise convolution
@@ -273,8 +279,10 @@ int32_t arm_convolve_s8_get_buffer_size_mve(const cmsis_nn_dims *input_dims, con
  *        so not recommended to call directly even on Host.
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_s8_opt_get_buffer_size_mve(const cmsis_nn_dims *input_dims,
                                                       const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Get the required buffer size for optimized s8 depthwise convolution
@@ -287,8 +295,10 @@ int32_t arm_depthwise_conv_s8_opt_get_buffer_size_mve(const cmsis_nn_dims *input
  *        so not recommended to call directly even on Host.
  *
  */
+#if ARM_NN_ENABLE_INT8
 int32_t arm_depthwise_conv_s8_opt_get_buffer_size_dsp(const cmsis_nn_dims *input_dims,
                                                       const cmsis_nn_dims *filter_dims);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Depthwise conv on an im2col buffer where the input channel equals output channel.
@@ -309,6 +319,7 @@ int32_t arm_depthwise_conv_s8_opt_get_buffer_size_dsp(const cmsis_nn_dims *input
  *
  * @details     Supported framework: TensorFlow Lite micro.
  */
+#if ARM_NN_ENABLE_INT8
 int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
                                       const int16_t *col,
                                       const uint16_t num_ch,
@@ -320,6 +331,7 @@ int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
                                       const uint16_t kernel_size,
                                       const int32_t *const output_bias,
                                       int8_t *out);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief General Matrix-multiplication function with per-channel requantization.
@@ -343,6 +355,7 @@ int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
  *
  * @details   Supported framework: TensorFlow Lite
  */
+#if ARM_NN_ENABLE_INT8
 int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
                            const int8_t *input_col,
                            const uint16_t output_ch,
@@ -357,6 +370,7 @@ int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
                            const uint16_t row_len,
                            const int32_t *const bias,
                            int8_t *out);
+#endif /* ARM_NN_ENABLE_INT8 */
 /**
  * @brief Matrix-multiplication function for convolution with per-channel requantization for 16 bits convolution.
  * @param[in]       input_a     pointer to operand A
@@ -380,6 +394,7 @@ int8_t *arm_nn_mat_mult_s8(const int8_t *input_row,
  *            clamped in the range provided by activation min and max.
  *            Supported framework: TensorFlow Lite micro.
  */
+#if ARM_NN_ENABLE_INT16
 int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
                                     const int16_t *input_b,
                                     const int32_t output_ch,
@@ -390,6 +405,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
                                     const int32_t num_col_a,
                                     const cmsis_nn_bias_data *const bias_data,
                                     int16_t *out_0);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief General Vector by Matrix multiplication with requantization and storage of result.
@@ -418,6 +434,7 @@ int16_t *arm_nn_mat_mult_kernel_s16(const int8_t *input_a,
  *
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s8(int32_t row_elements,
                                               const int32_t skipped_row_elements,
                                               const int8_t *row_base_ref,
@@ -427,6 +444,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s8(int32_t row_elements,
                                               const cmsis_nn_per_channel_quant_params *quant_params,
                                               const int32_t *bias,
                                               int8_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief General Vector by Matrix multiplication with requantization, storage of result and int4 weights packed into an
@@ -456,6 +474,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s8(int32_t row_elements,
  *
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
                                               const int32_t skipped_row_elements,
                                               const int8_t *row_base_ref,
@@ -465,6 +484,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
                                               const cmsis_nn_per_channel_quant_params *quant_params,
                                               const int32_t *bias,
                                               int8_t *output);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Matrix-multiplication with requantization & activation function for four rows and one column
@@ -483,6 +503,7 @@ arm_cmsis_nn_status arm_nn_mat_mul_core_1x_s4(int32_t row_elements,
  *
  * @details Compliant to TFLM int8 specification. MVE implementation only
  */
+#if ARM_NN_ENABLE_INT8
 int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
                                   const int32_t offset,
                                   const int8_t *row_base,
@@ -492,6 +513,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
                                   const cmsis_nn_per_channel_quant_params *quant_params,
                                   const int32_t *bias,
                                   int8_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief General Matrix-multiplication function with per-channel requantization.
@@ -525,6 +547,7 @@ int8_t *arm_nn_mat_mul_core_4x_s8(const int32_t row_elements,
  * @return     The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
                                             const int8_t *rhs,
                                             const int32_t *bias,
@@ -539,6 +562,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
                                             const int32_t activation_min,
                                             const int32_t activation_max,
                                             const int32_t lhs_cols_offset);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief General Matrix-multiplication function with per-channel requantization.
@@ -574,6 +598,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s4(const int8_t *lhs,
  * @return     The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
                                                              const int8_t *rhs,
                                                              const int32_t *bias,
@@ -588,6 +613,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
                                                              const int32_t activation_min,
                                                              const int32_t activation_max,
                                                              const int32_t lhs_cols_offset);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief General Matrix-multiplication function with per-channel requantization.
@@ -620,6 +646,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_interleaved_t_even_s4(const int8_t *lhs,
  * @return     The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                                             const int8_t *rhs,
                                             const int32_t *bias,
@@ -635,8 +662,9 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8(const int8_t *lhs,
                                             const int32_t activation_max,
                                             const int32_t row_address_offset,
                                             const int32_t lhs_cols_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
-#if ARM_NN_ENABLE_AOT
+#if ARM_NN_ENABLE_AOT && ARM_NN_ENABLE_INT8
 /**
  * @brief MVE s8 matrix multiplication using bias with the LHS-offset contribution already included
  *
@@ -659,7 +687,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_packed(const int8_t *lhs,
                                                    const int32_t activation_max,
                                                    const int32_t row_address_offset,
                                                    const int32_t lhs_cols_offset);
-#endif
+#endif /* ARM_NN_ENABLE_AOT && ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief General Matrix-multiplication function with per-channel requantization and int16 input (LHS) and output.
@@ -692,6 +720,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_packed(const int8_t *lhs,
  *                                  <code>ARM_CMSIS_NN_NO_IMPL_ERROR</code> if not for MVE
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                                              const int8_t *rhs,
                                              const cmsis_nn_bias_data *bias_data,
@@ -703,6 +732,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
                                              const int32_t rhs_cols,
                                              const int32_t activation_min,
                                              const int32_t activation_max);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief General Matrix-multiplication function with int8 input and int32 output.
@@ -724,6 +754,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s16(const int16_t *lhs,
  * @return     The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
                                                 const int8_t *rhs,
                                                 int32_t *dst,
@@ -732,6 +763,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
                                                 const int32_t rhs_cols,
                                                 const int32_t lhs_offset,
                                                 const int32_t dst_idx_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s4 Vector by Matrix (transposed) multiplication
@@ -753,6 +785,7 @@ arm_cmsis_nn_status arm_nn_mat_mult_nt_t_s8_s32(const int8_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
                                              const int8_t *packed_rhs,
                                              const int32_t *bias,
@@ -765,6 +798,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
                                              const int32_t rhs_rows,
                                              const int32_t activation_min,
                                              const int32_t activation_max);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief s8 Vector by Matrix (transposed) multiplication
@@ -791,6 +825,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s4(const int8_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s8(const int8_t *lhs,
                                              const int8_t *rhs,
                                              const int32_t *kernel_sum,
@@ -806,6 +841,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s8(const int8_t *lhs,
                                              const int32_t activation_max,
                                              const int32_t address_offset,
                                              const int32_t rhs_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s8 Vector by Matrix (transposed) multiplication using per channel quantization for output
@@ -832,6 +868,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s8(const int8_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
                                                     const int8_t *rhs,
                                                     const int32_t *kernel_sum,
@@ -847,6 +884,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
                                                     const int32_t activation_max,
                                                     const int32_t address_offset,
                                                     const int32_t rhs_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 Vector by s8 Matrix (transposed) multiplication
@@ -865,6 +903,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_per_ch_s8(const int8_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16(const int16_t *lhs,
                                               const int8_t *rhs,
                                               const int64_t *bias,
@@ -875,6 +914,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16(const int16_t *lhs,
                                               const int32_t rhs_rows,
                                               const int32_t activation_min,
                                               const int32_t activation_max);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s16 Vector by s16 Matrix (transposed) multiplication
@@ -893,6 +933,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16(const int16_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
                                                   const int16_t *rhs,
                                                   const int64_t *bias,
@@ -903,6 +944,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
                                                   const int32_t rhs_rows,
                                                   const int32_t activation_min,
                                                   const int32_t activation_max);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s8 Vector by Matrix (transposed) multiplication with s16 output
@@ -924,6 +966,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_s16_s16(const int16_t *lhs,
  * @return         The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
  *
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
                                                   const int8_t *rhs,
                                                   int16_t *dst,
@@ -935,6 +978,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
                                                   const int32_t rhs_rows,
                                                   const int32_t activation_min,
                                                   const int32_t activation_max);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Depthwise convolution of transposed rhs matrix with 4 lhs matrices. To be used in padded cases where
@@ -965,6 +1009,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mult_t_svdf_s8(const int8_t *lhs,
  *                  - Output bias
  *                  - rhs
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_padded_s8(const int8_t *lhs,
                                                          const int8_t *rhs,
                                                          const int32_t lhs_offset,
@@ -978,6 +1023,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_padded_s8(const int8_t *lhs,
                                                          const uint16_t row_x_col,
                                                          const int32_t *const output_bias,
                                                          int8_t *out);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Depthwise convolution of transposed rhs matrix with 4 lhs matrices. To be used in non-padded cases.
@@ -1008,6 +1054,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_padded_s8(const int8_t *lhs,
  *                  - Output bias
  *                  - rhs
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s8(const int8_t *lhs,
                                                   const int8_t *rhs,
                                                   const int32_t lhs_offset,
@@ -1021,6 +1068,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s8(const int8_t *lhs,
                                                   const uint16_t row_x_col,
                                                   const int32_t *const output_bias,
                                                   int8_t *out);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Depthwise convolution of transposed rhs matrix with 4 lhs matrices. To be used in non-padded cases. rhs
@@ -1052,6 +1100,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s8(const int8_t *lhs,
  *                  - Output bias
  *                  - rhs
  */
+#if ARM_NN_ENABLE_INT4
 arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
                                                   const int8_t *rhs,
                                                   const int32_t lhs_offset,
@@ -1065,6 +1114,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
                                                   const uint16_t row_x_col,
                                                   const int32_t *const output_bias,
                                                   int8_t *out);
+#endif /* ARM_NN_ENABLE_INT4 */
 
 /**
  * @brief Depthwise convolution of transposed rhs matrix with 4 lhs matrices. To be used in non-padded cases.
@@ -1092,6 +1142,7 @@ arm_cmsis_nn_status arm_nn_depthwise_conv_nt_t_s4(const int8_t *lhs,
  *                  - Output bias
  *                  - rhs
  */
+#if ARM_NN_ENABLE_INT16
 int16_t *arm_nn_depthwise_conv_nt_t_s16(const int16_t *lhs,
                                         const int8_t *rhs,
                                         const uint16_t num_ch,
@@ -1102,6 +1153,7 @@ int16_t *arm_nn_depthwise_conv_nt_t_s16(const int16_t *lhs,
                                         const uint16_t row_x_col,
                                         const int64_t *const output_bias,
                                         int16_t *out);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Row of s8 scalars multiplicated with a s8 matrix ad accumulated into a s32 rolling scratch buffer.
@@ -1128,6 +1180,7 @@ int16_t *arm_nn_depthwise_conv_nt_t_s16(const int16_t *lhs,
  * @note           Rolling buffer refers to how the function wraps around the scratch buffer, e.g. it starts writing at
  * [output_start + output_index], writes to [output_start + output_max] and then continues at [output_start] again.
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                                                      const int8_t *rhs,
                                                      int32_t *output_start,
@@ -1143,6 +1196,7 @@ arm_cmsis_nn_status arm_nn_transpose_conv_row_s8_s32(const int8_t *lhs,
                                                      const int32_t stride_x,
                                                      const int32_t skip_row_top,
                                                      const int32_t skip_row_bottom);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
   @brief         Read 2 s16 elements and post increment pointer.
@@ -1413,6 +1467,7 @@ __STATIC_FORCEINLINE const int8_t *read_and_pad_reordered(const int8_t *source, 
  *            clamped in the range provided by activation min and max.
  *            Supported framework: TensorFlow Lite micro.
  */
+#if ARM_NN_ENABLE_INT4
 int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *input_a,
                                       const int16_t *input_b,
                                       const uint16_t output_ch,
@@ -1424,6 +1479,7 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *input_a,
                                       const int32_t num_col_a,
                                       const int32_t *const output_bias,
                                       int8_t *out_0);
+#endif /* ARM_NN_ENABLE_INT4 */
 /**
  * @brief Matrix-multiplication function for convolution with per-channel requantization.
  * @param[in]       input_a            pointer to operand A
@@ -1447,6 +1503,7 @@ int8_t *arm_nn_mat_mult_kernel_s4_s16(const int8_t *input_a,
  *            clamped in the range provided by activation min and max.
  *            Supported framework: TensorFlow Lite micro.
  */
+#if ARM_NN_ENABLE_INT8
 int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
                                       const int16_t *input_b,
                                       const uint16_t output_ch,
@@ -1459,6 +1516,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
                                       const int32_t aligned_num_col_a,
                                       const int32_t *const output_bias,
                                       int8_t *out_0);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Matrix-multiplication function for convolution with per-channel requantization, supporting an address offset
@@ -1487,6 +1545,7 @@ int8_t *arm_nn_mat_mult_kernel_s8_s16(const int8_t *input_a,
  *            This function is slighly less performant than arm_nn_mat_mult_kernel_s8_s16, but allows support for
  * grouped convolution. Supported framework: TensorFlow Lite micro.
  */
+#if ARM_NN_ENABLE_INT8
 int8_t *arm_nn_mat_mult_kernel_row_offset_s8_s16(const int8_t *input_a,
                                                  const int16_t *input_b,
                                                  const uint16_t output_ch,
@@ -1500,6 +1559,7 @@ int8_t *arm_nn_mat_mult_kernel_row_offset_s8_s16(const int8_t *input_a,
                                                  const int32_t *const output_bias,
                                                  const int32_t row_address_offset,
                                                  int8_t *out_0);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Common softmax function for s8 input and s8 or s16 output
@@ -1516,6 +1576,7 @@ int8_t *arm_nn_mat_mult_kernel_row_offset_s8_s16(const int8_t *input_a,
  * @note Supported framework: TensorFlow Lite micro (bit-accurate)
  *
  */
+#if ARM_NN_ENABLE_INT8
 void arm_nn_softmax_common_s8(const int8_t *input,
                               const int32_t num_rows,
                               const int32_t row_size,
@@ -1524,6 +1585,7 @@ void arm_nn_softmax_common_s8(const int8_t *input,
                               const int32_t diff_min,
                               const bool int16_output,
                               void *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief macro for adding rounding offset
@@ -2066,12 +2128,14 @@ __STATIC_FORCEINLINE void arm_nn_write_s8x2_ia(int8_t **dst, int16_t src)
  * @return                                      The function returns ARM_CMSIS_NN_SUCCESS
 
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_lstm_step_s8(const int8_t *data_in,
                                         const int8_t *hidden_in,
                                         int8_t *hidden_out,
                                         const cmsis_nn_lstm_params *params,
                                         cmsis_nn_lstm_context *buffers,
                                         const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Update LSTM function for an iteration step using s16 input and output, and s16 internally.
@@ -2090,12 +2154,14 @@ arm_cmsis_nn_status arm_nn_lstm_step_s8(const int8_t *data_in,
  * @return                                      The function returns ARM_CMSIS_NN_SUCCESS
 
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_lstm_step_s16(const int16_t *data_in,
                                          const int16_t *hidden_in,
                                          int16_t *hidden_out,
                                          const cmsis_nn_lstm_params *params,
                                          cmsis_nn_lstm_context *buffers,
                                          const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Updates a LSTM gate for an iteration step of LSTM function, int8x8_16 version.
@@ -2111,12 +2177,14 @@ arm_cmsis_nn_status arm_nn_lstm_step_s16(const int16_t *data_in,
  * arm_nn_lstm_step_s8.
  * @return                                      The function returns ARM_CMSIS_NN_SUCCESS
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s8_s16(const int8_t *data_in,
                                                       const int8_t *hidden_in,
                                                       const cmsis_nn_lstm_gate *gate_data,
                                                       const cmsis_nn_lstm_params *params,
                                                       int16_t *output,
                                                       const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief Updates a LSTM gate for an iteration step of LSTM function, int16x8_16 version.
@@ -2132,12 +2200,14 @@ arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s8_s16(const int8_t *data_in,
  * arm_nn_lstm_step_s16.
  * @return                                      The function returns ARM_CMSIS_NN_SUCCESS
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s16(const int16_t *data_in,
                                                    const int16_t *hidden_in,
                                                    const cmsis_nn_lstm_gate *gate_data,
                                                    const cmsis_nn_lstm_params *params,
                                                    int16_t *output,
                                                    const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief The result of the multiplication is accumulated to the passed result buffer.
@@ -2158,6 +2228,7 @@ arm_cmsis_nn_status arm_nn_lstm_calculate_gate_s16(const int16_t *data_in,
  * @return                       The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
 
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
                                                          const int8_t *rhs,
                                                          const int32_t *effective_bias,
@@ -2168,6 +2239,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
                                                          const int32_t rhs_rows,
                                                          const int32_t batches,
                                                          const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief The result of the multiplication is accumulated to the passed result buffer.
@@ -2188,6 +2260,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s8_s16(const int8_t *lhs,
  * @return                       The function returns <code>ARM_CMSIS_NN_SUCCESS</code>
 
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s16(const int16_t *lhs,
                                                       const int8_t *rhs,
                                                       const int64_t *effective_bias,
@@ -2198,6 +2271,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s16(const int16_t *lhs,
                                                       const int32_t rhs_rows,
                                                       const int32_t batches,
                                                       const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s16 elementwise multiplication with s8 output
@@ -2215,6 +2289,7 @@ arm_cmsis_nn_status arm_nn_vec_mat_mul_result_acc_s16(const int16_t *lhs,
  *
  * @details   Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8
 arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
                                                const int16_t *input_2_vect,
                                                int8_t *output,
@@ -2224,6 +2299,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
                                                const int32_t block_size,
                                                const int32_t batch_size,
                                                const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @brief s16 elementwise multiplication with s16 output
@@ -2241,6 +2317,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_s8(const int16_t *input_1_vect,
  *
  * @details   Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_elementwise_mul_s16_batch_offset(const int16_t *input_1_vect,
                                                          const int16_t *input_2_vect,
                                                          int16_t *output,
@@ -2250,6 +2327,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_batch_offset(const int16_t *input_1_
                                                          const int32_t block_size,
                                                          const int32_t batch_size,
                                                          const int32_t batch_offset);
+#endif /* ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief s16 elementwise multiplication. The result of the multiplication is accumulated to the passed result buffer.
@@ -2268,6 +2346,7 @@ arm_cmsis_nn_status arm_elementwise_mul_s16_batch_offset(const int16_t *input_1_
  *
  * @details   Supported framework: TensorFlow Lite micro
  */
+#if ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16
 arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
                                                 const int16_t *input_2_vect,
                                                 const int32_t input_1_offset,
@@ -2279,6 +2358,7 @@ arm_cmsis_nn_status arm_elementwise_mul_acc_s16(const int16_t *input_1_vect,
                                                 const int32_t out_activation_min,
                                                 const int32_t out_activation_max,
                                                 const int32_t block_size);
+#endif /* ARM_NN_ENABLE_INT8 || ARM_NN_ENABLE_INT16 */
 
 /**
  * @brief Check if a broadcast is required between 2 cmsis_nn_dims.

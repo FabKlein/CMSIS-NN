@@ -16,12 +16,28 @@
 # limitations under the License.
 #
 
-file(GLOB SRC_S4 "./*_s4*.c")
-file(GLOB SRC_S8 "./*_s8*.c")
-if(NOT ARM_NN_ENABLE_AOT)
-  list(FILTER SRC_S8 EXCLUDE REGEX "/arm_convolve_s8_(pack_weights|packed_get_filter_size)\.c$")
+set(SRC_S4 "")
+set(SRC_S8 "")
+set(SRC_S16 "")
+if (ARM_NN_ENABLE_INT4)
+  file(GLOB SRC_S4 "./*_s4*.c")
 endif()
-file(GLOB SRC_S16 "./*_s16*.c")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8*.c" "./*_s8_s16.c" "./*_s8_s32.c")
+  if(NOT ARM_NN_ENABLE_AOT)
+    list(FILTER SRC_S8 EXCLUDE REGEX "/arm_convolve_s8_(pack_weights|packed_get_filter_size)\.c$")
+  endif()
+endif()
+if (ARM_NN_ENABLE_INT16)
+  list(APPEND SRC_S16 arm_convolve_s16.c
+                      arm_convolve_wrapper_s16.c
+                      arm_convolve_get_buffer_sizes_s16.c
+                      arm_depthwise_conv_s16.c
+                      arm_depthwise_conv_fast_s16.c
+                      arm_depthwise_conv_wrapper_s16.c
+                      arm_depthwise_conv_get_buffer_sizes_s16.c
+                      arm_nn_mat_mult_kernel_s16.c)
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_convolve_f32.c

@@ -22,8 +22,8 @@
  * Description:  Wrapper API to select appropriate transpose conv API based
  *               on dimensions.
  *
- * $Date:        15 October 2026
- * $Revision:    V.1.0.1
+ * $Date:        2 November 2026
+ * $Revision:    V.1.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,6 +31,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -159,3 +161,5 @@ arm_cmsis_nn_status arm_transpose_conv_wrapper_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNconv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

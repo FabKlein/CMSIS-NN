@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2023-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2023-2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_transpose_conv_s8.c
  * Description:  s8 version of transposed convolution using symmetric quantization.
  *
- * $Date:        12 July 2026
- * $Revision:    V.2.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.2
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  *  @ingroup Public
  */
@@ -154,7 +156,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                     int32_t *buf_out = buf + buf_row;
                     buf_out += output_ch * pad_x;
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                     for (int x = 0; x < output_x; x++)
                     {
                         const int32_t *mult_ptr = output_multiplier;
@@ -182,7 +184,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                         buf_out += channel_count;
                         output += channel_count;
                     }
-#else
+    #else
 
                     for (int x = 0; x < output_x; x++)
                     {
@@ -198,7 +200,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                             *output++ = result;
                         }
                     }
-#endif
+    #endif
 
                     // Reset the buffer which was just written
                     if (bias_data)
@@ -228,7 +230,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
             if ((input_y * stride_y + y >= pad_y) && (input_y * stride_y + y < pad_y + output_y))
             {
                 buf_out += output_ch * pad_x;
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
                 for (int x = 0; x < output_x; x++)
                 {
                     const int32_t *mult_ptr = output_multiplier;
@@ -255,7 +257,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                     buf_out += channel_count;
                     output += channel_count;
                 }
-#else
+    #else
                 for (int x = 0; x < output_x; x++)
                 {
                     const int32_t *output_multiplier_ptr = output_multiplier;
@@ -272,7 +274,7 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
                         *output++ = result;
                     }
                 }
-#endif
+    #endif
             }
             buf_row = (buf_row + buf_x) % buf_size;
         }
@@ -287,3 +289,5 @@ arm_cmsis_nn_status arm_transpose_conv_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

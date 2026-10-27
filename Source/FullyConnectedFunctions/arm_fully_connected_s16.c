@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2023, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_fully_connected_s16
  * Description:  Fully connected function compatible with TF Lite.
  *
- * $Date:        13 January 2023
- * $Revision:    V.2.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.2.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 
 /**
  *  @ingroup Public
@@ -89,3 +91,5 @@ arm_cmsis_nn_status arm_fully_connected_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of FC group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

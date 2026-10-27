@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Arm Limited or its affiliates.
+ * Copyright (C) 2022, 2026 Arm Limited or its affiliates.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_softmax_s8_s16.c
  * Description:  S8 to s16 softmax function
  *
- * $Date:        7 January 2022
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target Processor:  Cortex-M cores
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -53,3 +55,5 @@ void arm_softmax_s8_s16(const int8_t *input,
 /**
  * @} end of Softmax group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

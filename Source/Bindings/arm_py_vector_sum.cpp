@@ -21,8 +21,8 @@
  * Title:        arm_py_vector_sum.cpp
  * Description:  Python helper for effective-bias preparation
  *
- * $Date:        15 October 2026
- * $Revision:    V.1.0.0
+ * $Date:        2 November 2026
+ * $Revision:    V.1.0.1
  * -------------------------------------------------------------------- */
 
 #include <limits>
@@ -40,6 +40,7 @@ namespace py = pybind11;
 
 void vector_sum(py::module_ &m)
 {
+#if ARM_NN_ENABLE_INT8
     m.def(
         "vector_sum_s8",
         [](const py::array &weights, int32_t lhs_offset, const py::object &bias, int32_t rhs_offset) {
@@ -106,4 +107,13 @@ void vector_sum(py::module_ &m)
         py::arg("lhs_offset"),
         py::arg("bias") = py::none(),
         py::arg("rhs_offset") = 0);
+#else
+    m.def(
+        "vector_sum_s8",
+        [](const py::array &, int32_t, const py::object &, int32_t) { throw_data_type_not_compiled(DataType::A8W8); },
+        py::arg("weights"),
+        py::arg("lhs_offset"),
+        py::arg("bias") = py::none(),
+        py::arg("rhs_offset") = 0);
+#endif
 }

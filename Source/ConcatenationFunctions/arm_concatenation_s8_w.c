@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_concatenation_s8_w.c
  * Description:  s8 version of concatenation along the W axis
  *
- * $Date:        26 October 2022
- * $Revision:    V.1.0.1
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.2
  *
  * Target Processor:  Cortex-M cores
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -64,3 +66,5 @@ void arm_concatenation_s8_w(const int8_t *input,
 /**
  * @} end of Concatenation group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

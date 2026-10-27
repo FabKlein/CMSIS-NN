@@ -21,8 +21,8 @@
  * Title:        arm_convolve_1x1_s8_fast.c
  * Description:  Fast s8 version of 1x1 convolution (non-square shape)
  *
- * $Date:        15 October 2026
- * $Revision:    V.3.7.0
+ * $Date:        2 November 2026
+ * $Revision:    V.3.7.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,6 +31,8 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 #include <stdbool.h>
+
+#if ARM_NN_ENABLE_INT8
 
 /**
  *  @ingroup Public
@@ -59,13 +61,13 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
                                              const cmsis_nn_dims *output_dims,
                                              int8_t *output_data)
 {
-#if ARM_NN_ENABLE_AOT
+    #if ARM_NN_ENABLE_AOT
     const bool effective_bias = conv_params->filter_format == ARM_NN_FILTER_FORMAT_PACKED_4X16;
-#else
+    #else
     const bool effective_bias = false;
     (void)effective_bias;
-#endif
-#if ARM_NN_ENABLE_AOT
+    #endif
+    #if ARM_NN_ENABLE_AOT
     /* Only paired representations are supported. Validate before consuming data. */
     if (!((conv_params->filter_format == ARM_NN_FILTER_FORMAT_ROW_MAJOR &&
            conv_params->bias_format == ARM_NN_BIAS_FORMAT_ORIGINAL) ||
@@ -78,13 +80,13 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
     {
         return ARM_CMSIS_NN_ARG_ERROR;
     }
-    #if !defined(ARM_MATH_MVEI)
+        #if !defined(ARM_MATH_MVEI)
     if (effective_bias)
     {
         return ARM_CMSIS_NN_NO_IMPL_ERROR;
     }
+        #endif
     #endif
-#endif
 
     if (conv_params->padding.w != 0 || conv_params->padding.h != 0 || conv_params->stride.w != 1 ||
         conv_params->stride.h != 1)
@@ -99,7 +101,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
     const int32_t rhs_rows = output_dims->c;
     int32_t lhs_rows = input_dims->w * input_dims->h * input_dims->n;
 
-#if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI) && defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+    #if defined(ARM_MATH_DSP) && !defined(ARM_MATH_MVEI) && defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
     if (ctx->buf != NULL) /* Fall back to non buffered version if no additional memory buffer provided */
     {
         const int32_t batch = input_dims->n;
@@ -197,11 +199,11 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
         }
         return ARM_CMSIS_NN_SUCCESS;
     }
-#else
+    #else
     (void)ctx;
-#endif
+    #endif
 
-#if ARM_NN_ENABLE_AOT
+    #if ARM_NN_ENABLE_AOT
     if (effective_bias)
     {
         arm_nn_mat_mult_nt_t_s8_packed(input_data,
@@ -220,7 +222,7 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
                                        rhs_cols);
     }
     else
-#endif
+    #endif
 
     {
         arm_nn_mat_mult_nt_t_s8(input_data,
@@ -247,3 +249,5 @@ arm_cmsis_nn_status arm_convolve_1x1_s8_fast(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

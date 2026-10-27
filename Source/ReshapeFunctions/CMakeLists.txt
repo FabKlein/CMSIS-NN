@@ -16,7 +16,10 @@
 # limitations under the License.
 #
 
-set(SRC arm_reshape_s8.c)
+set(SRC "")
+if (ARM_NN_ENABLE_INT8)
+  list(APPEND SRC arm_reshape_s8.c)
+endif()
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC arm_reshape_f32.c)
 endif()

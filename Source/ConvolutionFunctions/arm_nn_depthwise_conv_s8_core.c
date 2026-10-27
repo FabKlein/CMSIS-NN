@@ -21,13 +21,15 @@
  * Title:        arm_nn_depthwise_conv_s8_core.c
  * Description:  Depthwise convolution on im2col buffers.
  *
- * $Date:        31 August 2026
- * $Revision:    V.1.0.6
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.7
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
 
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 
 /*
  * Depthwise conv on an im2col buffer where the input channel equals
@@ -49,7 +51,7 @@ int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
                                       const int32_t *const output_bias,
                                       int8_t *out)
 {
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     int32_t ch_per_loop = num_ch / 4;
 
     const int32_t *bias = output_bias;
@@ -204,7 +206,7 @@ int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
     }
 
     return out_tmp + num_ch;
-#else
+    #else
     (void)row;
     (void)col;
     (void)num_ch;
@@ -217,5 +219,7 @@ int8_t *arm_nn_depthwise_conv_s8_core(const int8_t *row,
     (void)output_bias;
     (void)out;
     return NULL;
-#endif
+    #endif
 }
+
+#endif /* ARM_NN_ENABLE_INT8 */

@@ -25,6 +25,9 @@ DEFAULT_BUILD_ROOT = Path("/tmp/cmsis-nn-lib-variants")
 class Variant:
     key: str
     label: str
+    enable_int8: bool
+    enable_int16: bool
+    enable_int4: bool
     enable_f16: bool
     enable_f32: bool
 
@@ -57,10 +60,60 @@ class VariantResult:
 
 
 VARIANTS: list[Variant] = [
-    Variant("baseline", "baseline (integer)", False, False),
-    Variant("f16", "baseline + float16", True, False),
-    Variant("f32", "baseline + float32", False, True),
-    Variant("f16_f32", "baseline + float16 + float32", True, True),
+    Variant(
+        key="int_s8",
+        label="int8 and int8-oriented mixed paths",
+        enable_int8=True,
+        enable_int16=False,
+        enable_int4=False,
+        enable_f16=False,
+        enable_f32=False,
+    ),
+    Variant(
+        key="int_s8_s16",
+        label="int8 and int16 paths",
+        enable_int8=True,
+        enable_int16=True,
+        enable_int4=False,
+        enable_f16=False,
+        enable_f32=False,
+    ),
+    Variant(
+        key="int_s4_s8_s16",
+        label="int4, int8, and int16 paths",
+        enable_int8=True,
+        enable_int16=True,
+        enable_int4=True,
+        enable_f16=False,
+        enable_f32=False,
+    ),
+    Variant(
+        key="float_f16",
+        label="float16 paths",
+        enable_int8=False,
+        enable_int16=False,
+        enable_int4=False,
+        enable_f16=True,
+        enable_f32=False,
+    ),
+    Variant(
+        key="float_f32",
+        label="float32 paths",
+        enable_int8=False,
+        enable_int16=False,
+        enable_int4=False,
+        enable_f16=False,
+        enable_f32=True,
+    ),
+    Variant(
+        key="all",
+        label="all integer and float paths",
+        enable_int8=True,
+        enable_int16=True,
+        enable_int4=True,
+        enable_f16=True,
+        enable_f32=True,
+    ),
 ]
 
 
@@ -394,6 +447,9 @@ def build_variant(
         f"-DCMAKE_C_FLAGS={toolchain.c_flags}",
         f"-DCMAKE_CXX_FLAGS={toolchain.cxx_flags}",
         f"-DCMSIS_OPTIMIZATION_LEVEL={optimization}",
+        f"-DARM_NN_ENABLE_INT8={'ON' if variant.enable_int8 else 'OFF'}",
+        f"-DARM_NN_ENABLE_INT16={'ON' if variant.enable_int16 else 'OFF'}",
+        f"-DARM_NN_ENABLE_INT4={'ON' if variant.enable_int4 else 'OFF'}",
         f"-DARM_NN_ENABLE_F32={'ON' if variant.enable_f32 else 'OFF'}",
         f"-DARM_NN_ENABLE_F16={'ON' if variant.enable_f16 else 'OFF'}",
     ]
@@ -473,7 +529,7 @@ def print_summary(toolchain: Toolchain, results: Iterable[VariantResult]) -> Non
 
 
 def parse_variants(selected: str) -> list[Variant]:
-    if selected.strip().lower() == "all":
+    if selected.strip().lower() == "matrix":
         return list(VARIANTS)
     wanted = {token.strip() for token in selected.split(",") if token.strip()}
     chosen = [variant for variant in VARIANTS if variant.key in wanted]
@@ -511,8 +567,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--variants",
-        default="all",
-        help="Comma-separated variant keys to build. Defaults to 'all'.",
+        default="matrix",
+        help="Comma-separated variant keys to build, or 'matrix' for every variant. Defaults to 'matrix'.",
     )
     parser.add_argument(
         "--cpu",

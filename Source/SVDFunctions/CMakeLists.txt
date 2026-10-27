@@ -16,7 +16,11 @@
 # limitations under the License.
 #
 
-file(GLOB SRC "./*_s8.c")
+set(SRC "")
+if (ARM_NN_ENABLE_INT8)
+  file(GLOB SRC_S8 "./*_s8.c")
+  list(APPEND SRC ${SRC_S8})
+endif()
 set(SRC_FLT "")
 if (ARM_NN_ENABLE_F32)
   list(APPEND SRC_FLT arm_svdf_f32.c)

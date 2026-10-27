@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2022 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2022, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +21,8 @@
  * Title:        arm_depthwise_conv_s16.c
  * Description:  s16 version of depthwise convolution.
  *
- * $Date:        28 April 2026
- * $Revision:    V.2.0.2
+ * $Date:        27 October 2026
+ * $Revision:    V.2.0.3
  *
  * Target Processor:  Cortex-M CPUs
  *
@@ -30,6 +30,8 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT16
 
 /**
  *  @ingroup Public
@@ -90,9 +92,9 @@ static void UNUSED_ATTR depthwise_conv_s16_mult_4_s16(const int16_t *input,
                     {
                         int32_t ker_idx = ker_h * (output_ch * kernel_x) + ker_w_start * output_ch + out_ch;
                         int32_t in_idx = (in_h + ker_h) * (input_ch * input_x) + in_w * input_ch + in_ch;
-#if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-    #pragma clang loop unroll(disable)
-#endif
+    #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+        #pragma clang loop unroll(disable)
+    #endif
                         for (int32_t ker_w = ker_w_start; ker_w < MIN(kernel_x, input_x - in_w);
                              ++ker_w, ker_idx += output_ch)
                         {
@@ -290,3 +292,5 @@ arm_cmsis_nn_status arm_depthwise_conv_s16(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT16 */

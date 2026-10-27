@@ -21,8 +21,8 @@
  * Title:        arm_convolve_1_x_n_s8.c
  * Description:  s8 version of 1xN convolution using symmetric quantization.
  *
- * $Date:        15 October 2026
- * $Revision:    V.3.7.0
+ * $Date:        2 November 2026
+ * $Revision:    V.3.7.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -30,6 +30,9 @@
 
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
+
 /**
  *  @ingroup Public
  */
@@ -57,7 +60,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
                                           const cmsis_nn_dims *output_dims,
                                           int8_t *output_data)
 {
-#if ARM_NN_ENABLE_AOT
+    #if ARM_NN_ENABLE_AOT
     if (conv_params->filter_format || conv_params->bias_format)
     {
         if (conv_params->filter_format != ARM_NN_FILTER_FORMAT_PACKED_4X16 ||
@@ -67,7 +70,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
         }
         return ARM_CMSIS_NN_NO_IMPL_ERROR;
     }
-#endif
+    #endif
 
     arm_cmsis_nn_status status = ARM_CMSIS_NN_SUCCESS;
 
@@ -78,7 +81,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
         return ARM_CMSIS_NN_ARG_ERROR;
     }
 
-#if defined(ARM_MATH_MVEI)
+    #if defined(ARM_MATH_MVEI)
     (void)bias_dims;
 
     const int32_t input_x = input_dims->w;
@@ -222,7 +225,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
         /* Advance to the next batch */
         input_data += (input_x * input_ch);
     }
-#else
+    #else
     status = arm_convolve_s8(ctx,
                              conv_params,
                              quant_params,
@@ -236,7 +239,7 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
                              output_dims,
                              output_data);
 
-#endif
+    #endif
 
     /* Return to application */
     return status;
@@ -245,3 +248,5 @@ arm_cmsis_nn_status arm_convolve_1_x_n_s8(const cmsis_nn_context *ctx,
 /**
  * @} end of NNConv group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

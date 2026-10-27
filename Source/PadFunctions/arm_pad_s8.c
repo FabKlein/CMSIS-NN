@@ -1,6 +1,6 @@
 
 /*
- * SPDX-FileCopyrightText: Copyright 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2024, 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -22,8 +22,8 @@
  * Title:        arm_pad_s8.c
  * Description:  Pad a s8 vector
  *
- * $Date:        19 Sep 2024
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -32,6 +32,8 @@
 #include "arm_nn_types.h"
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
+
+#if ARM_NN_ENABLE_INT8
 /**
  *  @ingroup Public
  */
@@ -115,3 +117,5 @@ arm_cmsis_nn_status arm_pad_s8(const int8_t *input,
 /**
  * @} end of Pad group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */
