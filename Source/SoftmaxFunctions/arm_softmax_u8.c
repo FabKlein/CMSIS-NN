@@ -1,5 +1,6 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2010-2020, 2022-2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+ * SPDX-FileCopyrightText: Copyright 2010-2020, 2022-2023, 2026 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,8 +22,8 @@
  * Title:        arm_softmax_u8.c
  * Description:  U8 softmax function
  *
- * $Date:        5 January 2023
- * $Revision:    V.1.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -31,7 +32,9 @@
 #include "arm_nnfunctions.h"
 #include "arm_nnsupportfunctions.h"
 
-#define ACCUM_BITS 12
+#if ARM_NN_ENABLE_INT8
+
+    #define ACCUM_BITS 12
 
 /**
  *  @ingroup Public
@@ -101,3 +104,5 @@ void arm_softmax_u8(const uint8_t *input,
 /**
  * @} end of Softmax group
  */
+
+#endif /* ARM_NN_ENABLE_INT8 */

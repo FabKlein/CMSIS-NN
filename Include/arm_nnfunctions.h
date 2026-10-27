@@ -21,8 +21,8 @@
  * Title:        arm_nnfunctions.h
  * Description:  Public header file for CMSIS NN Library
  *
- * $Date:        27 March 2026
- * $Revision:    V.19.1.0
+ * $Date:        27 October 2026
+ * $Revision:    V.19.1.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -2551,6 +2551,7 @@ arm_cmsis_nn_status arm_softmax_s16(const int16_t *input,
  *
  */
 
+#if ARM_NN_ENABLE_INT8
 void arm_softmax_u8(const uint8_t *input,
                     const int32_t num_rows,
                     const int32_t row_size,
@@ -2558,6 +2559,7 @@ void arm_softmax_u8(const uint8_t *input,
                     const int32_t shift,
                     const int32_t diff_min,
                     uint8_t *output);
+#endif /* ARM_NN_ENABLE_INT8 */
 
 /**
  * @defgroup Reshape Reshape Functions

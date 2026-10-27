@@ -23,7 +23,7 @@ on:
       - ".github/workflows/clang-format.yml"
       - "Include/**"
       - "Source/**"
-      - "Tests/UnitTest/Corstone-300/**"
+      - "Tests/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -54,7 +54,7 @@ jobs:
               -- \
               Include \
               Source \
-              Tests/UnitTest/Corstone-300 |
+              Tests |
             grep -E '\.(c|cc|cpp|h|hpp)$' || true
           )
 

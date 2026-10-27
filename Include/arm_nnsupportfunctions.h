@@ -21,8 +21,8 @@
  * Title:        arm_nnsupportfunctions.h
  * Description:  Public header file of support functions for CMSIS NN Library
  *
- * $Date:        15 June 2026
- * $Revision:    V.22.11.0
+ * $Date:        17 October 2026
+ * $Revision:    V.22.11.1
  *
  * Target :  Arm(R) M-Profile Architecture
  * -------------------------------------------------------------------- */
@@ -1296,8 +1296,9 @@ __STATIC_FORCEINLINE void arm_memset_s8(int8_t *dst, const int8_t val, uint32_t 
  */
 __STATIC_FORCEINLINE void read_and_pad_s4(const int8_t *source, int32_t *out1, int32_t *out2)
 {
-    int16_t in = arm_nn_read_s8x2(source);
-    int32_t inA = (in & 0x00FF) | ((in & 0xFF00) << 8);
+    uint16_t in;
+    memcpy(&in, source, sizeof(in));
+    int32_t inA = in | (in << 8);
 
     *out1 = SXTB16_RORn(__sxtb16(inA << 4), 4);
     *out2 = SXTB16_RORn(__sxtb16(inA), 4);
@@ -1674,7 +1675,9 @@ __STATIC_FORCEINLINE int32_t arm_nn_doubling_high_mult_no_sat(int32_t m1, int32_
  * @brief           Rounding divide by power of two.
  * @param[in]       dividend - Dividend
  * @param[in]       exponent - Divisor = power(2, exponent)
- *                             Range: [0, 31]
+ *                             C implementation: [0, 31].
+ *                             With CMSIS_NN_USE_REQUANTIZE_INLINE_ASSEMBLY: [1, 31];
+ *                             callers must handle zero separately.
  * @return          Rounded result of division. Midpoint is rounded away from zero.
  *
  */

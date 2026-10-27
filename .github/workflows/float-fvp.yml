@@ -62,10 +62,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -80,11 +80,10 @@ jobs:
         uses: ARM-software/cmsis-actions/vcpkg@v1
 
       - name: Activate Arm tool license
-        if: matrix.toolchain == 'AC6'
         uses: ARM-software/cmsis-actions/armlm@v1
 
       - name: Cache CMSIS packs
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           key: cmsis-packs
           path: /home/runner/.cache/arm/packs
@@ -153,7 +152,7 @@ jobs:
 
       - name: Upload float FVP logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: float-fvp-${{ matrix.key }}
           path: |
