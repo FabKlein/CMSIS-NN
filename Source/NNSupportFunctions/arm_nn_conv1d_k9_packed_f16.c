@@ -9,8 +9,8 @@
  * Title:        arm_nn_conv1d_k9_packed_f16.c
  * Description:  Support: NHWC 1D convolution kernel size 9 for packed f16 weights
  *
- * $Date:        22 Jun 2026
- * $Revision:    V.1.0.0
+ * $Date:        27 October 2026
+ * $Revision:    V.1.0.1
  *
  * Target :  Arm(R) M-Profile Architecture
  *
@@ -51,7 +51,6 @@ void arm_nn_conv1d_k9_packed_f16(const float16_t *__RESTRICT x_nhwc,
         const float16_t *x11 = x_nhwc + (size_t)(ow + 11) * (size_t)in_c;
         const float16_t *x12 = x_nhwc + (size_t)(ow + 12) * (size_t)in_c;
         const float16_t *x13 = x_nhwc + (size_t)(ow + 13) * (size_t)in_c;
-        const float16_t *x14 = x_nhwc + (size_t)(ow + 14) * (size_t)in_c;
         float16_t *y0 = out + (size_t)(ow + 0) * (size_t)out_c;
         float16_t *y1 = out + (size_t)(ow + 1) * (size_t)out_c;
         float16_t *y2 = out + (size_t)(ow + 2) * (size_t)out_c;
@@ -87,7 +86,6 @@ void arm_nn_conv1d_k9_packed_f16(const float16_t *__RESTRICT x_nhwc,
                 const float16_t sx11 = x11[ic];
                 const float16_t sx12 = x12[ic];
                 const float16_t sx13 = x13[ic];
-                const float16_t sx14 = x14[ic];
 
                 float16x8_t vw = vld1q(w_ic + 0U * in_c * block_cols);
                 vacc0 = vfmaq(vacc0, vw, sx0);
@@ -190,7 +188,6 @@ void arm_nn_conv1d_k9_packed_f16(const float16_t *__RESTRICT x_nhwc,
                 const float16_t sx11 = x11[ic];
                 const float16_t sx12 = x12[ic];
                 const float16_t sx13 = x13[ic];
-                const float16_t sx14 = x14[ic];
 
                 float16x8_t vw = vld1q_z(w_ic + 0U * in_c * block_cols, p);
                 vacc0 = vfmaq(vacc0, vw, sx0);
